@@ -45,10 +45,10 @@ jobs:
         env:
           # Set your backend API URL here
           # Replace with your actual backend URL (e.g., Railway, Render, Heroku)
-          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+          VITE_API_BASE_URL: "https://skynetbackend.duckdns.org"
           # Set base path if using repository name in URL (e.g., /website/)
           # Leave as '/' if using custom domain or username.github.io
-          VITE_BASE_PATH: '/'
+          VITE_BASE_PATH: '/website'
         run: npm run build
         
       - name: Setup Pages
