@@ -16,7 +16,6 @@ export function BaselineDetailPage() {
     return <ErrorMessage message="Failed to load baseline" />;
   }
 
-  // @ts-expect-error - Type inference issue with TanStack Query
   const baseline = baselines.find((b: any) => b.id === baselineId);
 
   if (!baseline) {
