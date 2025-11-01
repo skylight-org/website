@@ -11,7 +11,8 @@ import type {
   NumericRange,
 } from '@sky-light/shared-types';
 
-const API_BASE_URL = '/api/v1';
+// Use environment variable for API URL, fallback to local proxy for development
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
 export class ApiError extends Error {
   constructor(

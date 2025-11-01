@@ -186,3 +186,35 @@ Query parameters:
 - `baseline` - Filter by baseline
 - `sortBy` - Sort by metric
 - `order` - `asc` or `desc`
+
+## Deployment
+
+### GitHub Pages (Frontend)
+
+The frontend can be deployed to GitHub Pages automatically using GitHub Actions.
+
+**Quick Setup:**
+
+1. **Configure GitHub Repository**
+   - Go to Settings → Pages → Source: GitHub Actions
+
+2. **Set Backend API URL**
+   - Go to Settings → Secrets and variables → Actions
+   - Add secret: `VITE_API_BASE_URL` with your backend URL
+
+3. **Deploy**
+   - Push to `main` branch to trigger automatic deployment
+   - Or manually trigger from Actions tab
+
+**See [DEPLOYMENT.md](DEPLOYMENT.md) for complete instructions**
+
+### Backend Hosting
+
+The backend requires a Node.js hosting service. Recommended options:
+
+- **Railway** (recommended): Easy setup, PostgreSQL included
+- **Render**: Simple deployment, free tier available
+- **Heroku**: Mature platform with many add-ons
+- **Vercel**: Serverless option (requires adaptation)
+
+**See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed backend deployment instructions**
