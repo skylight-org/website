@@ -12,7 +12,9 @@ import type {
 } from '@sky-light/shared-types';
 
 // Use environment variable for API URL, fallback to local proxy for development
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+const API_BASE_URL = "https://skynetbackend.duckdns.org/api/v1"
+
+console.log(`Using API URL: ${API_BASE_URL}`);
 
 export class ApiError extends Error {
   constructor(
