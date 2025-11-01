@@ -93,10 +93,6 @@ export function BaselineDetailPage() {
           <p className="text-gray-300 leading-relaxed">
             {baseline.description}
           </p>
-          <p className="text-gray-300 leading-relaxed mt-4">
-            This baseline method represents a specific approach to sparse attention mechanisms, 
-            designed to optimize transformer model performance while maintaining computational efficiency.
-          </p>
         </div>
       </div>
 
