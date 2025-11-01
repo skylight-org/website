@@ -30,6 +30,30 @@
 
 ## Quick Start
 
+### Prerequisites
+
+Before starting, you need to configure your database connection:
+
+1. **Set up Supabase credentials**
+
+   Create a `.env` file in `apps/backend/`:
+   ```bash
+   cd apps/backend
+   cat > .env << EOF
+   SUPABASE_URL=your_supabase_url_here
+   SUPABASE_KEY=your_supabase_anon_key_here
+   PORT=3000
+   EOF
+   ```
+
+   Or set environment variables:
+   ```bash
+   export SUPABASE_URL=your_supabase_url_here
+   export SUPABASE_KEY=your_supabase_anon_key_here
+   ```
+
+   **Note:** Without Supabase credentials, the backend will fall back to mock in-memory data for development.
+
 ### Automated Setup (Recommended)
 
 **Option 1: Node.js script (cross-platform)**
@@ -111,19 +135,45 @@ sky-light/
 ### Requirements
 - Node.js 18 or higher
 - npm 8 or higher
+- Supabase account (for production data) or use mock data for development
+
+### Database
+
+**Current Implementation:** Supabase PostgreSQL (production-ready)
+
+The backend supports two modes:
+- **PostgreSQL Mode** (default): When `SUPABASE_URL` and `SUPABASE_KEY` are configured
+- **Mock Mode** (fallback): Uses in-memory data when Supabase is not configured
 
 ### Adding New Baselines
 
+**Using Supabase (Recommended):**
+1. Use the data upload script in `database_mgmt/`:
+   ```bash
+   cd database_mgmt
+   python upload.py --file your_data.jsonl
+   ```
+
+**Using Mock Data (Development):**
 1. Add baseline to `apps/backend/src/repositories/mock/mockData.ts`
-2. Generate configurations for the new baseline
-3. Restart backend server
+2. Restart backend server
 
 ### Adding New Datasets
 
-1. Add dataset to `mockDatasets` array
+**Using Supabase (Recommended):**
+1. Prepare data in JSONL format (see `database_mgmt/example_data.jsonl`)
+2. Upload using the upload script:
+   ```bash
+   cd database_mgmt
+   python upload.py --file your_data.jsonl
+   ```
+
+**Using Mock Data (Development):**
+1. Add dataset to `mockDatasets` array in `mockData.ts`
 2. Define metrics for the dataset
-3. Generate configurations
-4. Restart backend server
+3. Restart backend server
+
+For detailed database schema and upload instructions, see `database_mgmt/README.md`
 
 ### API Endpoints
 

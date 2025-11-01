@@ -65,6 +65,24 @@ main() {
     fi
     print_success "npm $(npm -v) detected"
 
+    # Check for Supabase credentials
+    if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_KEY" ]; then
+        echo ""
+        print_warning "Supabase credentials not detected"
+        print_info "The backend will use mock in-memory data"
+        print_info "To use real database, set environment variables:"
+        echo "  export SUPABASE_URL='https://your-project.supabase.co'"
+        echo "  export SUPABASE_KEY='your-anon-key'"
+        echo ""
+        print_info "Or create a .env file in apps/backend/ with:"
+        echo "  SUPABASE_URL=https://your-project.supabase.co"
+        echo "  SUPABASE_KEY=your-anon-key"
+        echo ""
+    else
+        print_success "Supabase credentials detected"
+        print_info "Backend will connect to: $SUPABASE_URL"
+    fi
+
     # Check if dependencies are installed
     NEEDS_INSTALL=false
 

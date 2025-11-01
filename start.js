@@ -79,6 +79,24 @@ async function main() {
   }
   log.success('npm detected');
 
+  // Check for Supabase credentials
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) {
+    console.log('');
+    log.warning('Supabase credentials not detected');
+    log.info('The backend will use mock in-memory data');
+    log.info('To use real database, set environment variables:');
+    console.log('  export SUPABASE_URL="https://your-project.supabase.co"');
+    console.log('  export SUPABASE_KEY="your-anon-key"');
+    console.log('');
+    log.info('Or create a .env file in apps/backend/ with:');
+    console.log('  SUPABASE_URL=https://your-project.supabase.co');
+    console.log('  SUPABASE_KEY=your-anon-key');
+    console.log('');
+  } else {
+    log.success('Supabase credentials detected');
+    log.info(`Backend will connect to: ${process.env.SUPABASE_URL}`);
+  }
+
   // Check dependencies
   let needsInstall = false;
   const checkPaths = [

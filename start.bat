@@ -24,6 +24,24 @@ if %ERRORLEVEL% NEQ 0 (
 echo [OK] npm detected
 npm -v
 
+REM Check for Supabase credentials
+if "%SUPABASE_URL%"=="" (
+    echo.
+    echo [WARN] Supabase credentials not detected
+    echo [INFO] The backend will use mock in-memory data
+    echo [INFO] To use real database, set environment variables:
+    echo   set SUPABASE_URL=https://your-project.supabase.co
+    echo   set SUPABASE_KEY=your-anon-key
+    echo.
+    echo [INFO] Or create a .env file in apps\backend\ with:
+    echo   SUPABASE_URL=https://your-project.supabase.co
+    echo   SUPABASE_KEY=your-anon-key
+    echo.
+) else (
+    echo [OK] Supabase credentials detected
+    echo [INFO] Backend will connect to: %SUPABASE_URL%
+)
+
 REM Check if dependencies are installed
 set NEEDS_INSTALL=0
 

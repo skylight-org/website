@@ -97,7 +97,8 @@ export class LeaderboardController {
 
       res.json(leaderboard);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch overall leaderboard' });
+      console.error('Error in getOverallLeaderboard:', error);
+      res.status(500).json({ error: 'Failed to fetch overall leaderboard', details: error instanceof Error ? error.message : 'Unknown error' });
     }
   };
 
