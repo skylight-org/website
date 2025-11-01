@@ -93,6 +93,19 @@ export function OverviewPage() {
           </a>{' '}
           repository.
         </p>
+        
+        {/* Development Notice */}
+        <div className="mt-6 bg-dark-surface border-2 border-accent-gold rounded-lg p-4 max-w-3xl">
+          <div className="flex items-start gap-3">
+            <span className="text-accent-gold text-xl">⚠️</span>
+            <div>
+              <h3 className="text-accent-gold font-semibold mb-1">Under Development</h3>
+              <p className="text-gray-300 text-sm">
+                This project is currently under active development. Features and data may change as we continue to improve the platform.
+              </p>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Stats */}
