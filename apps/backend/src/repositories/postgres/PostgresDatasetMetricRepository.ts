@@ -47,6 +47,24 @@ export class PostgresDatasetMetricRepository implements IDatasetMetricRepository
     return (data || []).map(this.mapToDatasetMetric);
   }
 
+  async findByDatasetAndMetric(datasetId: string, metricId: string): Promise<DatasetMetric | undefined> {
+    const { data, error } = await this.supabase
+      .from('dataset_metrics')
+      .select('*')
+      .eq('dataset_id', datasetId)
+      .eq('metric_id', metricId)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return undefined;
+      }
+      throw new Error(`Failed to fetch dataset metric: ${error.message}`);
+    }
+
+    return data ? this.mapToDatasetMetric(data) : undefined;
+  }
+
   /**
    * Map database row to DatasetMetric model
    */

@@ -1,14 +1,13 @@
 import { Router } from 'express';
 import { ResultController } from '../controllers/result.controller';
-import { MockResultRepository } from '../repositories/mock/MockResultRepository';
 
-const router = Router();
-const resultRepository = new MockResultRepository();
-const resultController = new ResultController(resultRepository);
+export function createResultRoutes(controller: ResultController): Router {
+  const router = Router();
 
-router.get('/', resultController.getAll);
-router.get('/configuration/:configurationId', resultController.getByConfigurationId);
-router.get('/dataset/:datasetId', resultController.getByDatasetId);
+  router.get('/', controller.getAll);
+  router.get('/configuration/:configurationId', controller.getByConfigurationId);
+  router.get('/dataset/:datasetId', controller.getByDatasetId);
 
-export default router;
+  return router;
+}
 

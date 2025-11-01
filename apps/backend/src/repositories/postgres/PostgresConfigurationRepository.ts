@@ -76,6 +76,47 @@ export class PostgresConfigurationRepository implements IConfigurationRepository
     return (data || []).map(this.mapToConfiguration);
   }
 
+  async getUniqueSparsityValues(): Promise<number[]> {
+    const { data, error } = await this.supabase
+      .from('configurations')
+      .select('target_sparsity')
+      .not('target_sparsity', 'is', null);
+
+    if (error) {
+      throw new Error(`Failed to fetch sparsity values: ${error.message}`);
+    }
+
+    // Extract unique values and sort
+    const uniqueValues = [...new Set(
+      (data || [])
+        .map(row => row.target_sparsity)
+        .filter((val): val is number => val !== null && val !== undefined)
+        .map(val => parseFloat(val.toString()))
+    )];
+
+    return uniqueValues.sort((a, b) => a - b);
+  }
+
+  async getUniqueAuxMemoryValues(): Promise<number[]> {
+    const { data, error } = await this.supabase
+      .from('configurations')
+      .select('target_aux_memory')
+      .not('target_aux_memory', 'is', null);
+
+    if (error) {
+      throw new Error(`Failed to fetch aux memory values: ${error.message}`);
+    }
+
+    // Extract unique values and sort
+    const uniqueValues = [...new Set(
+      (data || [])
+        .map(row => row.target_aux_memory)
+        .filter((val): val is number => val !== null && val !== undefined)
+    )];
+
+    return uniqueValues.sort((a, b) => a - b);
+  }
+
   /**
    * Map database row to Configuration model
    */

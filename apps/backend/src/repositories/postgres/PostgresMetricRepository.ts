@@ -21,7 +21,7 @@ export class PostgresMetricRepository implements IMetricRepository {
     return (data || []).map(this.mapToMetric);
   }
 
-  async findById(id: string): Promise<Metric | null> {
+  async findById(id: string): Promise<Metric | undefined> {
     const { data, error } = await this.supabase
       .from('metrics')
       .select('*')
@@ -30,12 +30,29 @@ export class PostgresMetricRepository implements IMetricRepository {
 
     if (error) {
       if (error.code === 'PGRST116') {
-        return null;
+        return undefined;
       }
       throw new Error(`Failed to fetch metric: ${error.message}`);
     }
 
-    return data ? this.mapToMetric(data) : null;
+    return data ? this.mapToMetric(data) : undefined;
+  }
+
+  async findByName(name: string): Promise<Metric | undefined> {
+    const { data, error } = await this.supabase
+      .from('metrics')
+      .select('*')
+      .eq('name', name)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return undefined;
+      }
+      throw new Error(`Failed to fetch metric: ${error.message}`);
+    }
+
+    return data ? this.mapToMetric(data) : undefined;
   }
 
   /**

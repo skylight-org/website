@@ -21,7 +21,7 @@ export class PostgresExperimentalRunRepository implements IExperimentalRunReposi
     return (data || []).map(this.mapToExperimentalRun);
   }
 
-  async findById(id: string): Promise<ExperimentalRun | null> {
+  async findById(id: string): Promise<ExperimentalRun | undefined> {
     const { data, error } = await this.supabase
       .from('experimental_runs')
       .select('*')
@@ -30,15 +30,29 @@ export class PostgresExperimentalRunRepository implements IExperimentalRunReposi
 
     if (error) {
       if (error.code === 'PGRST116') {
-        return null;
+        return undefined;
       }
       throw new Error(`Failed to fetch experimental run: ${error.message}`);
     }
 
-    return data ? this.mapToExperimentalRun(data) : null;
+    return data ? this.mapToExperimentalRun(data) : undefined;
   }
 
-  async findLatestCompleted(): Promise<ExperimentalRun | null> {
+  async findByStatus(status: 'pending' | 'running' | 'completed' | 'failed'): Promise<ExperimentalRun[]> {
+    const { data, error } = await this.supabase
+      .from('experimental_runs')
+      .select('*')
+      .eq('status', status)
+      .order('run_date', { ascending: false });
+
+    if (error) {
+      throw new Error(`Failed to fetch experimental runs: ${error.message}`);
+    }
+
+    return (data || []).map(this.mapToExperimentalRun);
+  }
+
+  async findLatestCompleted(): Promise<ExperimentalRun | undefined> {
     const { data, error } = await this.supabase
       .from('experimental_runs')
       .select('*')
@@ -49,12 +63,12 @@ export class PostgresExperimentalRunRepository implements IExperimentalRunReposi
 
     if (error) {
       if (error.code === 'PGRST116') {
-        return null;
+        return undefined;
       }
       throw new Error(`Failed to fetch latest experimental run: ${error.message}`);
     }
 
-    return data ? this.mapToExperimentalRun(data) : null;
+    return data ? this.mapToExperimentalRun(data) : undefined;
   }
 
   /**

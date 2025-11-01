@@ -21,7 +21,7 @@ export class PostgresLLMRepository implements ILLMRepository {
     return (data || []).map(this.mapToLLM);
   }
 
-  async findById(id: string): Promise<LLM | null> {
+  async findById(id: string): Promise<LLM | undefined> {
     const { data, error } = await this.supabase
       .from('llms')
       .select('*')
@@ -30,12 +30,29 @@ export class PostgresLLMRepository implements ILLMRepository {
 
     if (error) {
       if (error.code === 'PGRST116') {
-        return null;
+        return undefined;
       }
       throw new Error(`Failed to fetch LLM: ${error.message}`);
     }
 
-    return data ? this.mapToLLM(data) : null;
+    return data ? this.mapToLLM(data) : undefined;
+  }
+
+  async findByName(name: string): Promise<LLM | undefined> {
+    const { data, error } = await this.supabase
+      .from('llms')
+      .select('*')
+      .eq('name', name)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return undefined;
+      }
+      throw new Error(`Failed to fetch LLM: ${error.message}`);
+    }
+
+    return data ? this.mapToLLM(data) : undefined;
   }
 
   /**

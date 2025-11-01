@@ -35,18 +35,12 @@ export function initializeSupabase(): SupabaseClient {
 
 /**
  * Get existing Supabase client instance
+ * Initializes the client if not already done
  */
 export function getSupabaseClient(): SupabaseClient {
   if (!supabaseClient) {
     return initializeSupabase();
   }
   return supabaseClient;
-}
-
-/**
- * Check if Supabase credentials are configured
- */
-export function isSupabaseConfigured(): boolean {
-  return !!(process.env.SUPABASE_URL && process.env.SUPABASE_KEY);
 }
 

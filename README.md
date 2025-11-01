@@ -32,9 +32,14 @@
 
 ### Prerequisites
 
-Before starting, you need to configure your database connection:
+Before starting, you **must** configure your Supabase PostgreSQL database:
 
-1. **Set up Supabase credentials**
+1. **Create a Supabase Project**
+   - Sign up at [https://supabase.com](https://supabase.com)
+   - Create a new project
+   - Apply the database schema from `DB_Schema.md` via the Supabase SQL editor
+
+2. **Set up Supabase credentials**
 
    Create a `.env` file in `apps/backend/`:
    ```bash
@@ -52,7 +57,7 @@ Before starting, you need to configure your database connection:
    export SUPABASE_KEY=your_supabase_anon_key_here
    ```
 
-   **Note:** Without Supabase credentials, the backend will fall back to mock in-memory data for development.
+   **⚠️ REQUIRED:** The backend requires valid Supabase credentials to start. It will not run without them.
 
 ### Automated Setup (Recommended)
 
@@ -135,43 +140,33 @@ sky-light/
 ### Requirements
 - Node.js 18 or higher
 - npm 8 or higher
-- Supabase account (for production data) or use mock data for development
+- **Supabase account with configured project** (required - see Prerequisites)
 
 ### Database
 
-**Current Implementation:** Supabase PostgreSQL (production-ready)
+**Implementation:** Supabase PostgreSQL (required)
 
-The backend supports two modes:
-- **PostgreSQL Mode** (default): When `SUPABASE_URL` and `SUPABASE_KEY` are configured
-- **Mock Mode** (fallback): Uses in-memory data when Supabase is not configured
+The backend uses Supabase PostgreSQL exclusively for all data storage and retrieval. Valid Supabase credentials are **required** for the backend to function.
 
 ### Adding New Baselines
 
-**Using Supabase (Recommended):**
-1. Use the data upload script in `database_mgmt/`:
-   ```bash
-   cd database_mgmt
-   python upload.py --file your_data.jsonl
-   ```
+Use the data upload script to add baselines to your Supabase database:
 
-**Using Mock Data (Development):**
-1. Add baseline to `apps/backend/src/repositories/mock/mockData.ts`
-2. Restart backend server
+```bash
+cd database_mgmt
+python upload.py --file your_data.jsonl
+```
+
+See `database_mgmt/example_data.jsonl` for data format examples.
 
 ### Adding New Datasets
 
-**Using Supabase (Recommended):**
 1. Prepare data in JSONL format (see `database_mgmt/example_data.jsonl`)
 2. Upload using the upload script:
    ```bash
    cd database_mgmt
    python upload.py --file your_data.jsonl
    ```
-
-**Using Mock Data (Development):**
-1. Add dataset to `mockDatasets` array in `mockData.ts`
-2. Define metrics for the dataset
-3. Restart backend server
 
 For detailed database schema and upload instructions, see `database_mgmt/README.md`
 
