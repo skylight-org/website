@@ -1,0 +1,96 @@
+import { SupabaseClient } from '@supabase/supabase-js';
+import { IConfigurationRepository } from '../interfaces/IConfigurationRepository';
+import { Configuration } from '../../models/Configuration';
+
+/**
+ * PostgreSQL implementation of ConfigurationRepository using Supabase
+ */
+export class PostgresConfigurationRepository implements IConfigurationRepository {
+  constructor(private supabase: SupabaseClient) {}
+
+  async findAll(): Promise<Configuration[]> {
+    const { data, error } = await this.supabase
+      .from('configurations')
+      .select('*');
+
+    if (error) {
+      throw new Error(`Failed to fetch configurations: ${error.message}`);
+    }
+
+    return (data || []).map(this.mapToConfiguration);
+  }
+
+  async findById(id: string): Promise<Configuration | null> {
+    const { data, error } = await this.supabase
+      .from('configurations')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return null;
+      }
+      throw new Error(`Failed to fetch configuration: ${error.message}`);
+    }
+
+    return data ? this.mapToConfiguration(data) : null;
+  }
+
+  async findByDatasetId(datasetId: string): Promise<Configuration[]> {
+    const { data, error } = await this.supabase
+      .from('configurations')
+      .select('*')
+      .eq('dataset_id', datasetId);
+
+    if (error) {
+      throw new Error(`Failed to fetch configurations: ${error.message}`);
+    }
+
+    return (data || []).map(this.mapToConfiguration);
+  }
+
+  async findByBaselineId(baselineId: string): Promise<Configuration[]> {
+    const { data, error } = await this.supabase
+      .from('configurations')
+      .select('*')
+      .eq('baseline_id', baselineId);
+
+    if (error) {
+      throw new Error(`Failed to fetch configurations: ${error.message}`);
+    }
+
+    return (data || []).map(this.mapToConfiguration);
+  }
+
+  async findByLLMId(llmId: string): Promise<Configuration[]> {
+    const { data, error } = await this.supabase
+      .from('configurations')
+      .select('*')
+      .eq('llm_id', llmId);
+
+    if (error) {
+      throw new Error(`Failed to fetch configurations: ${error.message}`);
+    }
+
+    return (data || []).map(this.mapToConfiguration);
+  }
+
+  /**
+   * Map database row to Configuration model
+   */
+  private mapToConfiguration(row: any): Configuration {
+    return {
+      id: row.id,
+      baselineId: row.baseline_id,
+      datasetId: row.dataset_id,
+      llmId: row.llm_id,
+      targetSparsity: row.target_sparsity ? parseFloat(row.target_sparsity) : undefined,
+      targetAuxMemory: row.target_aux_memory,
+      additionalParams: row.additional_params,
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
+    };
+  }
+}
+
