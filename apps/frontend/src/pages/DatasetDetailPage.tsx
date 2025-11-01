@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useState } from 'react';
-import { useDatasetLeaderboard } from '../hooks/useLeaderboard';
+import type { NumericRange } from '@sky-light/shared-types';
+import { useDatasetLeaderboard, useAvailableSparsityValues, useAvailableAuxMemoryValues } from '../hooks/useLeaderboard';
 import { useDatasets } from '../hooks/useDatasets';
 import { useBenchmarks } from '../hooks/useBenchmarks';
 import { useDatasetMetrics } from '../hooks/useMetrics';
@@ -8,15 +9,24 @@ import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import { LeaderboardTable } from '../components/leaderboard/LeaderboardTable';
 import { Breadcrumb } from '../components/common/Breadcrumb';
+import { RangeFilter } from '../components/common/RangeFilter';
 
 export function DatasetDetailPage() {
   const { datasetId } = useParams<{ datasetId: string }>();
   const [llmFilter, setLlmFilter] = useState<string>('');
+  const [sparsityFilter, setSparsityFilter] = useState<NumericRange | undefined>(undefined);
+  const [auxMemoryFilter, setAuxMemoryFilter] = useState<NumericRange | undefined>(undefined);
 
   const { data: datasets } = useDatasets();
   const { data: benchmarks } = useBenchmarks();
   const { data: metrics, isLoading: metricsLoading } = useDatasetMetrics(datasetId);
-  const { data: entries, isLoading: entriesLoading, error } = useDatasetLeaderboard(datasetId);
+  const { data: sparsityValues, isLoading: sparsityLoading } = useAvailableSparsityValues();
+  const { data: auxMemoryValues, isLoading: auxMemoryLoading } = useAvailableAuxMemoryValues();
+  
+  const { data: entries, isLoading: entriesLoading, error } = useDatasetLeaderboard(datasetId, {
+    targetSparsity: sparsityFilter,
+    targetAuxMemory: auxMemoryFilter,
+  });
 
   const dataset = datasets?.find(d => d.id === datasetId);
   const benchmark = benchmarks?.find(b => b.id === dataset?.benchmarkId);
@@ -83,19 +93,64 @@ export function DatasetDetailPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-4">
-        <div>
-          <label className="block text-sm text-gray-400 mb-2">LLM Filter</label>
-          <select
-            value={llmFilter}
-            onChange={(e) => setLlmFilter(e.target.value)}
-            className="bg-dark-surface border border-dark-border rounded-lg px-4 py-2 text-white focus:outline-none focus:border-accent-gold"
-          >
-            <option value="">All LLMs</option>
-            {uniqueLlms.map(llm => (
-              <option key={llm} value={llm}>{llm}</option>
-            ))}
-          </select>
+      <div className="bg-dark-surface border border-dark-border rounded-lg p-6">
+        <h3 className="text-sm font-semibold text-accent-gold mb-4">Filters</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* LLM Filter */}
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-gray-300">LLM</label>
+            <select
+              value={llmFilter}
+              onChange={(e) => setLlmFilter(e.target.value)}
+              className="px-4 py-2 rounded-lg bg-dark-surface border border-dark-border text-white hover:border-accent-gold focus:outline-none focus:border-accent-gold transition-colors"
+            >
+              <option value="">All LLMs</option>
+              {uniqueLlms.map(llm => (
+                <option key={llm} value={llm}>{llm}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Sparsity Range Filter */}
+          <RangeFilter
+            label="Target Sparsity Range"
+            value={sparsityFilter}
+            onChange={setSparsityFilter}
+            options={sparsityValues || []}
+            formatValue={(v) => `${v}%`}
+            placeholder="All"
+            isLoading={sparsityLoading}
+          />
+
+          {/* Aux Memory Range Filter */}
+          <RangeFilter
+            label="Auxiliary Memory Range"
+            value={auxMemoryFilter}
+            onChange={setAuxMemoryFilter}
+            options={auxMemoryValues || []}
+            formatValue={(v) => {
+              if (v >= 1024) return `${(v / 1024).toFixed(1)}K`;
+              return v.toString();
+            }}
+            placeholder="All"
+            isLoading={auxMemoryLoading}
+          />
+
+          {/* Clear Filters Button */}
+          {(llmFilter || sparsityFilter !== undefined || auxMemoryFilter !== undefined) && (
+            <div className="flex items-end">
+              <button
+                onClick={() => {
+                  setLlmFilter('');
+                  setSparsityFilter(undefined);
+                  setAuxMemoryFilter(undefined);
+                }}
+                className="px-4 py-2 rounded-lg bg-dark-bg border border-dark-border text-gray-300 hover:border-accent-gold hover:text-accent-gold transition-colors w-full"
+              >
+                Clear Filters
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

@@ -7,6 +7,8 @@ export function createLeaderboardRoutes(controller: LeaderboardController): Rout
   router.get('/dataset/:datasetId', controller.getDatasetLeaderboard);
   router.get('/overall', controller.getOverallLeaderboard);
   router.get('/overview', controller.getOverviewStats);
+  router.get('/filters/sparsity', controller.getAvailableSparsityValues);
+  router.get('/filters/aux-memory', controller.getAvailableAuxMemoryValues);
 
   return router;
 }

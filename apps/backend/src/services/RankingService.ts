@@ -1,4 +1,4 @@
-import type { DatasetRanking, Metric, Baseline, LLM, Dataset, Configuration, Result } from '@sky-light/shared-types';
+import type { DatasetRanking, Metric, Baseline, LLM, Dataset, Configuration, Result, NumericRange } from '@sky-light/shared-types';
 import type { IBaselineRepository } from '../repositories/interfaces/IBaselineRepository';
 import type { ILLMRepository } from '../repositories/interfaces/ILLMRepository';
 import type { IDatasetRepository } from '../repositories/interfaces/IDatasetRepository';
@@ -32,12 +32,21 @@ export class RankingService {
    */
   async calculateDatasetRanking(
     datasetId: string,
-    experimentalRunId: string
+    experimentalRunId: string,
+    filters?: {
+      targetSparsity?: NumericRange;
+      targetAuxMemory?: NumericRange;
+      llmId?: string;
+    }
   ): Promise<DatasetRanking[]> {
     // Fetch all data needed
     const [dataset, configurations, results, datasetMetrics, allMetrics, allBaselines, allLLMs] = await Promise.all([
       this.datasetRepository.findById(datasetId),
-      this.configurationRepository.findByDatasetId(datasetId),
+      this.configurationRepository.findByDatasetId(datasetId, {
+        targetSparsity: filters?.targetSparsity,
+        targetAuxMemory: filters?.targetAuxMemory,
+        llmId: filters?.llmId,
+      }),
       this.resultRepository.findByDatasetAndRun(datasetId, experimentalRunId),
       this.datasetMetricRepository.findByDatasetId(datasetId),
       this.metricRepository.findAll(),

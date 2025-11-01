@@ -74,26 +74,37 @@ CREATE TABLE llms (
 -- EXPERIMENTAL CONFIGURATION TABLES
 -- ============================================================================
 
--- Configurations: Unique combinations of Baseline × Dataset × LLM
+-- Configurations: Unique combinations of Baseline × Dataset × LLM × Parameters
+-- Supports multiple configurations for same baseline-dataset-llm with different sparsity/memory settings
 CREATE TABLE configurations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     baseline_id UUID NOT NULL REFERENCES baselines(id) ON DELETE CASCADE,
     dataset_id UUID NOT NULL REFERENCES datasets(id) ON DELETE CASCADE,
     llm_id UUID NOT NULL REFERENCES llms(id) ON DELETE CASCADE,
     
-    -- Optional configuration parameters
-    additional_params JSONB, -- flexible storage for hyperparameters
+    -- Explicit experimental parameters
+    target_sparsity DECIMAL(5,2), -- e.g., 1.00 for 1%, 5.00 for 5%, 20.00 for 20%
+    target_aux_memory BIGINT, -- target auxiliary memory in bytes or tokens
+    
+    -- Additional configuration parameters (for extensibility)
+    additional_params JSONB, -- flexible storage for other hyperparameters
     
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
-    UNIQUE(baseline_id, dataset_id, llm_id)
+    -- Unique constraint includes parameters to allow multiple configs for same baseline-dataset-llm
+    -- COALESCE handles NULL values to ensure uniqueness works correctly
+    UNIQUE(baseline_id, dataset_id, llm_id, 
+           COALESCE(target_sparsity, -1), 
+           COALESCE(target_aux_memory, -1))
 );
 
--- Indexes for common queries (optional)
+-- Indexes for common queries
 CREATE INDEX idx_configurations_baseline ON configurations(baseline_id);
 CREATE INDEX idx_configurations_dataset ON configurations(dataset_id);
 CREATE INDEX idx_configurations_llm ON configurations(llm_id);
+CREATE INDEX idx_configurations_sparsity ON configurations(target_sparsity);
+CREATE INDEX idx_configurations_memory ON configurations(target_aux_memory);
 
 -- ============================================================================
 -- RESULTS TABLES (High-volume transactional data)

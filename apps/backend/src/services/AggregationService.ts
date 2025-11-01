@@ -1,4 +1,4 @@
-import type { AggregatedRanking, DatasetRanking, Baseline, LLM } from '@sky-light/shared-types';
+import type { AggregatedRanking, DatasetRanking, Baseline, LLM, NumericRange } from '@sky-light/shared-types';
 import type { IDatasetRepository } from '../repositories/interfaces/IDatasetRepository';
 import { RankingService } from './RankingService';
 
@@ -14,7 +14,11 @@ export class AggregationService {
    */
   async calculateOverallRanking(
     experimentalRunId: string,
-    benchmarkId?: string
+    benchmarkId?: string,
+    filters?: {
+      targetSparsity?: NumericRange;
+      targetAuxMemory?: NumericRange;
+    }
   ): Promise<AggregatedRanking[]> {
     // Get all datasets (optionally filtered by benchmark)
     let datasets = await this.datasetRepository.findAll();
@@ -29,7 +33,7 @@ export class AggregationService {
 
     // Calculate ranking for each dataset
     const datasetRankings = await Promise.all(
-      datasets.map(d => this.rankingService.calculateDatasetRanking(d.id, experimentalRunId))
+      datasets.map(d => this.rankingService.calculateDatasetRanking(d.id, experimentalRunId, filters))
     );
 
     // Group rankings by baseline+llm combination
@@ -110,7 +114,11 @@ export class AggregationService {
    */
   async calculateOverallRankingByLLM(
     llmId: string,
-    experimentalRunId: string
+    experimentalRunId: string,
+    filters?: {
+      targetSparsity?: NumericRange;
+      targetAuxMemory?: NumericRange;
+    }
   ): Promise<AggregatedRanking[]> {
     const datasets = await this.datasetRepository.findAll();
 
@@ -118,9 +126,12 @@ export class AggregationService {
       return [];
     }
 
-    // Calculate ranking for each dataset
+    // Calculate ranking for each dataset with filters
     const datasetRankings = await Promise.all(
-      datasets.map(d => this.rankingService.calculateDatasetRanking(d.id, experimentalRunId))
+      datasets.map(d => this.rankingService.calculateDatasetRanking(d.id, experimentalRunId, {
+        ...filters,
+        llmId, // Add LLM filter
+      }))
     );
 
     // Filter rankings to only include specified LLM

@@ -56,6 +56,8 @@ export interface Configuration {
     baselineId: string;
     datasetId: string;
     llmId: string;
+    targetSparsity?: number;
+    targetAuxMemory?: number;
     additionalParams?: Record<string, any>;
     createdAt: Date;
     updatedAt: Date;
@@ -109,12 +111,18 @@ export interface AggregatedRanking {
     bestDatasetRank: number;
     worstDatasetRank: number;
 }
+export interface NumericRange {
+    min?: number;
+    max?: number;
+}
 export interface RankingOptions {
     sortBy?: string;
     order?: 'asc' | 'desc';
     llmFilter?: string;
     baselineFilter?: string;
     experimentalRunId?: string;
+    targetSparsity?: NumericRange;
+    targetAuxMemory?: NumericRange;
 }
 export interface AggregationMethod {
     type: 'mean' | 'median' | 'weighted';

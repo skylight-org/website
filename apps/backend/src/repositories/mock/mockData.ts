@@ -361,26 +361,51 @@ export const mockExperimentalRuns: ExperimentalRun[] = [
 ];
 
 // ============================================================================
-// CONFIGURATIONS - Baseline × Dataset × LLM combinations
+// CONFIGURATIONS - Baseline × Dataset × LLM × Parameters combinations
 // ============================================================================
 export const mockConfigurations: Configuration[] = [];
+
+// Target sparsity levels to test
+const sparsityLevels = [1.0, 5.0, 10.0, 20.0]; // 1%, 5%, 10%, 20%
+const auxMemoryLevels = [512, 1024, 2048]; // Different memory configurations
 
 mockBaselines.forEach((baseline) => {
   mockDatasets.forEach((dataset) => {
     mockLLMs.forEach((llm) => {
-      mockConfigurations.push({
-        id: `config-${baseline.id}-${dataset.id}-${llm.id}`,
-        baselineId: baseline.id,
-        datasetId: dataset.id,
-        llmId: llm.id,
-        additionalParams: {
-          auxiliaryMemory: 512 + Math.random() * 1024,
-          averageSparsity: 0.3 + Math.random() * 0.4,
-          averageLocalError: 0.01 + Math.random() * 0.05,
-        },
-        createdAt: new Date('2024-01-10'),
-        updatedAt: new Date('2024-01-10'),
-      });
+      // For demonstration: first 3 baselines get tested with all sparsity levels
+      // Others get one default configuration
+      if (['baseline-1', 'baseline-2', 'baseline-3'].includes(baseline.id)) {
+        sparsityLevels.forEach((sparsity, idx) => {
+          mockConfigurations.push({
+            id: `config-${baseline.id}-${dataset.id}-${llm.id}-s${sparsity}`,
+            baselineId: baseline.id,
+            datasetId: dataset.id,
+            llmId: llm.id,
+            targetSparsity: sparsity,
+            targetAuxMemory: auxMemoryLevels[idx % auxMemoryLevels.length],
+            additionalParams: {
+              averageLocalError: 0.01 + Math.random() * 0.05,
+            },
+            createdAt: new Date('2024-01-10'),
+            updatedAt: new Date('2024-01-10'),
+          });
+        });
+      } else {
+        // Other baselines: single configuration
+        mockConfigurations.push({
+          id: `config-${baseline.id}-${dataset.id}-${llm.id}`,
+          baselineId: baseline.id,
+          datasetId: dataset.id,
+          llmId: llm.id,
+          targetSparsity: 10.0, // Default 10% sparsity
+          targetAuxMemory: 1024,
+          additionalParams: {
+            averageLocalError: 0.01 + Math.random() * 0.05,
+          },
+          createdAt: new Date('2024-01-10'),
+          updatedAt: new Date('2024-01-10'),
+        });
+      }
     });
   });
 });

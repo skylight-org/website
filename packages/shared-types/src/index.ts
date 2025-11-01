@@ -70,6 +70,8 @@ export interface Configuration {
   baselineId: string;
   datasetId: string;
   llmId: string;
+  targetSparsity?: number; // e.g., 1.0 for 1%, 5.0 for 5%, 20.0 for 20%
+  targetAuxMemory?: number; // target auxiliary memory in bytes or tokens
   additionalParams?: Record<string, any>;
   createdAt: Date;
   updatedAt: Date;
@@ -137,12 +139,19 @@ export interface AggregatedRanking {
 // QUERY & FILTER OPTIONS
 // ============================================================================
 
+export interface NumericRange {
+  min?: number;
+  max?: number;
+}
+
 export interface RankingOptions {
   sortBy?: string;
   order?: 'asc' | 'desc';
   llmFilter?: string;
   baselineFilter?: string;
   experimentalRunId?: string;
+  targetSparsity?: NumericRange;
+  targetAuxMemory?: NumericRange;
 }
 
 export interface AggregationMethod {

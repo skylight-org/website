@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
-import { useOverallLeaderboard, useOverviewStats } from '../hooks/useLeaderboard';
+import type { Dataset, Benchmark, NumericRange } from '@sky-light/shared-types';
+import { useOverallLeaderboard, useOverviewStats, useAvailableSparsityValues, useAvailableAuxMemoryValues } from '../hooks/useLeaderboard';
 import { useDatasets } from '../hooks/useDatasets';
 import { useBenchmarks } from '../hooks/useBenchmarks';
 import { useDatasetLeaderboard } from '../hooks/useLeaderboard';
@@ -8,16 +9,23 @@ import { ErrorMessage } from '../components/common/ErrorMessage';
 import { AggregatedTable } from '../components/leaderboard/AggregatedTable';
 import { DatasetCard } from '../components/leaderboard/DatasetCard';
 import { Breadcrumb } from '../components/common/Breadcrumb';
-import type { Dataset, Benchmark } from '@sky-light/shared-types';
+import { RangeFilter } from '../components/common/RangeFilter';
 
 export function OverviewPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [rankingsSearchQuery, setRankingsSearchQuery] = useState('');
+  const [sparsityFilter, setSparsityFilter] = useState<NumericRange | undefined>(undefined);
+  const [auxMemoryFilter, setAuxMemoryFilter] = useState<NumericRange | undefined>(undefined);
   
   const { data: stats, isLoading: statsLoading } = useOverviewStats();
-  const { data: aggregated, isLoading: aggregatedLoading, error: aggregatedError } = useOverallLeaderboard();
+  const { data: aggregated, isLoading: aggregatedLoading, error: aggregatedError } = useOverallLeaderboard({
+    targetSparsity: sparsityFilter,
+    targetAuxMemory: auxMemoryFilter,
+  });
   const { data: datasets, isLoading: datasetsLoading } = useDatasets();
   const { data: benchmarks, isLoading: benchmarksLoading } = useBenchmarks();
+  const { data: sparsityValues, isLoading: sparsityLoading } = useAvailableSparsityValues();
+  const { data: auxMemoryValues, isLoading: auxMemoryLoading } = useAvailableAuxMemoryValues();
 
   // Fuzzy search for datasets
   const filteredDatasets = useMemo(() => {
@@ -136,6 +144,52 @@ export function OverviewPage() {
             )}
           </div>
         </div>
+
+        {/* Filters for Configuration Parameters */}
+        <div className="bg-dark-surface border border-dark-border rounded-lg p-6 mb-6">
+          <h3 className="text-sm font-semibold text-accent-gold mb-4">Configuration Filters</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Sparsity Range Filter */}
+            <RangeFilter
+              label="Target Sparsity Range"
+              value={sparsityFilter}
+              onChange={setSparsityFilter}
+              options={sparsityValues || []}
+              formatValue={(v) => `${v}%`}
+              placeholder="All"
+              isLoading={sparsityLoading}
+            />
+
+            {/* Aux Memory Range Filter */}
+            <RangeFilter
+              label="Auxiliary Memory Range"
+              value={auxMemoryFilter}
+              onChange={setAuxMemoryFilter}
+              options={auxMemoryValues || []}
+              formatValue={(v) => {
+                if (v >= 1024) return `${(v / 1024).toFixed(1)}K`;
+                return v.toString();
+              }}
+              placeholder="All"
+              isLoading={auxMemoryLoading}
+            />
+
+            {/* Clear Filters Button */}
+            {(sparsityFilter !== undefined || auxMemoryFilter !== undefined) && (
+              <div className="flex items-end">
+                <button
+                  onClick={() => {
+                    setSparsityFilter(undefined);
+                    setAuxMemoryFilter(undefined);
+                  }}
+                  className="px-4 py-2 rounded-lg bg-dark-bg border border-dark-border text-gray-300 hover:border-accent-gold hover:text-accent-gold transition-colors w-full"
+                >
+                  Clear Filters
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
         
         {filteredRankings.length === 0 ? (
           <div className="bg-dark-surface border border-dark-border rounded-lg p-12 text-center">
@@ -183,6 +237,8 @@ export function OverviewPage() {
                 key={dataset.id} 
                 dataset={dataset}
                 benchmark={benchmarks?.find(b => b.id === dataset.benchmarkId)}
+                sparsityFilter={sparsityFilter}
+                auxMemoryFilter={auxMemoryFilter}
               />
             ))}
           </div>
@@ -196,10 +252,15 @@ export function OverviewPage() {
 interface DatasetCardWithDataProps {
   dataset: Dataset;
   benchmark?: Benchmark;
+  sparsityFilter?: NumericRange;
+  auxMemoryFilter?: NumericRange;
 }
 
-function DatasetCardWithData({ dataset, benchmark }: DatasetCardWithDataProps) {
-  const { data: entries } = useDatasetLeaderboard(dataset.id);
+function DatasetCardWithData({ dataset, benchmark, sparsityFilter, auxMemoryFilter }: DatasetCardWithDataProps) {
+  const { data: entries } = useDatasetLeaderboard(dataset.id, {
+    targetSparsity: sparsityFilter,
+    targetAuxMemory: auxMemoryFilter,
+  });
   
   return <DatasetCard dataset={dataset} topEntries={entries || []} benchmark={benchmark} />;
 }

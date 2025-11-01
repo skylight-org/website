@@ -8,6 +8,8 @@ export class Configuration implements IConfiguration {
     public llmId: string,
     public createdAt: Date,
     public updatedAt: Date,
+    public targetSparsity?: number,
+    public targetAuxMemory?: number,
     public additionalParams?: Record<string, any>
   ) {}
 }

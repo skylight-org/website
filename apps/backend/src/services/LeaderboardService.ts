@@ -1,4 +1,4 @@
-import type { DatasetRanking, AggregatedRanking, OverviewStats } from '@sky-light/shared-types';
+import type { DatasetRanking, AggregatedRanking, OverviewStats, NumericRange } from '@sky-light/shared-types';
 import type { IConfigurationRepository } from '../repositories/interfaces/IConfigurationRepository';
 import type { IDatasetRepository } from '../repositories/interfaces/IDatasetRepository';
 import type { IBenchmarkRepository } from '../repositories/interfaces/IBenchmarkRepository';
@@ -27,12 +27,17 @@ export class LeaderboardService {
    */
   async getDatasetLeaderboard(
     datasetId: string,
-    experimentalRunId?: string
+    experimentalRunId?: string,
+    filters?: {
+      targetSparsity?: NumericRange;
+      targetAuxMemory?: NumericRange;
+      llmId?: string;
+    }
   ): Promise<DatasetRanking[]> {
     // Use latest completed run if not specified
     const runId = experimentalRunId || await this.getLatestRunId();
     
-    return this.rankingService.calculateDatasetRanking(datasetId, runId);
+    return this.rankingService.calculateDatasetRanking(datasetId, runId, filters);
   }
 
   /**
@@ -41,16 +46,20 @@ export class LeaderboardService {
   async getOverallLeaderboard(
     experimentalRunId?: string,
     benchmarkId?: string,
-    llmId?: string
+    llmId?: string,
+    filters?: {
+      targetSparsity?: NumericRange;
+      targetAuxMemory?: NumericRange;
+    }
   ): Promise<AggregatedRanking[]> {
     // Use latest completed run if not specified
     const runId = experimentalRunId || await this.getLatestRunId();
     
     if (llmId) {
-      return this.aggregationService.calculateOverallRankingByLLM(llmId, runId);
+      return this.aggregationService.calculateOverallRankingByLLM(llmId, runId, filters);
     }
     
-    return this.aggregationService.calculateOverallRanking(runId, benchmarkId);
+    return this.aggregationService.calculateOverallRanking(runId, benchmarkId, filters);
   }
 
   /**
@@ -84,6 +93,20 @@ export class LeaderboardService {
       totalResults: results.length,
       lastUpdated: latestRun?.runDate || new Date(),
     };
+  }
+
+  /**
+   * Get available filter values for sparsity
+   */
+  async getAvailableSparsityValues(): Promise<number[]> {
+    return this.configurationRepository.getUniqueSparsityValues();
+  }
+
+  /**
+   * Get available filter values for auxiliary memory
+   */
+  async getAvailableAuxMemoryValues(): Promise<number[]> {
+    return this.configurationRepository.getUniqueAuxMemoryValues();
   }
 
   /**
