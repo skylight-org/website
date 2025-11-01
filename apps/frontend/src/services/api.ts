@@ -14,8 +14,6 @@ import type {
 // Use environment variable for API URL, fallback to local proxy for development
 const API_BASE_URL = "https://skynetbackend.duckdns.org/api/v1"
 
-console.log(`Using API URL: ${API_BASE_URL}`);
-
 export class ApiError extends Error {
   constructor(
     public status: number,
