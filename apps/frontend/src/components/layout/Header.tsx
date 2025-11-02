@@ -56,7 +56,7 @@ export function Header() {
   };
 
   const navItems = [
-    { path: '/', label: 'Overview' },
+    { path: '/website', label: 'Overview' },
     { path: '/comparison', label: 'Comparison' },
   ];
 
