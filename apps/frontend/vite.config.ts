@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react()],
   // Base path for GitHub Pages (e.g., /repository-name/)
   // Set to '/' if using custom domain or username.github.io
-  base: process.env.VITE_BASE_PATH || '/',
+  base: "/website",
   server: {
     port: 5173,
     proxy: {
