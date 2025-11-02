@@ -14,7 +14,7 @@ export function Breadcrumb() {
   }
 
   const breadcrumbs: { label: string; path: string }[] = [
-    { label: 'Overview', path: '/' }
+    { label: 'Overview', path: '/website' }
   ];
 
   // Build breadcrumbs based on path

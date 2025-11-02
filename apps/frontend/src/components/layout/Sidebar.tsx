@@ -76,7 +76,7 @@ export function Sidebar() {
   };
 
   const navItems = [
-    { path: '/', label: 'Overview' },
+    { path: '/website', label: 'Overview' },
     { path: '/comparison', label: 'Comparison' },
   ];
 
@@ -87,8 +87,8 @@ export function Sidebar() {
         {/* Logo (collapsed) */}
         <Link to="/" className="flex-1 flex items-start pt-2">
           <img 
-            src="/sky-light-logo-icon.png" 
-            alt="Sky Light" 
+            src="/website/sky-light-logo-icon.png"
+            alt="Sky Light"
             className="w-10 h-10 object-contain"
           />
         </Link>
@@ -117,9 +117,9 @@ export function Sidebar() {
     <aside className="fixed left-0 top-0 h-screen w-64 bg-dark-surface border-r border-dark-border rounded-tr-2xl rounded-br-2xl flex flex-col z-50">
       {/* Logo/Title */}
       <div className="p-6 border-b border-dark-border">
-        <Link to="/" className="flex flex-col items-center">
-          <img 
-            src="/sky-light-logo.png" 
+        <Link to="/website" className="flex flex-col items-center">
+          <img
+            src="/website/sky-light-logo.png"
             alt="Sky Light" 
             className="w-full h-auto object-contain mb-2"
           />

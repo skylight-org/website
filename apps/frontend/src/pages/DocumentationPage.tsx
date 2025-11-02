@@ -91,7 +91,7 @@ export function DocumentationPage() {
         <h2 className="text-2xl font-bold text-white mb-6">Quick Links</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Link
-            to="/"
+            to="/website"
             className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-surface-hover transition-colors"
           >
             <svg className="w-5 h-5 text-accent-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">

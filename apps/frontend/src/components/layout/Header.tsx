@@ -56,7 +56,7 @@ export function Header() {
   };
 
   const navItems = [
-    { path: '/', label: 'Overview' },
+    { path: '/website', label: 'Overview' },
     { path: '/comparison', label: 'Comparison' },
   ];
 
@@ -67,7 +67,7 @@ export function Header() {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
           <img 
-            src="/sky-light-logo-icon.png" 
+            src="/website/sky-light-logo-icon.png"
             alt="Sky Light" 
             className="w-8 h-8 object-contain"
           />
