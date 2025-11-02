@@ -48,7 +48,7 @@ function AppContent() {
       >
         <div className="max-w-7xl mx-auto">
           <Routes>
-            <Route path="/" element={<OverviewPage />} />
+            <Route path="/website" element={<OverviewPage />} />
             <Route path="/datasets" element={<DatasetsPage />} />
             <Route path="/comparison" element={<ComparisonPage />} />
             <Route path="/documentation" element={<DocumentationPage />} />
