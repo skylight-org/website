@@ -1,11 +1,15 @@
 import type { AggregatedRanking } from '@sky-light/shared-types';
 import { InfoTooltip } from '../common/InfoTooltip';
+import { SortableHeader } from '../common/SortableHeader';
+import { useSortableData } from '../../hooks/useSortableData';
 
 interface AggregatedTableProps {
   rankings: AggregatedRanking[];
 }
 
 export function AggregatedTable({ rankings }: AggregatedTableProps) {
+  const { sortedData, sortConfig, requestSort } = useSortableData(rankings);
+
   if (rankings.length === 0) {
     return (
       <div className="text-center py-12 text-gray-400">
@@ -20,50 +24,84 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
         <table className="w-full">
           <thead className="sticky top-0 bg-dark-surface z-10">
             <tr className="border-b border-dark-border">
-            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-400">
-              <div className="flex items-center">
-                Rank
-              </div>
-            </th>
-            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-400">
-              <div className="flex items-center">
-                Baseline
-                <InfoTooltip content="The sparse attention implementation being evaluated. Each baseline represents a different approach to optimizing attention mechanisms." />
-              </div>
-            </th>
-            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-400">
-              <div className="flex items-center">
-                LLM
-                <InfoTooltip content="The Large Language Model used for testing. Different LLMs may show different performance characteristics with the same baseline." />
-              </div>
-            </th>
-            <th className="px-4 py-3 text-right text-sm font-semibold text-gray-400">
-              <div className="flex items-center justify-end">
-                Avg Rank
-                <InfoTooltip content="Average ranking position across all datasets. This is calculated by taking the mean of the baseline's rank on each individual dataset. Lower is better." />
-              </div>
-            </th>
-            <th className="px-4 py-3 text-right text-sm font-semibold text-gray-400">
-              <div className="flex items-center justify-end">
-                Overall Score
-                <InfoTooltip content="Normalized performance score averaged across all datasets. This represents the actual metric values (not ranks). Higher scores indicate better performance." />
-              </div>
-            </th>
-            <th className="px-4 py-3 text-right text-sm font-semibold text-gray-400">
-              <div className="flex items-center justify-end">
-                Best / Worst
-                <InfoTooltip content="Shows the best (lowest) and worst (highest) rank achieved by this baseline+LLM combination across all datasets. For example, '1 / 5' means it ranked 1st on its best dataset and 5th on its worst dataset." />
-              </div>
-            </th>
-            <th className="px-4 py-3 text-right text-sm font-semibold text-gray-400">
-              <div className="flex items-center justify-end">
-                #Datasets
-              </div>
-            </th>
+            <SortableHeader
+              label="Rank"
+              sortKey="rank"
+              sortConfig={sortConfig}
+              onSort={requestSort}
+              align="left"
+            />
+            <SortableHeader
+              label={
+                <div className="flex items-center gap-1">
+                  Baseline
+                  <InfoTooltip content="The sparse attention implementation being evaluated. Each baseline represents a different approach to optimizing attention mechanisms." />
+                </div>
+              }
+              sortKey="baseline.name"
+              sortConfig={sortConfig}
+              onSort={requestSort}
+              align="left"
+            />
+            <SortableHeader
+              label={
+                <div className="flex items-center gap-1">
+                  LLM
+                  <InfoTooltip content="The Large Language Model used for testing. Different LLMs may show different performance characteristics with the same baseline." />
+                </div>
+              }
+              sortKey="llm.name"
+              sortConfig={sortConfig}
+              onSort={requestSort}
+              align="left"
+            />
+            <SortableHeader
+              label={
+                <div className="flex items-center gap-1">
+                  Avg Rank
+                  <InfoTooltip content="Average ranking position across all datasets. This is calculated by taking the mean of the baseline's rank on each individual dataset. Lower is better." />
+                </div>
+              }
+              sortKey="averageRank"
+              sortConfig={sortConfig}
+              onSort={requestSort}
+              align="right"
+            />
+            <SortableHeader
+              label={
+                <div className="flex items-center gap-1">
+                  Overall Score
+                  <InfoTooltip content="Normalized performance score averaged across all datasets. This represents the actual metric values (not ranks). Higher scores indicate better performance." />
+                </div>
+              }
+              sortKey="overallScore"
+              sortConfig={sortConfig}
+              onSort={requestSort}
+              align="right"
+            />
+            <SortableHeader
+              label={
+                <div className="flex items-center gap-1">
+                  Best / Worst
+                  <InfoTooltip content="Shows the best (lowest) and worst (highest) rank achieved by this baseline+LLM combination across all datasets. For example, '1 / 5' means it ranked 1st on its best dataset and 5th on its worst dataset." />
+                </div>
+              }
+              sortKey="bestDatasetRank"
+              sortConfig={sortConfig}
+              onSort={requestSort}
+              align="right"
+            />
+            <SortableHeader
+              label="#Datasets"
+              sortKey="numDatasets"
+              sortConfig={sortConfig}
+              onSort={requestSort}
+              align="right"
+            />
           </tr>
         </thead>
         <tbody>
-          {rankings.map((ranking, idx) => (
+          {sortedData.map((ranking, idx) => (
             <tr 
               key={`${ranking.baseline.id}-${ranking.llm.id}`}
               className={`border-b border-dark-border hover:bg-dark-surface-hover transition-colors ${

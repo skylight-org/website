@@ -13,15 +13,6 @@ export function Footer() {
             >
               UC Berkeley's Sky Lab
             </a>
-            {' '}and{' '}
-            <a
-              href="https://www.iitb.ac.in/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-accent-gold hover:underline transition-colors"
-            >
-              IIT Bombay
-            </a>
           </p>
           <p className="text-xs text-gray-500">
             © {new Date().getFullYear()} Sky Light. All rights reserved.
