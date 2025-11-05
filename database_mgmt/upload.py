@@ -2,7 +2,7 @@
 """
 Upload script for Sky Light leaderboard data to Supabase.
 
-This script reads experimental results from example_data.jsonl and uploads them
+This script reads experimental results from experiments.jsonl and uploads them
 to a Supabase PostgreSQL database following the schema defined in DB_Schema.md.
 
 Usage:
@@ -339,7 +339,7 @@ class SupabaseUploader:
             
             response = self.supabase.table('experimental_runs').insert({
                 'name': name,
-                'description': 'Uploaded from example_data.jsonl',
+                'description': 'Uploaded from experiments.jsonl',
                 'status': 'completed',
                 'metadata': {'source': 'upload.py'}
             }).execute()
@@ -551,7 +551,7 @@ def main():
     
     # Get JSONL file path
     script_dir = Path(__file__).parent
-    jsonl_path = script_dir / 'example_data.jsonl'
+    jsonl_path = script_dir / 'experiments.jsonl'
     
     if not jsonl_path.exists():
         print(f"Error: JSONL file not found at {jsonl_path}")
