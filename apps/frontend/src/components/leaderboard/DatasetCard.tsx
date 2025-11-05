@@ -30,7 +30,7 @@ export function DatasetCard({ dataset, topEntries, benchmark }: DatasetCardProps
       <div className="space-y-2">
         {topEntries.slice(0, 5).map((entry, idx) => (
           <div 
-            key={`${entry.baseline.id}-${entry.llm.id}`}
+            key={entry.configurationId}
             className="flex items-center justify-between py-2 border-b border-dark-border last:border-0"
           >
             <div className="flex items-center gap-3">

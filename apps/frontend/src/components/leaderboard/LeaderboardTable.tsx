@@ -77,7 +77,7 @@ export function LeaderboardTable({ entries, metrics = [] }: LeaderboardTableProp
         <tbody>
           {sortedData.map((entry, idx) => (
             <tr 
-              key={`${entry.baseline.id}-${entry.llm.id}`}
+              key={entry.configurationId}
               className={`border-b border-dark-border hover:bg-dark-surface-hover transition-colors ${
                 idx < 3 ? 'bg-yellow-500/5' : ''
               }`}

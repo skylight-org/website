@@ -118,6 +118,7 @@ export class RankingService {
         dataset,
         baseline: configScore.baseline,
         llm: configScore.llm,
+        configurationId: configScore.configuration.id,
         score: configScore.score,
         metricValues: configScore.metricValues,
       });
