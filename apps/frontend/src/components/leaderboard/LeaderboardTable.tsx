@@ -1,4 +1,6 @@
 import type { DatasetRanking, Metric } from '@sky-light/shared-types';
+import { SortableHeader } from '../common/SortableHeader';
+import { useSortableData } from '../../hooks/useSortableData';
 
 interface LeaderboardTableProps {
   entries: DatasetRanking[];
@@ -6,6 +8,8 @@ interface LeaderboardTableProps {
 }
 
 export function LeaderboardTable({ entries, metrics = [] }: LeaderboardTableProps) {
+  const { sortedData, sortConfig, requestSort } = useSortableData(entries);
+
   if (entries.length === 0) {
     return (
       <div className="text-center py-12 text-gray-400">
@@ -14,7 +18,6 @@ export function LeaderboardTable({ entries, metrics = [] }: LeaderboardTableProp
     );
   }
 
-  // Get metric names from the first entry's metricValues
   const metricNames = Object.keys(entries[0]?.metricValues || {});
 
   return (
@@ -22,23 +25,57 @@ export function LeaderboardTable({ entries, metrics = [] }: LeaderboardTableProp
       <table className="w-full">
         <thead>
           <tr className="border-b border-dark-border">
-            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-400">Rank</th>
-            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-400">Baseline</th>
-            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-400">LLM</th>
-            <th className="px-4 py-3 text-right text-sm font-semibold text-gray-400">Score</th>
+            <SortableHeader
+              label="Rank"
+              sortKey="rank"
+              sortConfig={sortConfig}
+              onSort={requestSort}
+              align="left"
+            />
+            <SortableHeader
+              label="Baseline"
+              sortKey="baseline.name"
+              sortConfig={sortConfig}
+              onSort={requestSort}
+              align="left"
+            />
+            <SortableHeader
+              label="LLM"
+              sortKey="llm.name"
+              sortConfig={sortConfig}
+              onSort={requestSort}
+              align="left"
+            />
+            <SortableHeader
+              label="Score"
+              sortKey="score"
+              sortConfig={sortConfig}
+              onSort={requestSort}
+              align="right"
+            />
             {metricNames.map(name => {
               const metric = metrics.find(m => m.name === name);
-              return (
-                <th key={name} className="px-4 py-3 text-right text-sm font-semibold text-gray-400">
+              const displayLabel = (
+                <>
                   {metric?.displayName || name.replace(/_/g, ' ')}
                   {metric?.unit && <span className="text-xs ml-1">({metric.unit})</span>}
-                </th>
+                </>
+              );
+              return (
+                <SortableHeader
+                  key={name}
+                  label={displayLabel}
+                  sortKey={`metricValues.${name}`}
+                  sortConfig={sortConfig}
+                  onSort={requestSort}
+                  align="right"
+                />
               );
             })}
           </tr>
         </thead>
         <tbody>
-          {entries.map((entry, idx) => (
+          {sortedData.map((entry, idx) => (
             <tr 
               key={`${entry.baseline.id}-${entry.llm.id}`}
               className={`border-b border-dark-border hover:bg-dark-surface-hover transition-colors ${
