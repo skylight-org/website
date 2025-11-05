@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { NumericRange } from '@sky-light/shared-types';
 import { useDatasetLeaderboard, useAvailableSparsityValues, useAvailableAuxMemoryValues } from '../hooks/useLeaderboard';
 import { useDatasets } from '../hooks/useDatasets';
@@ -10,10 +10,11 @@ import { ErrorMessage } from '../components/common/ErrorMessage';
 import { LeaderboardTable } from '../components/leaderboard/LeaderboardTable';
 import { Breadcrumb } from '../components/common/Breadcrumb';
 import { RangeFilter } from '../components/common/RangeFilter';
+import { MultiSelectFilter } from '../components/common/MultiSelectFilter';
 
 export function DatasetDetailPage() {
   const { datasetId } = useParams<{ datasetId: string }>();
-  const [llmFilter, setLlmFilter] = useState<string>('');
+  const [selectedLlms, setSelectedLlms] = useState<string[]>([]);
   const [sparsityFilter, setSparsityFilter] = useState<NumericRange | undefined>(undefined);
   const [auxMemoryFilter, setAuxMemoryFilter] = useState<NumericRange | undefined>(undefined);
 
@@ -31,6 +32,14 @@ export function DatasetDetailPage() {
   const dataset = datasets?.find(d => d.id === datasetId);
   const benchmark = benchmarks?.find(b => b.id === dataset?.benchmarkId);
 
+  const uniqueLlms = Array.from(new Set(entries?.map(e => e.llm.name) || []));
+
+  useEffect(() => {
+    if (uniqueLlms.length > 0 && selectedLlms.length === 0) {
+      setSelectedLlms([uniqueLlms[0]]);
+    }
+  }, [uniqueLlms.length]);
+
   const isLoading = entriesLoading || metricsLoading;
 
   if (isLoading) {
@@ -41,13 +50,7 @@ export function DatasetDetailPage() {
     return <ErrorMessage message="Failed to load dataset" />;
   }
 
-  // Extract unique LLMs from entries
-  const uniqueLlms = Array.from(new Set(entries?.map(e => e.llm.name) || []));
-
-  // Filter entries by LLM if filter is active
-  const filteredEntries = llmFilter 
-    ? entries?.filter(e => e.llm.name === llmFilter)
-    : entries;
+  const filteredEntries = entries?.filter(e => selectedLlms.includes(e.llm.name));
 
   return (
     <div className="space-y-8">
@@ -97,19 +100,12 @@ export function DatasetDetailPage() {
         <h3 className="text-sm font-semibold text-accent-gold mb-4">Filters</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* LLM Filter */}
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-gray-300">LLM</label>
-            <select
-              value={llmFilter}
-              onChange={(e) => setLlmFilter(e.target.value)}
-              className="px-4 py-2 rounded-lg bg-dark-surface border border-dark-border text-white hover:border-accent-gold focus:outline-none focus:border-accent-gold transition-colors"
-            >
-              <option value="">All LLMs</option>
-              {uniqueLlms.map(llm => (
-                <option key={llm} value={llm}>{llm}</option>
-              ))}
-            </select>
-          </div>
+          <MultiSelectFilter
+            label="LLM"
+            options={uniqueLlms}
+            selectedValues={selectedLlms}
+            onChange={setSelectedLlms}
+          />
 
           {/* Sparsity Range Filter */}
           <RangeFilter
@@ -137,11 +133,11 @@ export function DatasetDetailPage() {
           />
 
           {/* Clear Filters Button */}
-          {(llmFilter || sparsityFilter !== undefined || auxMemoryFilter !== undefined) && (
+          {(selectedLlms.length !== 1 || selectedLlms[0] !== uniqueLlms[0] || sparsityFilter !== undefined || auxMemoryFilter !== undefined) && (
             <div className="flex items-end">
               <button
                 onClick={() => {
-                  setLlmFilter('');
+                  setSelectedLlms(uniqueLlms.length > 0 ? [uniqueLlms[0]] : []);
                   setSparsityFilter(undefined);
                   setAuxMemoryFilter(undefined);
                 }}
