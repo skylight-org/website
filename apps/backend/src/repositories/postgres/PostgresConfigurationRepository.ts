@@ -86,12 +86,13 @@ export class PostgresConfigurationRepository implements IConfigurationRepository
       throw new Error(`Failed to fetch sparsity values: ${error.message}`);
     }
 
-    // Extract unique values and sort
+    // Extract unique values, round to 1 decimal place, and sort
     const uniqueValues = [...new Set(
       (data || [])
         .map(row => row.target_sparsity)
         .filter((val): val is number => val !== null && val !== undefined)
         .map(val => parseFloat(val.toString()))
+        .map(val => Math.round(val * 10) / 10) // Round to 1 decimal place
     )];
 
     return uniqueValues.sort((a, b) => a - b);
