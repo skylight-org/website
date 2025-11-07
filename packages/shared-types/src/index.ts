@@ -119,6 +119,7 @@ export interface DatasetRanking {
   baseline: Baseline;
   llm: LLM;
   configurationId: string;
+  configuration?: Configuration;
   score: number;
   metricValues: Record<string, number>;
 }
