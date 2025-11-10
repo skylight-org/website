@@ -42,16 +42,16 @@ import { createLLMRoutes } from './routes/llm.routes';
 import { createMetricRoutes } from './routes/metric.routes';
 import { createResultRoutes } from './routes/result.routes';
 
-export function createApp() {
+export async function createApp() {
   const app = express();
 
   // Middleware
   app.use(cors());
   app.use(express.json());
 
-  // Initialize Supabase client and repositories
-  console.log('🔗 Connecting to Supabase PostgreSQL database...');
-  const supabase = getSupabaseClient();
+  // Initialize database client and repositories
+  console.log('🔗 Connecting to database...');
+  const supabase = await getSupabaseClient();
   
   // Initialize repositories (Dependency Injection)
   const baselineRepo = new PostgresBaselineRepository(supabase);
@@ -64,7 +64,7 @@ export function createApp() {
   const resultRepo = new PostgresResultRepository(supabase);
   const experimentalRunRepo = new PostgresExperimentalRunRepository(supabase);
   
-  console.log('✅ Supabase PostgreSQL database connected');
+  console.log('✅ Database connected successfully');
 
   // Initialize services
   const rankingService = new RankingService(

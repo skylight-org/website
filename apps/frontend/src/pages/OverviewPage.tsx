@@ -1,69 +1,121 @@
-import { useState, useMemo } from 'react';
-import type { Dataset, Benchmark, NumericRange } from '@sky-light/shared-types';
-import { useOverallLeaderboard, useOverviewStats, useAvailableSparsityValues, useAvailableAuxMemoryValues } from '../hooks/useLeaderboard';
-import { useDatasets } from '../hooks/useDatasets';
-import { useBenchmarks } from '../hooks/useBenchmarks';
-import { useDatasetLeaderboard } from '../hooks/useLeaderboard';
+import { useState, useMemo, useEffect } from 'react';
+import type { NumericRange } from '@sky-light/shared-types';
+import { useOverallLeaderboard, useOverviewStats } from '../hooks/useLeaderboard';
+import { useLLMs } from '../hooks/useLLMs';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import { AggregatedTable } from '../components/leaderboard/AggregatedTable';
-import { DatasetCard } from '../components/leaderboard/DatasetCard';
 import { Breadcrumb } from '../components/common/Breadcrumb';
-import { RangeFilter } from '../components/common/RangeFilter';
+import { TextRangeFilter } from '../components/common/TextRangeFilter';
+import { MultiSelectFilter } from '../components/common/MultiSelectFilter';
 
 export function OverviewPage() {
-  const [searchQuery, setSearchQuery] = useState('');
   const [rankingsSearchQuery, setRankingsSearchQuery] = useState('');
   const [sparsityFilter, setSparsityFilter] = useState<NumericRange | undefined>(undefined);
   const [auxMemoryFilter, setAuxMemoryFilter] = useState<NumericRange | undefined>(undefined);
+  const [selectedLlms, setSelectedLlms] = useState<string[]>([]);
+  
+  // Local state for text inputs
+  const [localSparsityMin, setLocalSparsityMin] = useState<string>('');
+  const [localSparsityMax, setLocalSparsityMax] = useState<string>('');
+  const [localAuxMemoryMin, setLocalAuxMemoryMin] = useState<string>('');
+  const [localAuxMemoryMax, setLocalAuxMemoryMax] = useState<string>('');
   
   const { data: stats, isLoading: statsLoading } = useOverviewStats();
   const { data: aggregated, isLoading: aggregatedLoading, error: aggregatedError } = useOverallLeaderboard({
     targetSparsity: sparsityFilter,
     targetAuxMemory: auxMemoryFilter,
   });
-  const { data: datasets, isLoading: datasetsLoading } = useDatasets();
-  const { data: benchmarks, isLoading: benchmarksLoading } = useBenchmarks();
-  const { data: sparsityValues, isLoading: sparsityLoading } = useAvailableSparsityValues();
-  const { data: auxMemoryValues, isLoading: auxMemoryLoading } = useAvailableAuxMemoryValues();
+  const { data: llms } = useLLMs();
+  
+  console.log('OverviewPage stats:', stats);
+  console.log('OverviewPage aggregated data:', aggregated);
 
-  // Fuzzy search for datasets
-  const filteredDatasets = useMemo(() => {
-    if (!datasets) return [];
-    if (!searchQuery.trim()) return datasets;
+  // Get unique LLM names
+  const uniqueLlms = Array.from(new Set(aggregated?.map(a => a.llm.name) || []));
 
-    const query = searchQuery.toLowerCase().trim();
-    return datasets.filter((dataset) => {
-      const benchmark = benchmarks?.find(b => b.id === dataset.benchmarkId);
-      
-      // Search in dataset name, description, and benchmark name
-      return (
-        dataset.name.toLowerCase().includes(query) ||
-        dataset.description.toLowerCase().includes(query) ||
-        benchmark?.name.toLowerCase().includes(query) ||
-        benchmark?.description.toLowerCase().includes(query)
-      );
-    });
-  }, [datasets, benchmarks, searchQuery]);
+  // Initialize selected LLMs
+  useEffect(() => {
+    if (uniqueLlms.length > 0 && selectedLlms.length === 0) {
+      setSelectedLlms(uniqueLlms);
+    }
+  }, [uniqueLlms.length]);
+  
+  // Sync local state with filter values
+  useEffect(() => {
+    setLocalSparsityMin(sparsityFilter?.min?.toString() ?? '');
+    setLocalSparsityMax(sparsityFilter?.max?.toString() ?? '');
+  }, [sparsityFilter]);
+  
+  useEffect(() => {
+    setLocalAuxMemoryMin(auxMemoryFilter?.min?.toString() ?? '');
+    setLocalAuxMemoryMax(auxMemoryFilter?.max?.toString() ?? '');
+  }, [auxMemoryFilter]);
 
-  // Fuzzy search for overall rankings
+  // Fuzzy search for overall rankings with LLM filter
   const filteredRankings = useMemo(() => {
     if (!aggregated) return [];
-    if (!rankingsSearchQuery.trim()) return aggregated;
+    
+    let filtered = aggregated;
+    
+    // Filter by selected LLMs
+    if (selectedLlms.length > 0) {
+      filtered = filtered.filter(ranking => selectedLlms.includes(ranking.llm.name));
+    }
+    
+    // Search filter
+    if (rankingsSearchQuery.trim()) {
+      const query = rankingsSearchQuery.toLowerCase().trim();
+      filtered = filtered.filter((ranking) => {
+        return (
+          ranking.baseline.name.toLowerCase().includes(query) ||
+          ranking.baseline.description.toLowerCase().includes(query) ||
+          ranking.llm.name.toLowerCase().includes(query) ||
+          ranking.llm.provider.toLowerCase().includes(query)
+        );
+      });
+    }
+    
+    return filtered;
+  }, [aggregated, rankingsSearchQuery, selectedLlms]);
+  
+  const handleApplyFilters = () => {
+    // Apply sparsity filter
+    const sparsityMin = localSparsityMin === '' ? 0 : parseFloat(localSparsityMin);
+    const sparsityMax = localSparsityMax === '' ? 100.0 : parseFloat(localSparsityMax);
+    
+    if (!isNaN(sparsityMin) && !isNaN(sparsityMax)) {
+      if (sparsityMin === 0 && sparsityMax === 100.0) {
+        setSparsityFilter(undefined);
+      } else {
+        setSparsityFilter({ min: sparsityMin, max: sparsityMax });
+      }
+    }
+    
+    // Apply auxiliary memory filter
+    const auxMin = localAuxMemoryMin === '' ? 0 : parseFloat(localAuxMemoryMin);
+    const auxMax = localAuxMemoryMax === '' ? 128 : parseFloat(localAuxMemoryMax);
+    
+    if (!isNaN(auxMin) && !isNaN(auxMax)) {
+      if (auxMin === 0 && auxMax === 128) {
+        setAuxMemoryFilter(undefined);
+      } else {
+        setAuxMemoryFilter({ min: auxMin, max: auxMax });
+      }
+    }
+  };
+  
+  const handleClearFilters = () => {
+    setSelectedLlms(uniqueLlms);
+    setSparsityFilter(undefined);
+    setAuxMemoryFilter(undefined);
+    setLocalSparsityMin('');
+    setLocalSparsityMax('');
+    setLocalAuxMemoryMin('');
+    setLocalAuxMemoryMax('');
+  };
 
-    const query = rankingsSearchQuery.toLowerCase().trim();
-    return aggregated.filter((ranking) => {
-      // Search in baseline name, description, LLM name, and provider
-      return (
-        ranking.baseline.name.toLowerCase().includes(query) ||
-        ranking.baseline.description.toLowerCase().includes(query) ||
-        ranking.llm.name.toLowerCase().includes(query) ||
-        ranking.llm.provider.toLowerCase().includes(query)
-      );
-    });
-  }, [aggregated, rankingsSearchQuery]);
-
-  if (statsLoading || aggregatedLoading || datasetsLoading || benchmarksLoading) {
+  if (statsLoading || aggregatedLoading) {
     return <LoadingSpinner />;
   }
 
@@ -160,47 +212,60 @@ export function OverviewPage() {
 
         {/* Filters for Configuration Parameters */}
         <div className="bg-dark-surface border border-dark-border rounded-lg p-6 mb-6">
-          <h3 className="text-sm font-semibold text-accent-gold mb-4">Configuration Filters</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Sparsity Range Filter */}
-            <RangeFilter
-              label="Target Sparsity Range"
-              value={sparsityFilter}
-              onChange={setSparsityFilter}
-              options={sparsityValues || []}
-              formatValue={(v) => `${v}%`}
-              placeholder="All"
-              isLoading={sparsityLoading}
+          <div className="flex items-center justify-between gap-4 mb-4">
+            <h3 className="text-sm font-semibold text-accent-gold">Configuration Filters</h3>
+            {/* Filter Action Buttons */}
+            <div className="flex gap-2">
+              <button
+                onClick={handleApplyFilters}
+                className="px-4 py-2 rounded-lg bg-accent-gold text-dark-bg hover:bg-accent-gold/90 transition-colors font-medium text-sm"
+              >
+                Apply
+              </button>
+              {(selectedLlms.length < uniqueLlms.length || sparsityFilter !== undefined || auxMemoryFilter !== undefined || localSparsityMin !== '' || localSparsityMax !== '' || localAuxMemoryMin !== '' || localAuxMemoryMax !== '') && (
+                <button
+                  onClick={handleClearFilters}
+                  className="px-4 py-2 rounded-lg bg-dark-bg border border-dark-border text-gray-300 hover:border-accent-gold hover:text-accent-gold transition-colors text-sm"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* LLM Filter */}
+            <MultiSelectFilter
+              label="Models"
+              options={uniqueLlms}
+              selectedValues={selectedLlms}
+              onChange={setSelectedLlms}
             />
+            
+            {/* Sparsity Range Filter */}
+            <div onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}>
+              <TextRangeFilter
+                label="Target Sparsity Range (%)"
+                minValue={localSparsityMin}
+                maxValue={localSparsityMax}
+                onMinChange={setLocalSparsityMin}
+                onMaxChange={setLocalSparsityMax}
+                minDefault={0}
+                maxDefault={100.0}
+              />
+            </div>
 
             {/* Aux Memory Range Filter */}
-            <RangeFilter
-              label="Auxiliary Memory Range"
-              value={auxMemoryFilter}
-              onChange={setAuxMemoryFilter}
-              options={auxMemoryValues || []}
-              formatValue={(v) => {
-                if (v >= 1024) return `${(v / 1024).toFixed(1)}K`;
-                return v.toString();
-              }}
-              placeholder="All"
-              isLoading={auxMemoryLoading}
-            />
-
-            {/* Clear Filters Button */}
-            {(sparsityFilter !== undefined || auxMemoryFilter !== undefined) && (
-              <div className="flex items-end">
-                <button
-                  onClick={() => {
-                    setSparsityFilter(undefined);
-                    setAuxMemoryFilter(undefined);
-                  }}
-                  className="px-4 py-2 rounded-lg bg-dark-bg border border-dark-border text-gray-300 hover:border-accent-gold hover:text-accent-gold transition-colors w-full"
-                >
-                  Clear Filters
-                </button>
-              </div>
-            )}
+            <div onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}>
+              <TextRangeFilter
+                label="Auxiliary Memory Range"
+                minValue={localAuxMemoryMin}
+                maxValue={localAuxMemoryMax}
+                onMinChange={setLocalAuxMemoryMin}
+                onMaxChange={setLocalAuxMemoryMax}
+                minDefault={0}
+                maxDefault={128}
+              />
+            </div>
           </div>
         </div>
         
@@ -215,66 +280,6 @@ export function OverviewPage() {
         )}
       </section>
 
-      {/* Dataset Cards */}
-      <section>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-white">Dataset-based Rankings</h2>
-          <div className="relative w-96">
-            <input
-              type="text"
-              placeholder="Search datasets and benchmarks..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 bg-dark-surface border border-dark-border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-accent-gold transition-colors"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-                aria-label="Clear search"
-              >
-                ✕
-              </button>
-            )}
-          </div>
-        </div>
-        
-        {filteredDatasets.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-400">No datasets found matching "{searchQuery}"</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredDatasets.map((dataset) => (
-              <DatasetCardWithData 
-                key={dataset.id} 
-                dataset={dataset}
-                benchmark={benchmarks?.find(b => b.id === dataset.benchmarkId)}
-                sparsityFilter={sparsityFilter}
-                auxMemoryFilter={auxMemoryFilter}
-              />
-            ))}
-          </div>
-        )}
-      </section>
     </div>
   );
 }
-
-// Helper component to fetch dataset leaderboard data
-interface DatasetCardWithDataProps {
-  dataset: Dataset;
-  benchmark?: Benchmark;
-  sparsityFilter?: NumericRange;
-  auxMemoryFilter?: NumericRange;
-}
-
-function DatasetCardWithData({ dataset, benchmark, sparsityFilter, auxMemoryFilter }: DatasetCardWithDataProps) {
-  const { data: entries } = useDatasetLeaderboard(dataset.id, {
-    targetSparsity: sparsityFilter,
-    targetAuxMemory: auxMemoryFilter,
-  });
-  
-  return <DatasetCard dataset={dataset} topEntries={entries || []} benchmark={benchmark} />;
-}
-

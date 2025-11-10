@@ -155,7 +155,7 @@ def test_results_by_dataset(supabase: Client):
             result = response.data[0]
             print(f"   Sample result fields:")
             print(f"   - configuration_id: {result.get('configuration_id')}")
-            print(f"   - metric_id: {result.get('metric_id')}")
+            print(f"   - dataset_metric_id: {result.get('dataset_metric_id')}")
             print(f"   - value: {result.get('value')}")
     
     except Exception as e:

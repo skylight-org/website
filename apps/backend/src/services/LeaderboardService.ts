@@ -37,7 +37,8 @@ export class LeaderboardService {
     // Use latest completed run if not specified
     const runId = experimentalRunId || await this.getLatestRunId();
     
-    return this.rankingService.calculateDatasetRanking(datasetId, runId, filters);
+    const rankings = await this.rankingService.calculateDatasetRanking(datasetId, runId, filters);
+    return rankings;
   }
 
   /**

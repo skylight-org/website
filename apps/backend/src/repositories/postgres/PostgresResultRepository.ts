@@ -51,11 +51,11 @@ export class PostgresResultRepository implements IResultRepository {
     return (data || []).map(this.mapToResult);
   }
 
-  async findByMetricId(metricId: string): Promise<Result[]> {
+  async findByDatasetMetricId(datasetMetricId: string): Promise<Result[]> {
     const { data, error } = await this.supabase
       .from('results')
       .select('*')
-      .eq('metric_id', metricId);
+      .eq('dataset_metric_id', datasetMetricId);
 
     if (error) {
       throw new Error(`Failed to fetch results: ${error.message}`);
@@ -117,7 +117,7 @@ export class PostgresResultRepository implements IResultRepository {
     return {
       id: row.id,
       configurationId: row.configuration_id,
-      metricId: row.metric_id,
+      datasetMetricId: row.dataset_metric_id,
       experimentalRunId: row.experimental_run_id,
       value: parseFloat(row.value),
       standardDeviation: row.standard_deviation ? parseFloat(row.standard_deviation) : undefined,

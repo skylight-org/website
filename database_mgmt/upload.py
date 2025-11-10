@@ -40,7 +40,7 @@ class SupabaseUploader:
         self.baseline_cache: Dict[str, str] = {}  # name -> id
         self.llm_cache: Dict[str, str] = {}  # name -> id
         self.config_cache: Dict[tuple, str] = {}  # (baseline_id, dataset_id, llm_id, sparsity, aux_mem) -> id
-        self.dataset_metric_cache: Set[tuple] = set()  # (dataset_id, metric_id)
+        self.dataset_metric_cache: Dict[tuple, str] = {}  # (dataset_id, metric_id) -> dataset_metric_id
         
         self.experimental_run_id: Optional[str] = None
         # Track processed configurations for keep-only cleanup
@@ -87,10 +87,14 @@ class SupabaseUploader:
         Extract target sparsity from record.
         
         Converts average_density to percentage (e.g., 0.022 -> 2.2).
-        Returns None for dense baseline or if not available.
+        Returns 100.0 for dense baseline (no sparsity = 100% density).
         """
-        if record.get('baseline') == 'dense':
-            return None
+        # Check both the original baseline and inferred group name
+        baseline_name = record.get('baseline', '').lower()
+        inferred_name = self.infer_group_name(record) or ''
+        
+        if baseline_name == 'dense' or inferred_name == 'dense':
+            return 100.0  # Dense = 100% density = no sparsity
         
         average_density = record.get('average_density')
         if average_density is not None:
@@ -265,6 +269,12 @@ class SupabaseUploader:
                         'unit': None,
                         'higher_is_better': True
                     },
+                    'average_local_error': {
+                        'display_name': 'Average Local Error',
+                        'description': 'Average attention output error across all layers',
+                        'unit': None,
+                        'higher_is_better': False
+                    },
                 }
                 
                 metric_def = metric_definitions.get(name, {
@@ -292,26 +302,31 @@ class SupabaseUploader:
             print(f"Error upserting metric '{name}': {e}")
             raise
 
-    def upsert_dataset_metric(self, dataset_id: str, metric_id: str, is_primary: bool = True):
-        """Create dataset-metric relationship if not exists."""
+    def upsert_dataset_metric(self, dataset_id: str, metric_id: str, is_primary: bool = True) -> str:
+        """Create dataset-metric relationship if not exists and return its ID."""
         cache_key = (dataset_id, metric_id)
         if cache_key in self.dataset_metric_cache:
-            return
+            return self.dataset_metric_cache[cache_key]
         
         try:
             # Try to find existing
             response = self.supabase.table('dataset_metrics').select('id').eq('dataset_id', dataset_id).eq('metric_id', metric_id).execute()
             
-            if not response.data or len(response.data) == 0:
+            if response.data and len(response.data) > 0:
+                dataset_metric_id = response.data[0]['id']
+            else:
                 # Insert new
-                self.supabase.table('dataset_metrics').insert({
+                insert_response = self.supabase.table('dataset_metrics').insert({
                     'dataset_id': dataset_id,
                     'metric_id': metric_id,
                     'weight': 1.0,
                     'is_primary': is_primary
                 }).execute()
+                
+                dataset_metric_id = insert_response.data[0]['id']
             
-            self.dataset_metric_cache.add(cache_key)
+            self.dataset_metric_cache[cache_key] = dataset_metric_id
+            return dataset_metric_id
             
         except Exception as e:
             print(f"Error upserting dataset_metric: {e}")
@@ -482,7 +497,7 @@ class SupabaseUploader:
     def insert_result(
         self,
         config_id: str,
-        metric_id: str,
+        dataset_metric_id: str,
         run_id: str,
         value: float
     ):
@@ -491,7 +506,7 @@ class SupabaseUploader:
             # Check if result already exists
             response = self.supabase.table('results').select('id') \
                 .eq('configuration_id', config_id) \
-                .eq('metric_id', metric_id) \
+                .eq('dataset_metric_id', dataset_metric_id) \
                 .eq('experimental_run_id', run_id) \
                 .execute()
             
@@ -504,7 +519,7 @@ class SupabaseUploader:
                 # Insert new result
                 self.supabase.table('results').insert({
                     'configuration_id': config_id,
-                    'metric_id': metric_id,
+                    'dataset_metric_id': dataset_metric_id,
                     'experimental_run_id': run_id,
                     'value': value
                 }).execute()
@@ -551,9 +566,11 @@ class SupabaseUploader:
             # Insert results
             for metric_name, value in benchmark_metrics.items():
                 metric_id = self.metric_cache[metric_name]
+                # Get the dataset_metric_id for this dataset-metric pair
+                dataset_metric_id = self.dataset_metric_cache[(dataset_id, metric_id)]
                 self.insert_result(
                     config_id=config_id,
-                    metric_id=metric_id,
+                    dataset_metric_id=dataset_metric_id,
                     run_id=self.experimental_run_id,
                     value=value
                 )

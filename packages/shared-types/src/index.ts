@@ -90,7 +90,7 @@ export interface ExperimentalRun {
 export interface Result {
   id: string;
   configurationId: string;
-  metricId: string;
+  datasetMetricId: string;
   experimentalRunId?: string;
   value: number;
   standardDeviation?: number;
@@ -121,6 +121,7 @@ export interface DatasetRanking {
   configurationId: string;
   score: number;
   metricValues: Record<string, number>;
+  targetSparsity?: number;
 }
 
 export interface AggregatedRanking {
@@ -134,6 +135,8 @@ export interface AggregatedRanking {
   numDatasets: number;
   bestDatasetRank: number;
   worstDatasetRank: number;
+  avgSparsity?: number; // average sparsity across all datasets
+  avgLocalError?: number; // average local error across all datasets
 }
 
 // ============================================================================

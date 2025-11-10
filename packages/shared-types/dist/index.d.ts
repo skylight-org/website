@@ -74,7 +74,7 @@ export interface ExperimentalRun {
 export interface Result {
     id: string;
     configurationId: string;
-    metricId: string;
+    datasetMetricId: string;
     experimentalRunId?: string;
     value: number;
     standardDeviation?: number;
@@ -99,6 +99,7 @@ export interface DatasetRanking {
     configurationId: string;
     score: number;
     metricValues: Record<string, number>;
+    targetSparsity?: number;
 }
 export interface AggregatedRanking {
     rank: number;
@@ -111,6 +112,7 @@ export interface AggregatedRanking {
     numDatasets: number;
     bestDatasetRank: number;
     worstDatasetRank: number;
+    avgSparsity?: number;
 }
 export interface NumericRange {
     min?: number;

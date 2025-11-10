@@ -1,7 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useBaselines } from '../../hooks/useBaselines';
-import { useDatasets } from '../../hooks/useDatasets';
 import { useSidebar } from '../../contexts/SidebarContext';
 import { useState } from 'react';
 
@@ -44,15 +43,12 @@ export function Sidebar() {
   const location = useLocation();
   const isDocumentationPath = location.pathname.startsWith('/documentation');
   const isBaselinePath = location.pathname.startsWith('/documentation/baselines');
-  const isDatasetPath = location.pathname.startsWith('/documentation/datasets');
   
   const { isCollapsed, setIsCollapsed } = useSidebar();
   const [isDocExpanded, setIsDocExpanded] = useState(isDocumentationPath);
   const [isBaselinesExpanded, setIsBaselinesExpanded] = useState(isBaselinePath);
-  const [isDatasetsExpanded, setIsDatasetsExpanded] = useState(isDatasetPath);
 
   const { data: baselines } = useBaselines();
-  const { data: datasets } = useDatasets();
   
   // Auto-expand sections when navigating to their pages
   useEffect(() => {
@@ -62,10 +58,7 @@ export function Sidebar() {
     if (isBaselinePath) {
       setIsBaselinesExpanded(true);
     }
-    if (isDatasetPath) {
-      setIsDatasetsExpanded(true);
-    }
-  }, [isDocumentationPath, isBaselinePath, isDatasetPath]);
+  }, [isDocumentationPath, isBaselinePath]);
 
   const isActive = (path: string): boolean => {
     return location.pathname === path;
@@ -77,7 +70,7 @@ export function Sidebar() {
 
   const navItems = [
     { path: '/website', label: 'Overview' },
-    { path: '/comparison', label: 'Comparison' },
+    { path: '/datasets', label: 'Datasets' },
   ];
 
 
@@ -220,53 +213,6 @@ export function Sidebar() {
                 ) : null}
               </div>
 
-              {/* Datasets Sub-section */}
-              <div>
-                <button
-                  onClick={() => setIsDatasetsExpanded(!isDatasetsExpanded)}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    location.pathname === '/documentation/datasets'
-                      ? 'bg-dark-surface-hover text-accent-gold'
-                      : 'text-gray-400 hover:bg-dark-surface-hover hover:text-white'
-                  }`}
-                >
-                  <Link
-                    to="/documentation/datasets"
-                    className="flex-1 text-left"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    Datasets
-                  </Link>
-                  <svg
-                    className={`w-3 h-3 transition-transform ${isDatasetsExpanded ? 'rotate-180' : ''}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                
-                {isDatasetsExpanded && datasets ? (
-                  <div className="ml-3 mt-1 space-y-1 max-h-48 overflow-y-auto">
-                    {/* @ts-ignore */}
-                    {datasets.map((dataset: any) => (
-                      <Link
-                        key={dataset.id}
-                        to={`/documentation/datasets/${dataset.id}`}
-                        className={`block px-3 py-1.5 rounded text-xs transition-colors ${
-                          location.pathname === `/documentation/datasets/${dataset.id}`
-                            ? 'text-accent-gold font-medium'
-                            : 'text-gray-500 hover:bg-dark-surface-hover hover:text-gray-300'
-                        }`}
-                        title={dataset.description}
-                      >
-                        <div className="truncate">{dataset.name}</div>
-                      </Link>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
             </div>
           )}
         </div>

@@ -1,4 +1,4 @@
-import type { DatasetRanking, Metric, Baseline, LLM, Dataset, Configuration, Result, NumericRange } from '@sky-light/shared-types';
+import type { DatasetRanking, Metric, Baseline, LLM, Dataset, Configuration, Result, NumericRange, DatasetMetric } from '@sky-light/shared-types';
 import type { IBaselineRepository } from '../repositories/interfaces/IBaselineRepository';
 import type { ILLMRepository } from '../repositories/interfaces/ILLMRepository';
 import type { IDatasetRepository } from '../repositories/interfaces/IDatasetRepository';
@@ -113,7 +113,7 @@ export class RankingService {
         currentRank = index + 1;
       }
 
-      rankings.push({
+      const rankingEntry = {
         rank: currentRank,
         dataset,
         baseline: configScore.baseline,
@@ -121,7 +121,17 @@ export class RankingService {
         configurationId: configScore.configuration.id,
         score: configScore.score,
         metricValues: configScore.metricValues,
-      });
+        targetSparsity: configScore.configuration.targetSparsity,
+      };
+      
+      // Debug: Log the first ranking to check metricValues
+      if (rankings.length === 0) {
+        console.log('DEBUG RankingService: First ranking entry');
+        console.log('  - metricValues:', rankingEntry.metricValues);
+        console.log('  - Has average_local_error?', 'average_local_error' in rankingEntry.metricValues);
+      }
+      
+      rankings.push(rankingEntry);
 
       previousScore = configScore.score;
     });
@@ -135,26 +145,35 @@ export class RankingService {
    */
   private calculateWeightedScore(
     results: Result[],
-    datasetMetrics: Array<{ metricId: string; weight: number; isPrimary: boolean }>,
+    datasetMetrics: DatasetMetric[],
     metricsMap: Map<string, Metric>
   ): { score: number; metricValues: Record<string, number> } {
     const metricValues: Record<string, number> = {};
     
+    // Create a map of datasetMetricId to datasetMetric for quick lookup
+    const datasetMetricsMap = new Map<string, DatasetMetric>();
+    datasetMetrics.forEach(dm => {
+      datasetMetricsMap.set(dm.id, dm);
+    });
+    
     // Build metric values map
     results.forEach(result => {
-      const metric = metricsMap.get(result.metricId);
-      if (metric) {
-        metricValues[metric.name] = result.value;
+      const datasetMetric = datasetMetricsMap.get(result.datasetMetricId);
+      if (datasetMetric) {
+        const metric = metricsMap.get(datasetMetric.metricId);
+        if (metric) {
+          metricValues[metric.name] = result.value;
+        }
       }
     });
 
     // Find primary metric
-    const primaryMetric = datasetMetrics.find(dm => dm.isPrimary);
+    const primaryDatasetMetric = datasetMetrics.find(dm => dm.isPrimary);
     
-    if (primaryMetric) {
+    if (primaryDatasetMetric) {
       // Use primary metric as score
-      const result = results.find(r => r.metricId === primaryMetric.metricId);
-      const metric = metricsMap.get(primaryMetric.metricId);
+      const result = results.find(r => r.datasetMetricId === primaryDatasetMetric.id);
+      const metric = metricsMap.get(primaryDatasetMetric.metricId);
       
       if (result && metric) {
         // Normalize score (if lower is better, invert it)
@@ -171,18 +190,20 @@ export class RankingService {
     let weightedSum = 0;
 
     results.forEach(result => {
-      const datasetMetric = datasetMetrics.find(dm => dm.metricId === result.metricId);
-      const metric = metricsMap.get(result.metricId);
-      
-      if (datasetMetric && metric) {
-        const weight = datasetMetric.weight;
-        // Normalize value based on metric direction
-        const normalizedValue = metric.higherIsBetter 
-          ? result.value 
-          : 100 - result.value;
+      const datasetMetric = datasetMetricsMap.get(result.datasetMetricId);
+      if (datasetMetric) {
+        const metric = metricsMap.get(datasetMetric.metricId);
         
-        weightedSum += normalizedValue * weight;
-        totalWeight += weight;
+        if (metric) {
+          const weight = datasetMetric.weight;
+          // Normalize value based on metric direction
+          const normalizedValue = metric.higherIsBetter 
+            ? result.value 
+            : 100 - result.value;
+          
+          weightedSum += normalizedValue * weight;
+          totalWeight += weight;
+        }
       }
     });
 

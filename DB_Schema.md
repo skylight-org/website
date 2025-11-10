@@ -12,7 +12,8 @@ CREATE TABLE benchmarks (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Datasets: Specific test sets within benchmarks (this design would allow the same dataset to exist multiple times)
+-- Datasets: Specific test sets within benchmarks
+-- The UNIQUE constraint ensures a dataset name is unique within its benchmark.
 CREATE TABLE datasets (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     benchmark_id UUID NOT NULL REFERENCES benchmarks(id) ON DELETE CASCADE,
@@ -36,7 +37,7 @@ CREATE TABLE metrics (
 );
 
 -- Dataset-Metric relationship (many-to-many)
--- Different datasets can track different metrics
+-- This table defines *which* metrics are valid for *which* datasets.
 CREATE TABLE dataset_metrics (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     dataset_id UUID NOT NULL REFERENCES datasets(id) ON DELETE CASCADE,
@@ -75,7 +76,7 @@ CREATE TABLE llms (
 -- ============================================================================
 
 -- Configurations: Unique combinations of Baseline × Dataset × LLM × Parameters
--- Supports multiple configurations for same baseline-dataset-llm with different sparsity/memory settings
+-- **FIX**: Removed the broken inline UNIQUE constraint
 CREATE TABLE configurations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     baseline_id UUID NOT NULL REFERENCES baselines(id) ON DELETE CASCADE,
@@ -90,13 +91,17 @@ CREATE TABLE configurations (
     additional_params JSONB, -- flexible storage for other hyperparameters
     
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
-    -- Unique constraint includes parameters to allow multiple configs for same baseline-dataset-llm
-    -- COALESCE handles NULL values to ensure uniqueness works correctly
-    UNIQUE(baseline_id, dataset_id, llm_id, 
-           COALESCE(target_sparsity, -1), 
-           COALESCE(target_aux_memory, -1))
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- **FIX**: Re-created the unique constraint using an INDEX.
+-- This correctly handles NULLs as a single value by using COALESCE.
+CREATE UNIQUE INDEX idx_unique_configuration ON configurations(
+    baseline_id, 
+    dataset_id, 
+    llm_id, 
+    COALESCE(target_sparsity, -1), 
+    COALESCE(target_aux_memory, -1)
 );
 
 -- Indexes for common queries
@@ -122,10 +127,17 @@ CREATE TABLE experimental_runs (
 );
 
 -- Results: Raw metric values for each configuration
+-- **IMPROVEMENT**: This table is now linked to `dataset_metrics`
+-- to enforce that only valid metrics can be recorded for a configuration's dataset.
 CREATE TABLE results (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     configuration_id UUID NOT NULL REFERENCES configurations(id) ON DELETE CASCADE,
-    metric_id UUID NOT NULL REFERENCES metrics(id) ON DELETE CASCADE,
+    
+    -- **FIX**: Changed from metric_id to dataset_metric_id
+    -- This ensures the result's metric is one that is explicitly
+    -- associated with the dataset (via the configuration)
+    dataset_metric_id UUID NOT NULL REFERENCES dataset_metrics(id) ON DELETE CASCADE,
+    
     experimental_run_id UUID REFERENCES experimental_runs(id) ON DELETE SET NULL,
     
     -- The actual measurement
@@ -139,12 +151,13 @@ CREATE TABLE results (
     
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
-    -- Ensure one result per configuration-metric-run combination
-    UNIQUE(configuration_id, metric_id, experimental_run_id)
+    -- **FIX**: Updated UNIQUE constraint to use dataset_metric_id
+    UNIQUE(configuration_id, dataset_metric_id, experimental_run_id)
 );
 
 -- Indexes for performance on frequently queried columns (optional)
 CREATE INDEX idx_results_configuration ON results(configuration_id);
-CREATE INDEX idx_results_metric ON results(metric_id);
+-- **FIX**: Updated index to match new column name
+CREATE INDEX idx_results_dataset_metric ON results(dataset_metric_id);
 CREATE INDEX idx_results_run ON results(experimental_run_id);
 CREATE INDEX idx_results_value ON results(value); -- for ranking queries

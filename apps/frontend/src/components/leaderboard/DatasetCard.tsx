@@ -10,7 +10,7 @@ interface DatasetCardProps {
 export function DatasetCard({ dataset, topEntries, benchmark }: DatasetCardProps) {
   return (
     <Link 
-      to={`/documentation/datasets/${dataset.id}`}
+      to={`/datasets/${dataset.id}`}
       className="block bg-dark-surface border border-dark-border rounded-lg p-6 hover:border-accent-gold transition-colors"
     >
       <div className="flex items-start justify-between mb-4">
