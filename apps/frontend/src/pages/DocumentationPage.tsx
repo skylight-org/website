@@ -30,7 +30,7 @@ export function DocumentationPage() {
       </section>
 
       {/* Documentation Categories */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Baselines Card */}
         <Link
           to="/documentation/baselines"
@@ -79,6 +79,33 @@ export function DocumentationPage() {
           </p>
           <div className="flex items-center gap-2 text-accent-gold font-medium">
             <span>View datasets</span>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </Link>
+
+        {/* Auxiliary Memory Card */}
+        <Link
+          to="/documentation/auxiliary-memory"
+          className="group bg-dark-surface border border-dark-border rounded-lg p-8 hover:border-accent-gold transition-colors"
+        >
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-12 h-12 rounded-lg bg-accent-gold/10 flex items-center justify-center">
+              <svg className="w-6 h-6 text-accent-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-white group-hover:text-accent-gold transition-colors">
+              Auxiliary Memory
+            </h2>
+          </div>
+          <p className="text-gray-300 mb-4">
+            Learn how auxiliary memory is computed for different sparse attention methods. 
+            Understand the memory requirements and trade-offs for each approach.
+          </p>
+          <div className="flex items-center gap-2 text-accent-gold font-medium">
+            <span>View guide</span>
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>

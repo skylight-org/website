@@ -267,6 +267,17 @@ export function Sidebar() {
                   </div>
                 ) : null}
               </div>
+                            {/* Auxiliary Memory Sub-section */}
+                            <Link
+                to="/documentation/auxiliary-memory"
+                className={`block px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  location.pathname === '/documentation/auxiliary-memory'
+                    ? 'bg-dark-surface-hover text-accent-gold'
+                    : 'text-gray-400 hover:bg-dark-surface-hover hover:text-white'
+                }`}
+              >
+                Auxiliary Memory
+              </Link>
             </div>
           )}
         </div>
