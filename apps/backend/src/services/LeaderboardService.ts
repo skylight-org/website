@@ -63,6 +63,24 @@ export class LeaderboardService {
     return this.aggregationService.calculateOverallRanking(runId, benchmarkId, filters);
   }
 
+  async getPlotData(filters?: {
+    targetSparsity?: NumericRange;
+    targetAuxMemory?: NumericRange;
+  }): Promise<DatasetRanking[]> {
+    const runId = await this.getLatestRunId();
+    const datasets = await this.datasetRepository.findAll();
+    
+    if (datasets.length === 0) {
+      return [];
+    }
+
+    const allRankings = await Promise.all(
+      datasets.map(d => this.rankingService.calculateDatasetRanking(d.id, runId, filters))
+    );
+
+    return allRankings.flat();
+  }
+
   /**
    * Get overview statistics for the leaderboard
    */

@@ -30,21 +30,23 @@ export class AggregationService {
     if (datasets.length === 0) {
       return [];
     }
+    const totalNumDatasets = datasets.length;
 
     // Calculate ranking for each dataset
     const datasetRankings = await Promise.all(
       datasets.map(d => this.rankingService.calculateDatasetRanking(d.id, experimentalRunId, filters))
     );
 
-    // Group rankings by baseline+llm combination
-    const rankingsByBaselineLLM = new Map<string, {
+    // Group rankings by baseline+llm+sparsity+aux_memory combination
+    const rankingsByConfig = new Map<string, {
       baseline: Baseline;
       llm: LLM;
+      targetSparsity?: number;
+      targetAuxMemory?: number;
       datasetRanks: Map<string, number>;
       datasetScores: Map<string, number>;
+      datasetDetails: Map<string, { sparsity?: number; auxMemory?: number; localError?: number; configuration?: any }>;
       ranks: number[];
-      sparsityValues: (number | undefined)[];
-      auxMemoryValues: (number | undefined)[];
       localErrorValues: (number | undefined)[];
     }>();
 
@@ -52,27 +54,32 @@ export class AggregationService {
       const dataset = datasets[datasetIdx];
       
       rankings.forEach(ranking => {
-        const key = `${ranking.baseline.id}-${ranking.llm.id}`;
+        const key = `${ranking.baseline.id}-${ranking.llm.id}-${ranking.targetSparsity ?? 'N/A'}-${ranking.targetAuxMemory ?? 'N/A'}`;
         
-        if (!rankingsByBaselineLLM.has(key)) {
-          rankingsByBaselineLLM.set(key, {
+        if (!rankingsByConfig.has(key)) {
+          rankingsByConfig.set(key, {
             baseline: ranking.baseline,
             llm: ranking.llm,
+            targetSparsity: ranking.targetSparsity,
+            targetAuxMemory: ranking.targetAuxMemory,
             datasetRanks: new Map(),
             datasetScores: new Map(),
+            datasetDetails: new Map(),
             ranks: [],
-            sparsityValues: [],
-            auxMemoryValues: [],
             localErrorValues: [],
           });
         }
 
-        const entry = rankingsByBaselineLLM.get(key)!;
+        const entry = rankingsByConfig.get(key)!;
         entry.datasetRanks.set(dataset.id, ranking.rank);
         entry.datasetScores.set(dataset.id, ranking.score);
+        entry.datasetDetails.set(dataset.id, {
+          sparsity: ranking.targetSparsity,
+          auxMemory: ranking.targetAuxMemory,
+          localError: ranking.metricValues?.average_local_error,
+          configuration: ranking.configuration,
+        });
         entry.ranks.push(ranking.rank);
-        entry.sparsityValues.push(ranking.targetSparsity);
-        entry.auxMemoryValues.push(ranking.targetAuxMemory);
         // Debug: Log first few rankings to see metricValues
         if (datasetIdx === 0 && rankings.indexOf(ranking) === 0) {
           console.log('DEBUG AggregationService: First dataset, first ranking');
@@ -90,32 +97,14 @@ export class AggregationService {
     // Calculate average rank and create aggregated rankings
     const aggregated: Array<AggregatedRanking & { averageRank: number }> = [];
 
-    rankingsByBaselineLLM.forEach((data) => {
+    rankingsByConfig.forEach((data) => {
       const averageRank = data.ranks.reduce((sum, r) => sum + r, 0) / data.ranks.length;
       const overallScore = Array.from(data.datasetScores.values()).reduce((sum, s) => sum + s, 0) / data.datasetScores.size;
       
-      // Calculate average sparsity if any values are present
-      const avgSparsity = data.sparsityValues.length > 0
-        ? data.sparsityValues.filter((v): v is number => v !== undefined).reduce((sum, s) => sum + s, 0) / data.sparsityValues.length
-        : undefined;
-      
-      const avgAuxMemory = data.auxMemoryValues.length > 0
-        ? data.auxMemoryValues.filter((v): v is number => v !== undefined).reduce((sum, s) => sum + s, 0) / data.auxMemoryValues.length
-        : undefined;
-      
-      // Calculate average local error if any values are present
       const avgLocalError = data.localErrorValues.length > 0
-        ? data.localErrorValues.reduce((sum, e) => sum + e, 0) / data.localErrorValues.length
+        ? data.localErrorValues.filter((v): v is number => v !== undefined).reduce((sum, e) => sum + e, 0) / data.localErrorValues.length
         : undefined;
       
-      // Debug: Log first aggregated entry
-      if (aggregated.length === 0) {
-        console.log('DEBUG AggregationService calculateOverallRanking: First aggregated entry');
-        console.log('  - localErrorValues array:', data.localErrorValues);
-        console.log('  - localErrorValues length:', data.localErrorValues.length);
-        console.log('  - avgLocalError calculated:', avgLocalError);
-      }
-
       aggregated.push({
         rank: 0, // Will be assigned after sorting
         baseline: data.baseline,
@@ -124,11 +113,13 @@ export class AggregationService {
         overallScore,
         datasetRanks: Object.fromEntries(data.datasetRanks),
         datasetScores: Object.fromEntries(data.datasetScores),
+        datasetDetails: Object.fromEntries(data.datasetDetails),
         numDatasets: data.ranks.length,
+        totalNumDatasets,
         bestDatasetRank: Math.min(...data.ranks),
         worstDatasetRank: Math.max(...data.ranks),
-        avgSparsity,
-        avgAuxMemory,
+        targetSparsity: data.targetSparsity,
+        targetAuxMemory: data.targetAuxMemory,
         avgLocalError,
       });
     });
@@ -169,6 +160,7 @@ export class AggregationService {
     if (datasets.length === 0) {
       return [];
     }
+    const totalNumDatasets = datasets.length;
 
     // Calculate ranking for each dataset with filters
     const datasetRankings = await Promise.all(
@@ -189,6 +181,7 @@ export class AggregationService {
       llm: LLM;
       datasetRanks: Map<string, number>;
       datasetScores: Map<string, number>;
+      datasetDetails: Map<string, { sparsity?: number; auxMemory?: number; localError?: number; configuration?: any }>;
       ranks: number[];
       sparsityValues: (number | undefined)[];
       auxMemoryValues: (number | undefined)[];
@@ -207,6 +200,7 @@ export class AggregationService {
             llm: ranking.llm,
             datasetRanks: new Map(),
             datasetScores: new Map(),
+            datasetDetails: new Map(),
             ranks: [],
             sparsityValues: [],
             auxMemoryValues: [],
@@ -217,6 +211,12 @@ export class AggregationService {
         const entry = rankingsByBaseline.get(key)!;
         entry.datasetRanks.set(dataset.id, ranking.rank);
         entry.datasetScores.set(dataset.id, ranking.score);
+        entry.datasetDetails.set(dataset.id, {
+          sparsity: ranking.targetSparsity,
+          auxMemory: ranking.targetAuxMemory,
+          localError: ranking.metricValues?.average_local_error,
+          configuration: ranking.configuration,
+        });
         entry.ranks.push(ranking.rank);
         entry.sparsityValues.push(ranking.targetSparsity);
         entry.auxMemoryValues.push(ranking.targetAuxMemory);
@@ -255,7 +255,9 @@ export class AggregationService {
         overallScore,
         datasetRanks: Object.fromEntries(data.datasetRanks),
         datasetScores: Object.fromEntries(data.datasetScores),
+        datasetDetails: Object.fromEntries(data.datasetDetails),
         numDatasets: data.ranks.length,
+        totalNumDatasets,
         bestDatasetRank: Math.min(...data.ranks),
         worstDatasetRank: Math.max(...data.ranks),
         avgSparsity,

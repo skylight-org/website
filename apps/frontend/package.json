@@ -12,11 +12,13 @@
     "@tanstack/react-query": "^5.17.9",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.21.1"
+    "react-router-dom": "^6.21.1",
+    "recharts": "^2.12.7"
   },
   "devDependencies": {
     "@types/react": "^18.2.47",
     "@types/react-dom": "^18.2.18",
+    "@types/recharts": "^2.0.0",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.16",
     "postcss": "^8.4.32",
@@ -25,4 +27,3 @@
     "vite": "^5.0.10"
   }
 }
-

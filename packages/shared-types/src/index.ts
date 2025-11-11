@@ -28,6 +28,7 @@ export interface Dataset {
   name: string;
   description: string;
   size?: number;
+  configurationCount?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -122,6 +123,8 @@ export interface DatasetRanking {
   score: number;
   metricValues: Record<string, number>;
   targetSparsity?: number;
+  targetAuxMemory?: number;
+  configuration: Configuration;
 }
 
 export interface AggregatedRanking {
@@ -132,11 +135,19 @@ export interface AggregatedRanking {
   overallScore: number;
   datasetRanks: Record<string, number>; // datasetId -> rank
   datasetScores: Record<string, number>; // datasetId -> score
+  datasetDetails: Record<string, {
+    sparsity?: number;
+    auxMemory?: number;
+    localError?: number;
+    configuration: Configuration;
+  }>;
   numDatasets: number;
+  totalNumDatasets: number;
   bestDatasetRank: number;
   worstDatasetRank: number;
-  avgSparsity?: number; // average sparsity across all datasets
-  avgLocalError?: number; // average local error across all datasets
+  targetSparsity?: number;
+  targetAuxMemory?: number;
+  avgLocalError?: number;
 }
 
 // ============================================================================

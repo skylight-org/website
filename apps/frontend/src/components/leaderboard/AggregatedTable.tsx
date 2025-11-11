@@ -13,8 +13,24 @@ interface AggregatedTableProps {
 export function AggregatedTable({ rankings }: AggregatedTableProps) {
   const { sortedData, sortConfig, requestSort } = useSortableData(rankings);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const { data: datasets } = useDatasets();
   const { data: benchmarks } = useBenchmarks();
+  
+  // Replacer function to remove 'search_space' keys from JSON output
+  const jsonReplacer = (key: string, value: any) => {
+    if (key === 'search_space') {
+      return undefined;
+    }
+    return value;
+  };
+  
+  const handleCopy = (text: string, key: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedKey(key);
+      setTimeout(() => setCopiedKey(null), 2000); // Reset after 2 seconds
+    });
+  };
   
   console.log('AggregatedTable rankings:', rankings);
   if (rankings.length > 0) {
@@ -101,11 +117,11 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
             <SortableHeader
               label={
                 <div className="flex items-center gap-1">
-                  Sparsity
-                  <InfoTooltip content="Average sparsity level used in experiments." />
+                  Density (%)
+                  <InfoTooltip content="The target density level for this configuration." />
                 </div>
               }
-              sortKey="avgSparsity"
+              sortKey="targetSparsity"
               sortConfig={sortConfig}
               onSort={requestSort}
               align="right"
@@ -114,10 +130,10 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
               label={
                 <div className="flex items-center gap-1">
                   Aux Memory
-                  <InfoTooltip content="Average auxiliary memory used in experiments." />
+                  <InfoTooltip content="The target auxiliary memory for this configuration." />
                 </div>
               }
-              sortKey="avgAuxMemory"
+              sortKey="targetAuxMemory"
               sortConfig={sortConfig}
               onSort={requestSort}
               align="right"
@@ -158,6 +174,9 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
               <td className="px-4 py-4">
                 <div className="font-medium text-white">{ranking.baseline.name}</div>
                 <div className="text-xs text-gray-400 max-w-xs truncate">{ranking.baseline.description}</div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {`Evaluated on ${ranking.numDatasets}/${ranking.totalNumDatasets} datasets`}
+                </div>
               </td>
               <td className="px-4 py-4 text-right">
                 <span className="font-semibold text-accent-gold text-lg">
@@ -171,12 +190,12 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
                   </td>
                   <td className="px-4 py-4 text-right">
                     <span className="text-gray-400">
-                      {ranking.avgSparsity?.toFixed(2) || '-'}
+                      {ranking.targetSparsity?.toFixed(2) || '-'}
                     </span>
                   </td>
                   <td className="px-4 py-4 text-right">
                     <span className="text-gray-400">
-                      {ranking.avgAuxMemory?.toLocaleString(undefined, { maximumFractionDigits: 0 }) || '-'}
+                      {ranking.targetAuxMemory?.toLocaleString(undefined, { maximumFractionDigits: 0 }) || '-'}
                     </span>
                   </td>
                 </tr>
@@ -228,7 +247,7 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
                                         dataset,
                                         score,
                                         benchmark,
-                                        details: (ranking as any).datasetDetails?.[datasetId] || {}
+                                        details: ranking.datasetDetails[datasetId] || {}
                                       });
                                       
                                       return acc;
@@ -255,15 +274,26 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
                                   <div className="text-sm text-white">{ranking.llm.name}</div>
                                   <div className="text-xs text-gray-400 mb-2">{ranking.baseline.name}</div>
                                   <div className="mt-2 p-2 bg-black/30 rounded">
-                                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Config (example)</p>
+                                    <div className="flex justify-between items-center mb-1">
+                                      <p className="text-xs text-gray-500 uppercase tracking-wide">Sparse Attention Config</p>
+                                      <button
+                                        onClick={() => {
+                                          const configToCopy = details.configuration?.additionalParams?.sparse_attention_config ?? { name: 'DenseAttention', description: 'Standard full attention mechanism.' };
+                                          handleCopy(
+                                            JSON.stringify(configToCopy, jsonReplacer, 2),
+                                            `${ranking.llm.id}-${ranking.baseline.id}-${datasetId}`
+                                          );
+                                        }}
+                                        className="text-xs text-gray-400 hover:text-white transition-colors"
+                                      >
+                                        {copiedKey === `${ranking.llm.id}-${ranking.baseline.id}-${datasetId}` ? 'Copied!' : 'Copy'}
+                                      </button>
+                                    </div>
                                     <pre className="text-xs text-gray-300 font-mono overflow-x-auto">
-{`{
-  "sparse_attention_config": {
-    "method": "${ranking.baseline.name}",
-    "sparsity": ${details.sparsity || 0},
-    "aux_memory": ${details.auxMemory || 0}
-  }
-}`}
+{details.configuration?.additionalParams?.sparse_attention_config
+  ? JSON.stringify(details.configuration.additionalParams.sparse_attention_config, jsonReplacer, 2)
+  : JSON.stringify({ name: 'DenseAttention', description: 'Standard full attention mechanism.' }, null, 2)
+}
                                     </pre>
                                   </div>
                                 </td>
@@ -278,13 +308,13 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
                                 </span>
                               </td>
                               <td className="w-[10%] px-4 py-3 text-right text-sm text-gray-400">
-                                {details.localErrors || 0}
+                                {details.localError?.toPrecision(2) || '-'}
                               </td>
                               <td className="w-[10%] px-4 py-3 text-right text-sm text-gray-400">
                                 {details.sparsity?.toFixed(2) || '-'}
                               </td>
                               <td className="w-[10%] px-4 py-3 text-right text-sm text-gray-400">
-                                {details.auxMemory || '-'}
+                                {details.auxMemory?.toLocaleString() || '-'}
               </td>
                             </tr>
                                             );

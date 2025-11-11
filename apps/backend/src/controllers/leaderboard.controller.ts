@@ -5,7 +5,7 @@ import { LeaderboardService } from '../services/LeaderboardService';
 export class LeaderboardController {
   constructor(private leaderboardService: LeaderboardService) {}
 
-  getDatasetLeaderboard = async (req: Request, res: Response): Promise<void> => {
+  public getDatasetLeaderboard = async (req: Request, res: Response): Promise<void> => {
     try {
       const { datasetId } = req.params;
       const { 
@@ -62,7 +62,7 @@ export class LeaderboardController {
     }
   };
 
-  getOverallLeaderboard = async (req: Request, res: Response): Promise<void> => {
+  public getOverallLeaderboard = async (req: Request, res: Response): Promise<void> => {
     try {
       const { 
         experimentalRunId, 
@@ -116,7 +116,7 @@ export class LeaderboardController {
     }
   };
 
-  getOverviewStats = async (req: Request, res: Response): Promise<void> => {
+  public getOverviewStats = async (req: Request, res: Response): Promise<void> => {
     try {
       const stats = await this.leaderboardService.getOverviewStats();
       res.json(stats);
@@ -125,7 +125,7 @@ export class LeaderboardController {
     }
   };
 
-  getAvailableSparsityValues = async (req: Request, res: Response): Promise<void> => {
+  public getAvailableSparsityValues = async (req: Request, res: Response): Promise<void> => {
     try {
       const values = await this.leaderboardService.getAvailableSparsityValues();
       res.json(values);
@@ -134,7 +134,7 @@ export class LeaderboardController {
     }
   };
 
-  getAvailableAuxMemoryValues = async (req: Request, res: Response): Promise<void> => {
+  public getAvailableAuxMemoryValues = async (req: Request, res: Response): Promise<void> => {
     try {
       const values = await this.leaderboardService.getAvailableAuxMemoryValues();
       res.json(values);

@@ -41,6 +41,16 @@ export function useOverviewStats() {
   });
 }
 
+export function usePlotData(params?: {
+  targetSparsity?: NumericRange;
+  targetAuxMemory?: NumericRange;
+}) {
+  return useQuery<DatasetRanking[], Error>({
+    queryKey: ['leaderboard', 'plot-data', params],
+    queryFn: () => api.leaderboards.getPlotData(params),
+  });
+}
+
 export function useAvailableSparsityValues() {
   return useQuery<number[], Error>({
     queryKey: ['leaderboard', 'filters', 'sparsity'],

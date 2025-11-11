@@ -28,7 +28,8 @@ export function DatasetCard({ dataset, topEntries, benchmark }: DatasetCardProps
       </div>
 
       <div className="space-y-2">
-        {topEntries.slice(0, 5).map((entry, idx) => (
+        <div className="text-xs uppercase text-gray-500 font-semibold tracking-wider">Top Performers</div>
+        {topEntries.slice(0, 3).map((entry, idx) => (
           <div 
             key={entry.configurationId}
             className="flex items-center justify-between py-2 border-b border-dark-border last:border-0"
@@ -54,9 +55,13 @@ export function DatasetCard({ dataset, topEntries, benchmark }: DatasetCardProps
         ))}
       </div>
 
-      <div className="mt-4 pt-4 border-t border-dark-border">
+      <div className="mt-4 pt-4 border-t border-dark-border flex justify-between items-center">
+        <div className="text-sm">
+          <span className="font-semibold text-white">{dataset.configurationCount || 0}</span>
+          <span className="text-gray-400"> configurations</span>
+        </div>
         <span className="text-xs text-accent-gold hover:underline">
-          View full description →
+          View leaderboard →
         </span>
       </div>
     </Link>

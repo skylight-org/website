@@ -150,6 +150,37 @@ export const api = {
         : '';
       return fetchApi(`/leaderboards/overall${query}`);
     },
+    getPlotData: (params?: {
+      targetSparsity?: NumericRange;
+      targetAuxMemory?: NumericRange;
+    }): Promise<DatasetRanking[]> => {
+      const queryParams: Record<string, string> = {};
+      
+      // Handle sparsity range
+      if (params?.targetSparsity) {
+        if (params.targetSparsity.min !== undefined) {
+          queryParams.targetSparsityMin = params.targetSparsity.min.toString();
+        }
+        if (params.targetSparsity.max !== undefined) {
+          queryParams.targetSparsityMax = params.targetSparsity.max.toString();
+        }
+      }
+      
+      // Handle aux memory range
+      if (params?.targetAuxMemory) {
+        if (params.targetAuxMemory.min !== undefined) {
+          queryParams.targetAuxMemoryMin = params.targetAuxMemory.min.toString();
+        }
+        if (params.targetAuxMemory.max !== undefined) {
+          queryParams.targetAuxMemoryMax = params.targetAuxMemory.max.toString();
+        }
+      }
+      
+      const query = Object.keys(queryParams).length > 0
+        ? `?${new URLSearchParams(queryParams).toString()}`
+        : '';
+      return fetchApi(`/leaderboards/plot-data${query}`);
+    },
     getOverview: (): Promise<OverviewStats> => fetchApi('/leaderboards/overview'),
     getAvailableSparsityValues: (): Promise<number[]> => fetchApi('/leaderboards/filters/sparsity'),
     getAvailableAuxMemoryValues: (): Promise<number[]> => fetchApi('/leaderboards/filters/aux-memory'),
