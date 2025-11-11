@@ -7,10 +7,9 @@ import { Footer } from './components/common/Footer';
 import { OverviewPage } from './pages/OverviewPage';
 import { DatasetsPage } from './pages/DatasetsPage';
 import { DatasetDetailPage } from './pages/DatasetDetailPage';
-import { ComparisonPage } from './pages/ComparisonPage';
 import { DocumentationPage } from './pages/DocumentationPage';
 import { DocumentationBaselinesPage } from './pages/DocumentationBaselinesPage';
-import { DocumentationDatasetsPage } from './pages/DocumentationDatasetsPage';
+import { DocumentationAuxMemoryPage } from './pages/DocumentationAuxMemoryPage';
 import { BaselineDetailPage } from './pages/BaselineDetailPage';
 import { ContributePage } from './pages/ContributePage';
 
@@ -50,12 +49,11 @@ function AppContent() {
           <Routes>
             <Route path="/website" element={<OverviewPage />} />
             <Route path="/datasets" element={<DatasetsPage />} />
-            <Route path="/comparison" element={<ComparisonPage />} />
+            <Route path="/datasets/:datasetId" element={<DatasetDetailPage />} />
             <Route path="/documentation" element={<DocumentationPage />} />
             <Route path="/documentation/baselines" element={<DocumentationBaselinesPage />} />
             <Route path="/documentation/baselines/:baselineId" element={<BaselineDetailPage />} />
-            <Route path="/documentation/datasets" element={<DocumentationDatasetsPage />} />
-            <Route path="/documentation/datasets/:datasetId" element={<DatasetDetailPage />} />
+            <Route path="/documentation/auxiliary-memory" element={<DocumentationAuxMemoryPage />} />
             <Route path="/contribute" element={<ContributePage />} />
           </Routes>
           <Footer />

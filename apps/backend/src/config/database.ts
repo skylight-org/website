@@ -34,7 +34,7 @@ export function initializeSupabase(): SupabaseClient {
 }
 
 /**
- * Get existing Supabase client instance
+ * Get Supabase client
  * Initializes the client if not already done
  */
 export function getSupabaseClient(): SupabaseClient {

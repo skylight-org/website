@@ -57,7 +57,6 @@ export function Header() {
 
   const navItems = [
     { path: '/website', label: 'Overview' },
-    { path: '/comparison', label: 'Comparison' },
   ];
 
   return (

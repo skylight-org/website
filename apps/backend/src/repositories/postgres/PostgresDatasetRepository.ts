@@ -1,6 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { IDatasetRepository } from '../interfaces/IDatasetRepository';
-import { Dataset } from '../../models/Dataset';
+import type { Dataset } from '@sky-light/shared-types';
 
 /**
  * PostgreSQL implementation of DatasetRepository using Supabase
@@ -11,7 +11,10 @@ export class PostgresDatasetRepository implements IDatasetRepository {
   async findAll(): Promise<Dataset[]> {
     const { data, error } = await this.supabase
       .from('datasets')
-      .select('*')
+      .select(`
+        *,
+        configurations(count)
+      `)
       .order('name', { ascending: true });
 
     if (error) {
@@ -62,6 +65,7 @@ export class PostgresDatasetRepository implements IDatasetRepository {
       name: row.name,
       description: row.description || '',
       size: row.size,
+      configurationCount: Array.isArray(row.configurations) ? row.configurations[0]?.count ?? 0 : 0,
       createdAt: new Date(row.created_at),
       updatedAt: new Date(row.updated_at),
     };

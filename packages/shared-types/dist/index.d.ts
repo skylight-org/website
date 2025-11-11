@@ -22,6 +22,7 @@ export interface Dataset {
     name: string;
     description: string;
     size?: number;
+    configurationCount?: number;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -74,7 +75,7 @@ export interface ExperimentalRun {
 export interface Result {
     id: string;
     configurationId: string;
-    metricId: string;
+    datasetMetricId: string;
     experimentalRunId?: string;
     value: number;
     standardDeviation?: number;
@@ -99,6 +100,9 @@ export interface DatasetRanking {
     configurationId: string;
     score: number;
     metricValues: Record<string, number>;
+    targetSparsity?: number;
+    targetAuxMemory?: number;
+    configuration: Configuration;
 }
 export interface AggregatedRanking {
     rank: number;
@@ -108,9 +112,20 @@ export interface AggregatedRanking {
     overallScore: number;
     datasetRanks: Record<string, number>;
     datasetScores: Record<string, number>;
+    datasetDetails: Record<string, {
+        sparsity?: number;
+        auxMemory?: number;
+        localError?: number;
+        configuration: Configuration;
+    }>;
     numDatasets: number;
+    totalNumDatasets: number;
     bestDatasetRank: number;
     worstDatasetRank: number;
+    targetSparsity?: number;
+    targetAuxMemory?: number;
+    avgLocalError?: number;
+    avgTargetSparsity?: number;
 }
 export interface NumericRange {
     min?: number;

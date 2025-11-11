@@ -20,8 +20,13 @@ export function Breadcrumb() {
   // Build breadcrumbs based on path
   if (pathSegments[0] === 'datasets') {
     breadcrumbs.push({ label: 'Datasets', path: '/datasets' });
-  } else if (pathSegments[0] === 'comparison') {
-    breadcrumbs.push({ label: 'Comparison', path: '/comparison' });
+    // If viewing a specific dataset
+    if (pathSegments.length === 2 && datasets) {
+      const dataset = datasets.find(d => d.id === pathSegments[1]);
+      if (dataset) {
+        breadcrumbs.push({ label: dataset.name, path: location.pathname });
+      }
+    }
   } else if (pathSegments[0] === 'contribute') {
     breadcrumbs.push({ label: 'Contribute', path: '/contribute' });
   } else if (pathSegments[0] === 'documentation') {
@@ -34,15 +39,6 @@ export function Breadcrumb() {
         const baseline = baselines.find(b => b.id === pathSegments[2]);
         if (baseline) {
           breadcrumbs.push({ label: baseline.name, path: location.pathname });
-        }
-      }
-    } else if (pathSegments[1] === 'datasets') {
-      breadcrumbs.push({ label: 'Datasets', path: '/documentation/datasets' });
-      // If viewing a specific dataset
-      if (pathSegments.length === 3 && datasets) {
-        const dataset = datasets.find(d => d.id === pathSegments[2]);
-        if (dataset) {
-          breadcrumbs.push({ label: dataset.name, path: location.pathname });
         }
       }
     }

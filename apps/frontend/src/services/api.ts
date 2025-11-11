@@ -12,7 +12,8 @@ import type {
 } from '@sky-light/shared-types';
 
 // Use environment variable for API URL, fallback to local proxy for development
-const API_BASE_URL = "https://skynetbackend.duckdns.org/api/v1"
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1"
+// const API_BASE_URL = "https://skynetbackend.duckdns.org/api/v1"
 
 export class ApiError extends Error {
   constructor(
@@ -77,14 +78,12 @@ export const api = {
     getDataset: (
       datasetId: string, 
       params?: { 
-        experimentalRunId?: string;
         targetSparsity?: NumericRange;
         targetAuxMemory?: NumericRange;
         llmId?: string;
       }
     ): Promise<DatasetRanking[]> => {
       const queryParams: Record<string, string> = {};
-      if (params?.experimentalRunId) queryParams.experimentalRunId = params.experimentalRunId;
       
       // Handle sparsity range
       if (params?.targetSparsity) {
@@ -149,6 +148,37 @@ export const api = {
         ? `?${new URLSearchParams(queryParams).toString()}` 
         : '';
       return fetchApi(`/leaderboards/overall${query}`);
+    },
+    getPlotData: (params?: {
+      targetSparsity?: NumericRange;
+      targetAuxMemory?: NumericRange;
+    }): Promise<DatasetRanking[]> => {
+      const queryParams: Record<string, string> = {};
+      
+      // Handle sparsity range
+      if (params?.targetSparsity) {
+        if (params.targetSparsity.min !== undefined) {
+          queryParams.targetSparsityMin = params.targetSparsity.min.toString();
+        }
+        if (params.targetSparsity.max !== undefined) {
+          queryParams.targetSparsityMax = params.targetSparsity.max.toString();
+        }
+      }
+      
+      // Handle aux memory range
+      if (params?.targetAuxMemory) {
+        if (params.targetAuxMemory.min !== undefined) {
+          queryParams.targetAuxMemoryMin = params.targetAuxMemory.min.toString();
+        }
+        if (params.targetAuxMemory.max !== undefined) {
+          queryParams.targetAuxMemoryMax = params.targetAuxMemory.max.toString();
+        }
+      }
+      
+      const query = Object.keys(queryParams).length > 0
+        ? `?${new URLSearchParams(queryParams).toString()}`
+        : '';
+      return fetchApi(`/leaderboards/plot-data${query}`);
     },
     getOverview: (): Promise<OverviewStats> => fetchApi('/leaderboards/overview'),
     getAvailableSparsityValues: (): Promise<number[]> => fetchApi('/leaderboards/filters/sparsity'),

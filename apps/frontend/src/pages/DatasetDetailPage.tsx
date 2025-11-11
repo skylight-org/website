@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import type { NumericRange } from '@sky-light/shared-types';
-import { useDatasetLeaderboard, useAvailableSparsityValues, useAvailableAuxMemoryValues } from '../hooks/useLeaderboard';
+import { useDatasetLeaderboard } from '../hooks/useLeaderboard';
 import { useDatasets } from '../hooks/useDatasets';
 import { useBenchmarks } from '../hooks/useBenchmarks';
 import { useDatasetMetrics } from '../hooks/useMetrics';
@@ -9,25 +9,31 @@ import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import { LeaderboardTable } from '../components/leaderboard/LeaderboardTable';
 import { Breadcrumb } from '../components/common/Breadcrumb';
-import { RangeFilter } from '../components/common/RangeFilter';
+import { TextRangeFilter } from '../components/common/TextRangeFilter';
 import { MultiSelectFilter } from '../components/common/MultiSelectFilter';
 
 export function DatasetDetailPage() {
   const { datasetId } = useParams<{ datasetId: string }>();
   const [selectedLlms, setSelectedLlms] = useState<string[]>([]);
-  const [sparsityFilter, setSparsityFilter] = useState<NumericRange | undefined>(undefined);
+  const [densityFilter, setDensityFilter] = useState<NumericRange | undefined>(undefined);
   const [auxMemoryFilter, setAuxMemoryFilter] = useState<NumericRange | undefined>(undefined);
+  
+  // Local state for text inputs
+  const [localDensityMin, setLocalDensityMin] = useState<string>('');
+  const [localDensityMax, setLocalDensityMax] = useState<string>('');
+  const [localAuxMemoryMin, setLocalAuxMemoryMin] = useState<string>('');
+  const [localAuxMemoryMax, setLocalAuxMemoryMax] = useState<string>('');
 
   const { data: datasets } = useDatasets();
   const { data: benchmarks } = useBenchmarks();
   const { data: metrics, isLoading: metricsLoading } = useDatasetMetrics(datasetId);
-  const { data: sparsityValues, isLoading: sparsityLoading } = useAvailableSparsityValues();
-  const { data: auxMemoryValues, isLoading: auxMemoryLoading } = useAvailableAuxMemoryValues();
   
   const { data: entries, isLoading: entriesLoading, error } = useDatasetLeaderboard(datasetId, {
-    targetSparsity: sparsityFilter,
+    targetSparsity: densityFilter,
     targetAuxMemory: auxMemoryFilter,
   });
+  
+  console.log('DatasetDetailPage entries:', entries);
 
   const dataset = datasets?.find(d => d.id === datasetId);
   const benchmark = benchmarks?.find(b => b.id === dataset?.benchmarkId);
@@ -36,9 +42,21 @@ export function DatasetDetailPage() {
 
   useEffect(() => {
     if (uniqueLlms.length > 0 && selectedLlms.length === 0) {
-      setSelectedLlms([uniqueLlms[0]]);
+      setSelectedLlms(uniqueLlms);
     }
-  }, [uniqueLlms.length]);
+  }, [uniqueLlms]);
+  
+  // Sync local state with density filter when it changes
+  useEffect(() => {
+    setLocalDensityMin(densityFilter?.min?.toString() ?? '');
+    setLocalDensityMax(densityFilter?.max?.toString() ?? '');
+  }, [densityFilter]);
+  
+  // Sync local state with auxiliary memory filter when it changes
+  useEffect(() => {
+    setLocalAuxMemoryMin(auxMemoryFilter?.min?.toString() ?? '');
+    setLocalAuxMemoryMax(auxMemoryFilter?.max?.toString() ?? '');
+  }, [auxMemoryFilter]);
 
   const isLoading = entriesLoading || metricsLoading;
 
@@ -51,6 +69,42 @@ export function DatasetDetailPage() {
   }
 
   const filteredEntries = entries?.filter(e => selectedLlms.includes(e.llm.name));
+  
+  const handleApplyFilters = () => {
+    // Apply density filter
+    const densityMin = localDensityMin === '' ? 0 : parseFloat(localDensityMin);
+    const densityMax = localDensityMax === '' ? 100.0 : parseFloat(localDensityMax);
+    
+    if (!isNaN(densityMin) && !isNaN(densityMax)) {
+      if (densityMin === 0 && densityMax === 100.0) {
+        setDensityFilter(undefined);
+      } else {
+        setDensityFilter({ min: densityMin, max: densityMax });
+      }
+    }
+    
+    // Apply auxiliary memory filter
+    const auxMin = localAuxMemoryMin === '' ? 0 : parseFloat(localAuxMemoryMin);
+    const auxMax = localAuxMemoryMax === '' ? 2048 : parseInt(localAuxMemoryMax, 10);
+    
+    if (!isNaN(auxMin) && !isNaN(auxMax)) {
+      if (auxMin === 0 && auxMax === 2048) {
+        setAuxMemoryFilter(undefined);
+      } else {
+        setAuxMemoryFilter({ min: auxMin, max: auxMax });
+      }
+    }
+  };
+  
+  const handleClearFilters = () => {
+    setSelectedLlms(uniqueLlms);
+    setDensityFilter(undefined);
+    setAuxMemoryFilter(undefined);
+    setLocalDensityMin('');
+    setLocalDensityMax('');
+    setLocalAuxMemoryMin('');
+    setLocalAuxMemoryMax('');
+  };
 
   return (
     <div className="space-y-8">
@@ -97,8 +151,27 @@ export function DatasetDetailPage() {
 
       {/* Filters */}
       <div className="bg-dark-surface border border-dark-border rounded-lg p-6">
-        <h3 className="text-sm font-semibold text-accent-gold mb-4">Filters</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="flex items-center justify-between gap-4 mb-4">
+          <h3 className="text-sm font-semibold text-accent-gold">Filters</h3>
+          {/* Filter Action Buttons */}
+          <div className="flex gap-2">
+            <button
+              onClick={handleApplyFilters}
+              className="px-4 py-2 rounded-lg bg-accent-gold text-dark-bg hover:bg-accent-gold/90 transition-colors font-medium text-sm"
+            >
+              Apply
+            </button>
+            {(selectedLlms.length !== 1 || selectedLlms[0] !== uniqueLlms[0] || densityFilter !== undefined || auxMemoryFilter !== undefined || localDensityMin !== '' || localDensityMax !== '' || localAuxMemoryMin !== '' || localAuxMemoryMax !== '') && (
+              <button
+                onClick={handleClearFilters}
+                className="px-4 py-2 rounded-lg bg-dark-bg border border-dark-border text-gray-300 hover:border-accent-gold hover:text-accent-gold transition-colors text-sm"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* LLM Filter */}
           <MultiSelectFilter
             label="LLM"
@@ -108,45 +181,30 @@ export function DatasetDetailPage() {
           />
 
           {/* Sparsity Range Filter */}
-          <RangeFilter
-            label="Target Sparsity Range"
-            value={sparsityFilter}
-            onChange={setSparsityFilter}
-            options={sparsityValues || []}
-            formatValue={(v) => `${v}%`}
-            placeholder="All"
-            isLoading={sparsityLoading}
-          />
+          <div onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}>
+            <TextRangeFilter
+              label="Target Density Range (%)"
+              minValue={localDensityMin}
+              maxValue={localDensityMax}
+              onMinChange={setLocalDensityMin}
+              onMaxChange={setLocalDensityMax}
+              minDefault={0}
+              maxDefault={100.0}
+            />
+          </div>
 
           {/* Aux Memory Range Filter */}
-          <RangeFilter
-            label="Auxiliary Memory Range"
-            value={auxMemoryFilter}
-            onChange={setAuxMemoryFilter}
-            options={auxMemoryValues || []}
-            formatValue={(v) => {
-              if (v >= 1024) return `${(v / 1024).toFixed(1)}K`;
-              return v.toString();
-            }}
-            placeholder="All"
-            isLoading={auxMemoryLoading}
-          />
-
-          {/* Clear Filters Button */}
-          {(selectedLlms.length !== 1 || selectedLlms[0] !== uniqueLlms[0] || sparsityFilter !== undefined || auxMemoryFilter !== undefined) && (
-            <div className="flex items-end">
-              <button
-                onClick={() => {
-                  setSelectedLlms(uniqueLlms.length > 0 ? [uniqueLlms[0]] : []);
-                  setSparsityFilter(undefined);
-                  setAuxMemoryFilter(undefined);
-                }}
-                className="px-4 py-2 rounded-lg bg-dark-bg border border-dark-border text-gray-300 hover:border-accent-gold hover:text-accent-gold transition-colors w-full"
-              >
-                Clear Filters
-              </button>
-            </div>
-          )}
+          <div onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}>
+            <TextRangeFilter
+              label="Auxiliary Memory Range"
+              minValue={localAuxMemoryMin}
+              maxValue={localAuxMemoryMax}
+              onMinChange={setLocalAuxMemoryMin}
+              onMaxChange={setLocalAuxMemoryMax}
+              minDefault={0}
+              maxDefault={2048}
+            />
+          </div>
         </div>
       </div>
 

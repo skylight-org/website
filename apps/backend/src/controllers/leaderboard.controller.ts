@@ -5,16 +5,15 @@ import { LeaderboardService } from '../services/LeaderboardService';
 export class LeaderboardController {
   constructor(private leaderboardService: LeaderboardService) {}
 
-  getDatasetLeaderboard = async (req: Request, res: Response): Promise<void> => {
+  public getDatasetLeaderboard = async (req: Request, res: Response): Promise<void> => {
     try {
       const { datasetId } = req.params;
-      const { 
-        experimentalRunId, 
+      const {
         targetSparsityMin,
         targetSparsityMax,
         targetAuxMemoryMin,
         targetAuxMemoryMax,
-        llmId 
+        llmId
       } = req.query;
 
       const filters: {
@@ -45,9 +44,15 @@ export class LeaderboardController {
 
       const leaderboard = await this.leaderboardService.getDatasetLeaderboard(
         datasetId,
-        experimentalRunId as string | undefined,
         Object.keys(filters).length > 0 ? filters : undefined
       );
+
+      // Debug: Log first entry to check average_local_error in metricValues
+      if (leaderboard.length > 0) {
+        console.log('DEBUG DatasetLeaderboardController: First leaderboard entry');
+        console.log('  - metricValues:', leaderboard[0].metricValues);
+        console.log('  - Has average_local_error?', 'average_local_error' in leaderboard[0].metricValues);
+      }
 
       res.json(leaderboard);
     } catch (error) {
@@ -55,21 +60,22 @@ export class LeaderboardController {
     }
   };
 
-  getOverallLeaderboard = async (req: Request, res: Response): Promise<void> => {
+  public getOverallLeaderboard = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { 
-        experimentalRunId, 
-        benchmarkId, 
-        llmId,
+      const {
+        experimentalRunId,
+        benchmarkId,
         targetSparsityMin,
         targetSparsityMax,
         targetAuxMemoryMin,
-        targetAuxMemoryMax
+        targetAuxMemoryMax,
+        llmId,
       } = req.query;
 
       const filters: {
         targetSparsity?: NumericRange;
         targetAuxMemory?: NumericRange;
+        llmId?: string;
       } = {};
 
       // Parse sparsity range
@@ -88,12 +94,21 @@ export class LeaderboardController {
         };
       }
 
+      if (llmId) {
+        filters.llmId = llmId as string;
+      }
+
       const leaderboard = await this.leaderboardService.getOverallLeaderboard(
-        experimentalRunId as string | undefined,
         benchmarkId as string | undefined,
-        llmId as string | undefined,
         Object.keys(filters).length > 0 ? filters : undefined
       );
+
+      // Debug: Log first entry to check avgLocalError
+      if (leaderboard.length > 0) {
+        console.log('DEBUG LeaderboardController: First leaderboard entry');
+        console.log('  - avgLocalError:', leaderboard[0].avgLocalError);
+        console.log('  - avgSparsity:', leaderboard[0].avgSparsity);
+      }
 
       res.json(leaderboard);
     } catch (error) {
@@ -102,7 +117,7 @@ export class LeaderboardController {
     }
   };
 
-  getOverviewStats = async (req: Request, res: Response): Promise<void> => {
+  public getOverviewStats = async (req: Request, res: Response): Promise<void> => {
     try {
       const stats = await this.leaderboardService.getOverviewStats();
       res.json(stats);
@@ -111,7 +126,7 @@ export class LeaderboardController {
     }
   };
 
-  getAvailableSparsityValues = async (req: Request, res: Response): Promise<void> => {
+  public getAvailableSparsityValues = async (req: Request, res: Response): Promise<void> => {
     try {
       const values = await this.leaderboardService.getAvailableSparsityValues();
       res.json(values);
@@ -120,7 +135,7 @@ export class LeaderboardController {
     }
   };
 
-  getAvailableAuxMemoryValues = async (req: Request, res: Response): Promise<void> => {
+  public getAvailableAuxMemoryValues = async (req: Request, res: Response): Promise<void> => {
     try {
       const values = await this.leaderboardService.getAvailableAuxMemoryValues();
       res.json(values);

@@ -5,13 +5,15 @@ interface MultiSelectFilterProps {
   options: string[];
   selectedValues: string[];
   onChange: (values: string[]) => void;
+  className?: string;
 }
 
 export function MultiSelectFilter({
   label,
   options,
   selectedValues,
-  onChange
+  onChange,
+  className = ''
 }: MultiSelectFilterProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -51,7 +53,7 @@ export function MultiSelectFilter({
     : `${selectedValues.length} selected`;
 
   return (
-    <div className="flex flex-col gap-2" ref={dropdownRef}>
+    <div className={`flex flex-col gap-2 ${className}`} ref={dropdownRef}>
       <label className="text-sm font-medium text-gray-300">{label}</label>
       <div className="relative">
         <button

@@ -4,7 +4,7 @@ export class Result implements IResult {
   constructor(
     public id: string,
     public configurationId: string,
-    public metricId: string,
+    public datasetMetricId: string,
     public value: number,
     public createdAt: Date,
     public experimentalRunId?: string,
