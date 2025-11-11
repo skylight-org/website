@@ -8,7 +8,10 @@ interface LeaderboardTableProps {
 }
 
 export function LeaderboardTable({ entries, metrics = [] }: LeaderboardTableProps) {
-  const { sortedData, sortConfig, requestSort } = useSortableData(entries);
+  const { sortedData, sortConfig, requestSort } = useSortableData(entries, {
+    key: 'score',
+    direction: 'desc',
+  });
 
   console.log('LeaderboardTable entries:', entries);
   console.log('LeaderboardTable metrics:', metrics);
@@ -25,7 +28,9 @@ export function LeaderboardTable({ entries, metrics = [] }: LeaderboardTableProp
     );
   }
 
-  const metricNames = Object.keys(entries[0]?.metricValues || {});
+  const metricNames = Object.keys(entries[0]?.metricValues || {}).filter(
+    name => name !== 'average_density' && name !== 'average_local_error'
+  );
 
   return (
     <div className="overflow-x-auto">
@@ -61,8 +66,8 @@ export function LeaderboardTable({ entries, metrics = [] }: LeaderboardTableProp
               align="right"
             />
             <SortableHeader
-              label="Sparsity (%)"
-              sortKey="targetSparsity"
+              label="Avg Density (%)"
+              sortKey="metricValues.average_density"
               sortConfig={sortConfig}
               onSort={requestSort}
               align="right"
@@ -125,8 +130,9 @@ export function LeaderboardTable({ entries, metrics = [] }: LeaderboardTableProp
                 <span className="font-semibold text-accent-gold text-lg">{entry.score.toFixed(2)}</span>
               </td>
               <td className="px-4 py-4 text-right text-sm text-gray-300">
-                {entry.targetSparsity !== undefined && entry.targetSparsity !== null
-                  ? entry.targetSparsity.toFixed(2)
+                {entry.metricValues.average_density !== undefined &&
+                entry.metricValues.average_density !== null
+                  ? entry.metricValues.average_density.toFixed(2)
                   : '-'}
               </td>
               <td className="px-4 py-4 text-right text-sm text-gray-300">

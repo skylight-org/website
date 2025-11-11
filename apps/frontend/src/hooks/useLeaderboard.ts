@@ -22,7 +22,7 @@ export function useOverallLeaderboard(params?: {
   experimentalRunId?: string; 
   benchmarkId?: string; 
   llmId?: string;
-  targetDensity?: NumericRange;
+  targetSparsity?: NumericRange;
   targetAuxMemory?: NumericRange;
 }) {
   return useQuery<AggregatedRanking[], Error>({

@@ -13,6 +13,7 @@ export function OverviewPage() {
   const [densityFilter, setDensityFilter] = useState<NumericRange | undefined>(undefined);
   const [auxMemoryFilter, setAuxMemoryFilter] = useState<NumericRange | undefined>(undefined);
   const [selectedLlms, setSelectedLlms] = useState<string[]>([]);
+  const [showAll, setShowAll] = useState(false); // Default to showing only complete runs
   
   // Local state for text inputs to sync with TextRangeFilter
   const [localDensityMin, setLocalDensityMin] = useState('');
@@ -25,7 +26,7 @@ export function OverviewPage() {
     isLoading: rankingsLoading, 
     error: rankingsError 
   } = useOverallLeaderboard({
-    targetDensity: densityFilter,
+    targetSparsity: densityFilter,
     targetAuxMemory: auxMemoryFilter,
   });
   const { data: llms, isLoading: llmsLoading, error: llmsError } = useLLMs();
@@ -45,12 +46,19 @@ export function OverviewPage() {
   const filteredRankings = useMemo(() => {
     if (!rankings) return [];
     
+    let filtered = rankings;
+
+    // Filter by "Show only complete" toggle (now inverted logic)
+    if (!showAll) {
+      filtered = filtered.filter(ranking => ranking.numDatasets === ranking.totalNumDatasets);
+    }
+
     // Filter by selected LLMs client-side
     if (llmOptions.length > 0 && selectedLlms.length === 0) {
-      return rankings; // Show all if no models are specifically selected yet
+      return filtered; // Show all if no models are specifically selected yet
     }
-    return rankings.filter(ranking => selectedLlms.includes(ranking.llm.name));
-  }, [rankings, selectedLlms, llmOptions]);
+    return filtered.filter(ranking => selectedLlms.includes(ranking.llm.name));
+  }, [rankings, selectedLlms, llmOptions, showAll]);
 
   const handleApplyFilters = () => {
     setDensityFilter({
@@ -126,51 +134,71 @@ export function OverviewPage() {
       )}
 
       {/* Filters Section */}
-      <div className="bg-dark-surface border border-dark-border rounded-lg p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-bold text-white">Filters</h3>
-          <div>
-            <button
-              onClick={handleApplyFilters}
-              className="px-4 py-2 rounded-lg text-sm font-medium bg-accent-gold text-dark-bg hover:bg-accent-gold/90 transition-colors mr-2"
-            >
-              Apply
-            </button>
-            <button
-              onClick={handleClearFilters}
-              className="px-4 py-2 rounded-lg text-sm font-medium bg-dark-bg text-gray-300 hover:text-white hover:bg-dark-surface-hover transition-colors"
-            >
-              Clear
-            </button>
+      <form onSubmit={(e) => { e.preventDefault(); handleApplyFilters(); }}>
+        <div className="bg-dark-surface border border-dark-border rounded-lg p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-bold text-white">Filters</h3>
+            <div>
+              <button
+                type="submit"
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-accent-gold text-dark-bg hover:bg-accent-gold/90 transition-colors mr-2"
+              >
+                Apply
+              </button>
+              <button
+                type="button"
+                onClick={handleClearFilters}
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-dark-bg text-gray-300 hover:text-white hover:bg-dark-surface-hover transition-colors"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <MultiSelectFilter
+              className="md:col-span-2 lg:col-span-2"
+              label="Models"
+              options={llmOptions}
+              selectedValues={selectedLlms}
+              onChange={setSelectedLlms}
+            />
+            <TextRangeFilter
+              label="Filter by Density (%)"
+              minValue={localDensityMin}
+              maxValue={localDensityMax}
+              onMinChange={setLocalDensityMin}
+              onMaxChange={setLocalDensityMax}
+              minDefault={0}
+              maxDefault={100}
+            />
+            <TextRangeFilter
+              label="Filter by Aux Memory"
+              minValue={localAuxMemoryMin}
+              maxValue={localAuxMemoryMax}
+              onMinChange={setLocalAuxMemoryMin}
+              onMaxChange={setLocalAuxMemoryMax}
+              minDefault={0}
+              maxDefault={2048}
+            />
+            <div className="flex items-center justify-center pt-6">
+              <label htmlFor="showAll" className="flex items-center cursor-pointer text-sm text-gray-300">
+                <div className="relative">
+                  <input 
+                    type="checkbox" 
+                    id="showAll" 
+                    className="sr-only" 
+                    checked={showAll}
+                    onChange={() => setShowAll(!showAll)}
+                  />
+                  <div className="block bg-dark-bg w-14 h-8 rounded-full border border-dark-border"></div>
+                  <div className={`dot absolute left-1 top-1 bg-gray-400 w-6 h-6 rounded-full transition-transform ${showAll ? 'translate-x-6 bg-accent-gold' : ''}`}></div>
+                </div>
+                <div className="ml-3">Show All</div>
+              </label>
+            </div>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <MultiSelectFilter
-            label="Models"
-            options={llmOptions}
-            selectedValues={selectedLlms}
-            onChange={setSelectedLlms}
-          />
-          <TextRangeFilter
-            label="Filter by Density (%)"
-            minValue={localDensityMin}
-            maxValue={localDensityMax}
-            onMinChange={setLocalDensityMin}
-            onMaxChange={setLocalDensityMax}
-            minDefault={0}
-            maxDefault={100}
-          />
-          <TextRangeFilter
-            label="Filter by Aux Memory"
-            minValue={localAuxMemoryMin}
-            maxValue={localAuxMemoryMax}
-            onMinChange={setLocalAuxMemoryMin}
-            onMaxChange={setLocalAuxMemoryMax}
-            minDefault={0}
-            maxDefault={2048}
-          />
-        </div>
-      </div>
+      </form>
 
       {/* Leaderboard Table Section */}
       <div className="bg-dark-surface border border-dark-border rounded-lg">

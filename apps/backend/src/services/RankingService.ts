@@ -33,7 +33,7 @@ export class RankingService {
   async calculateDatasetRanking(
     datasetId: string,
     filters?: {
-      targetDensity?: NumericRange;
+      targetSparsity?: NumericRange;
       targetAuxMemory?: NumericRange;
       llmId?: string;
     }

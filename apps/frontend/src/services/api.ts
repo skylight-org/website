@@ -12,8 +12,8 @@ import type {
 } from '@sky-light/shared-types';
 
 // Use environment variable for API URL, fallback to local proxy for development
-// const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1"
-const API_BASE_URL = "https://skynetbackend.duckdns.org/api/v1"
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1"
+// const API_BASE_URL = "https://skynetbackend.duckdns.org/api/v1"
 
 export class ApiError extends Error {
   constructor(
@@ -116,7 +116,7 @@ export const api = {
       experimentalRunId?: string; 
       benchmarkId?: string; 
       llmId?: string;
-      targetDensity?: NumericRange;
+      targetSparsity?: NumericRange;
       targetAuxMemory?: NumericRange;
     }): Promise<AggregatedRanking[]> => {
       const queryParams: Record<string, string> = {};
@@ -124,13 +124,13 @@ export const api = {
       if (params?.benchmarkId) queryParams.benchmarkId = params.benchmarkId;
       if (params?.llmId) queryParams.llmId = params.llmId;
       
-      // Handle density range
-      if (params?.targetDensity) {
-        if (params.targetDensity.min !== undefined) {
-          queryParams.targetDensityMin = params.targetDensity.min.toString();
+      // Handle sparsity range
+      if (params?.targetSparsity) {
+        if (params.targetSparsity.min !== undefined) {
+          queryParams.targetSparsityMin = params.targetSparsity.min.toString();
         }
-        if (params.targetDensity.max !== undefined) {
-          queryParams.targetDensityMax = params.targetDensity.max.toString();
+        if (params.targetSparsity.max !== undefined) {
+          queryParams.targetSparsityMax = params.targetSparsity.max.toString();
         }
       }
       

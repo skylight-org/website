@@ -407,6 +407,12 @@ class SupabaseUploader:
                         'unit': '%',
                         'higher_is_better': True
                     },
+                    'average_density': {
+                        'display_name': 'Average Density',
+                        'description': 'Average attention density across all layers',
+                        'unit': '%',
+                        'higher_is_better': False
+                    },
                 }
                 
         return definitions.get(name, {
@@ -758,6 +764,21 @@ class SupabaseUploader:
                     run_id=self.experimental_run_id,
                     value=record['average_local_error']
                 )
+
+            if 'average_density' in record and record['average_density'] is not None:
+                # Create/get the metric
+                density_metric_id = self.upsert_metric('average_density')
+                # Create dataset-metric relationship
+                density_dataset_metric_id = self.upsert_dataset_metric(
+                    dataset_id, density_metric_id, is_primary=False
+                )
+                # Insert the result, converting fraction to percentage
+                self.insert_result(
+                    config_id=config_id,
+                    dataset_metric_id=density_dataset_metric_id,
+                    run_id=self.experimental_run_id,
+                    value=record['average_density'] * 100
+                )
             
             # Also track overall_score if present
             if 'overall_score' in record and record['overall_score'] is not None:
@@ -839,6 +860,8 @@ class SupabaseUploader:
                 metrics_to_create.update(record.get('benchmark_metrics', {}).keys())
                 if 'average_local_error' in record and record['average_local_error'] is not None:
                     metrics_to_create.add('average_local_error')
+                if 'average_density' in record and record['average_density'] is not None:
+                    metrics_to_create.add('average_density')
                 if 'overall_score' in record and record['overall_score'] is not None:
                     metrics_to_create.add('overall_score')
             except KeyError:
@@ -873,6 +896,11 @@ class SupabaseUploader:
                 
                 if 'average_local_error' in record and record['average_local_error'] is not None:
                     metric_id = self.metric_cache.get('average_local_error')
+                    if metric_id:
+                        self.upsert_dataset_metric(dataset_id, metric_id, is_primary=False)
+
+                if 'average_density' in record and record['average_density'] is not None:
+                    metric_id = self.metric_cache.get('average_density')
                     if metric_id:
                         self.upsert_dataset_metric(dataset_id, metric_id, is_primary=False)
 

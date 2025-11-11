@@ -15,12 +15,12 @@ import { MultiSelectFilter } from '../components/common/MultiSelectFilter';
 export function DatasetDetailPage() {
   const { datasetId } = useParams<{ datasetId: string }>();
   const [selectedLlms, setSelectedLlms] = useState<string[]>([]);
-  const [sparsityFilter, setSparsityFilter] = useState<NumericRange | undefined>(undefined);
+  const [densityFilter, setDensityFilter] = useState<NumericRange | undefined>(undefined);
   const [auxMemoryFilter, setAuxMemoryFilter] = useState<NumericRange | undefined>(undefined);
   
   // Local state for text inputs
-  const [localSparsityMin, setLocalSparsityMin] = useState<string>('');
-  const [localSparsityMax, setLocalSparsityMax] = useState<string>('');
+  const [localDensityMin, setLocalDensityMin] = useState<string>('');
+  const [localDensityMax, setLocalDensityMax] = useState<string>('');
   const [localAuxMemoryMin, setLocalAuxMemoryMin] = useState<string>('');
   const [localAuxMemoryMax, setLocalAuxMemoryMax] = useState<string>('');
 
@@ -29,11 +29,10 @@ export function DatasetDetailPage() {
   const { data: metrics, isLoading: metricsLoading } = useDatasetMetrics(datasetId);
   
   const { data: entries, isLoading: entriesLoading, error } = useDatasetLeaderboard(datasetId, {
-    targetSparsity: sparsityFilter,
+    targetSparsity: densityFilter,
     targetAuxMemory: auxMemoryFilter,
   });
   
-  console.log('DatasetDetailPage metrics:', metrics);
   console.log('DatasetDetailPage entries:', entries);
 
   const dataset = datasets?.find(d => d.id === datasetId);
@@ -47,11 +46,11 @@ export function DatasetDetailPage() {
     }
   }, [uniqueLlms]);
   
-  // Sync local state with sparsity filter when it changes
+  // Sync local state with density filter when it changes
   useEffect(() => {
-    setLocalSparsityMin(sparsityFilter?.min?.toString() ?? '');
-    setLocalSparsityMax(sparsityFilter?.max?.toString() ?? '');
-  }, [sparsityFilter]);
+    setLocalDensityMin(densityFilter?.min?.toString() ?? '');
+    setLocalDensityMax(densityFilter?.max?.toString() ?? '');
+  }, [densityFilter]);
   
   // Sync local state with auxiliary memory filter when it changes
   useEffect(() => {
@@ -72,24 +71,24 @@ export function DatasetDetailPage() {
   const filteredEntries = entries?.filter(e => selectedLlms.includes(e.llm.name));
   
   const handleApplyFilters = () => {
-    // Apply sparsity filter
-    const sparsityMin = localSparsityMin === '' ? 0 : parseFloat(localSparsityMin);
-    const sparsityMax = localSparsityMax === '' ? 100.0 : parseFloat(localSparsityMax);
+    // Apply density filter
+    const densityMin = localDensityMin === '' ? 0 : parseFloat(localDensityMin);
+    const densityMax = localDensityMax === '' ? 100.0 : parseFloat(localDensityMax);
     
-    if (!isNaN(sparsityMin) && !isNaN(sparsityMax)) {
-      if (sparsityMin === 0 && sparsityMax === 100.0) {
-        setSparsityFilter(undefined);
+    if (!isNaN(densityMin) && !isNaN(densityMax)) {
+      if (densityMin === 0 && densityMax === 100.0) {
+        setDensityFilter(undefined);
       } else {
-        setSparsityFilter({ min: sparsityMin, max: sparsityMax });
+        setDensityFilter({ min: densityMin, max: densityMax });
       }
     }
     
     // Apply auxiliary memory filter
     const auxMin = localAuxMemoryMin === '' ? 0 : parseFloat(localAuxMemoryMin);
-    const auxMax = localAuxMemoryMax === '' ? 128 : parseFloat(localAuxMemoryMax);
+    const auxMax = localAuxMemoryMax === '' ? 2048 : parseInt(localAuxMemoryMax, 10);
     
     if (!isNaN(auxMin) && !isNaN(auxMax)) {
-      if (auxMin === 0 && auxMax === 128) {
+      if (auxMin === 0 && auxMax === 2048) {
         setAuxMemoryFilter(undefined);
       } else {
         setAuxMemoryFilter({ min: auxMin, max: auxMax });
@@ -99,10 +98,10 @@ export function DatasetDetailPage() {
   
   const handleClearFilters = () => {
     setSelectedLlms(uniqueLlms);
-    setSparsityFilter(undefined);
+    setDensityFilter(undefined);
     setAuxMemoryFilter(undefined);
-    setLocalSparsityMin('');
-    setLocalSparsityMax('');
+    setLocalDensityMin('');
+    setLocalDensityMax('');
     setLocalAuxMemoryMin('');
     setLocalAuxMemoryMax('');
   };
@@ -162,7 +161,7 @@ export function DatasetDetailPage() {
             >
               Apply
             </button>
-            {(selectedLlms.length !== 1 || selectedLlms[0] !== uniqueLlms[0] || sparsityFilter !== undefined || auxMemoryFilter !== undefined || localSparsityMin !== '' || localSparsityMax !== '' || localAuxMemoryMin !== '' || localAuxMemoryMax !== '') && (
+            {(selectedLlms.length !== 1 || selectedLlms[0] !== uniqueLlms[0] || densityFilter !== undefined || auxMemoryFilter !== undefined || localDensityMin !== '' || localDensityMax !== '' || localAuxMemoryMin !== '' || localAuxMemoryMax !== '') && (
               <button
                 onClick={handleClearFilters}
                 className="px-4 py-2 rounded-lg bg-dark-bg border border-dark-border text-gray-300 hover:border-accent-gold hover:text-accent-gold transition-colors text-sm"
@@ -185,10 +184,10 @@ export function DatasetDetailPage() {
           <div onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}>
             <TextRangeFilter
               label="Target Density Range (%)"
-              minValue={localSparsityMin}
-              maxValue={localSparsityMax}
-              onMinChange={setLocalSparsityMin}
-              onMaxChange={setLocalSparsityMax}
+              minValue={localDensityMin}
+              maxValue={localDensityMax}
+              onMinChange={setLocalDensityMin}
+              onMaxChange={setLocalDensityMax}
               minDefault={0}
               maxDefault={100.0}
             />
@@ -203,7 +202,7 @@ export function DatasetDetailPage() {
               onMinChange={setLocalAuxMemoryMin}
               onMaxChange={setLocalAuxMemoryMax}
               minDefault={0}
-              maxDefault={128}
+              maxDefault={2048}
             />
           </div>
         </div>
