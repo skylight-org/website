@@ -8,13 +8,12 @@ export class LeaderboardController {
   public getDatasetLeaderboard = async (req: Request, res: Response): Promise<void> => {
     try {
       const { datasetId } = req.params;
-      const { 
-        experimentalRunId, 
+      const {
         targetSparsityMin,
         targetSparsityMax,
         targetAuxMemoryMin,
         targetAuxMemoryMax,
-        llmId 
+        llmId
       } = req.query;
 
       const filters: {
@@ -45,7 +44,6 @@ export class LeaderboardController {
 
       const leaderboard = await this.leaderboardService.getDatasetLeaderboard(
         datasetId,
-        experimentalRunId as string | undefined,
         Object.keys(filters).length > 0 ? filters : undefined
       );
 
@@ -64,26 +62,27 @@ export class LeaderboardController {
 
   public getOverallLeaderboard = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { 
-        experimentalRunId, 
-        benchmarkId, 
-        llmId,
-        targetSparsityMin,
-        targetSparsityMax,
+      const {
+        experimentalRunId,
+        benchmarkId,
+        targetDensityMin,
+        targetDensityMax,
         targetAuxMemoryMin,
-        targetAuxMemoryMax
+        targetAuxMemoryMax,
+        llmId,
       } = req.query;
 
       const filters: {
-        targetSparsity?: NumericRange;
+        targetDensity?: NumericRange;
         targetAuxMemory?: NumericRange;
+        llmId?: string;
       } = {};
 
-      // Parse sparsity range
-      if (targetSparsityMin || targetSparsityMax) {
-        filters.targetSparsity = {
-          min: targetSparsityMin ? parseFloat(targetSparsityMin as string) : undefined,
-          max: targetSparsityMax ? parseFloat(targetSparsityMax as string) : undefined,
+      // Parse density range
+      if (targetDensityMin || targetDensityMax) {
+        filters.targetDensity = {
+          min: targetDensityMin ? parseFloat(targetDensityMin as string) : undefined,
+          max: targetDensityMax ? parseFloat(targetDensityMax as string) : undefined,
         };
       }
 
@@ -95,10 +94,12 @@ export class LeaderboardController {
         };
       }
 
+      if (llmId) {
+        filters.llmId = llmId as string;
+      }
+
       const leaderboard = await this.leaderboardService.getOverallLeaderboard(
-        experimentalRunId as string | undefined,
         benchmarkId as string | undefined,
-        llmId as string | undefined,
         Object.keys(filters).length > 0 ? filters : undefined
       );
 

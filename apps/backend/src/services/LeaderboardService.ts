@@ -27,17 +27,13 @@ export class LeaderboardService {
    */
   async getDatasetLeaderboard(
     datasetId: string,
-    experimentalRunId?: string,
     filters?: {
       targetSparsity?: NumericRange;
       targetAuxMemory?: NumericRange;
       llmId?: string;
     }
   ): Promise<DatasetRanking[]> {
-    // Use latest completed run if not specified
-    const runId = experimentalRunId || await this.getLatestRunId();
-    
-    const rankings = await this.rankingService.calculateDatasetRanking(datasetId, runId, filters);
+    const rankings = await this.rankingService.calculateDatasetRanking(datasetId, filters);
     return rankings;
   }
 
@@ -45,22 +41,14 @@ export class LeaderboardService {
    * Get overall leaderboard (aggregated across all datasets)
    */
   async getOverallLeaderboard(
-    experimentalRunId?: string,
     benchmarkId?: string,
-    llmId?: string,
     filters?: {
-      targetSparsity?: NumericRange;
+      targetDensity?: NumericRange;
       targetAuxMemory?: NumericRange;
+      llmId?: string;
     }
   ): Promise<AggregatedRanking[]> {
-    // Use latest completed run if not specified
-    const runId = experimentalRunId || await this.getLatestRunId();
-    
-    if (llmId) {
-      return this.aggregationService.calculateOverallRankingByLLM(llmId, runId, filters);
-    }
-    
-    return this.aggregationService.calculateOverallRanking(runId, benchmarkId, filters);
+    return this.aggregationService.calculateOverallRanking(benchmarkId, filters);
   }
 
   async getPlotData(filters?: {
@@ -91,7 +79,7 @@ export class LeaderboardService {
       datasets,
       llms,
       configurations,
-      results,
+      resultCount,
       latestRun
     ] = await Promise.all([
       this.baselineRepository.findAll(),
@@ -99,7 +87,7 @@ export class LeaderboardService {
       this.datasetRepository.findAll(),
       this.llmRepository.findAll(),
       this.configurationRepository.findAll(),
-      this.resultRepository.findAll(),
+      this.resultRepository.countAll(),
       this.experimentalRunRepository.findLatestCompleted(),
     ]);
 
@@ -109,7 +97,7 @@ export class LeaderboardService {
       totalDatasets: datasets.length,
       totalLLMs: llms.length,
       totalConfigurations: configurations.length,
-      totalResults: results.length,
+      totalResults: resultCount,
       lastUpdated: latestRun?.runDate || new Date(),
     };
   }
@@ -126,18 +114,5 @@ export class LeaderboardService {
    */
   async getAvailableAuxMemoryValues(): Promise<number[]> {
     return this.configurationRepository.getUniqueAuxMemoryValues();
-  }
-
-  /**
-   * Get latest completed experimental run ID
-   */
-  private async getLatestRunId(): Promise<string> {
-    const latestRun = await this.experimentalRunRepository.findLatestCompleted();
-    
-    if (!latestRun) {
-      throw new Error('No completed experimental runs found');
-    }
-    
-    return latestRun.id;
   }
 }

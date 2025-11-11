@@ -43,9 +43,9 @@ export function DatasetDetailPage() {
 
   useEffect(() => {
     if (uniqueLlms.length > 0 && selectedLlms.length === 0) {
-      setSelectedLlms([uniqueLlms[0]]);
+      setSelectedLlms(uniqueLlms);
     }
-  }, [uniqueLlms.length]);
+  }, [uniqueLlms]);
   
   // Sync local state with sparsity filter when it changes
   useEffect(() => {
@@ -98,7 +98,7 @@ export function DatasetDetailPage() {
   };
   
   const handleClearFilters = () => {
-    setSelectedLlms(uniqueLlms.length > 0 ? [uniqueLlms[0]] : []);
+    setSelectedLlms(uniqueLlms);
     setSparsityFilter(undefined);
     setAuxMemoryFilter(undefined);
     setLocalSparsityMin('');
@@ -184,7 +184,7 @@ export function DatasetDetailPage() {
           {/* Sparsity Range Filter */}
           <div onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}>
             <TextRangeFilter
-              label="Target Sparsity Range (%)"
+              label="Target Density Range (%)"
               minValue={localSparsityMin}
               maxValue={localSparsityMax}
               onMinChange={setLocalSparsityMin}

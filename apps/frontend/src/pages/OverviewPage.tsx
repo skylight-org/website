@@ -10,13 +10,13 @@ import { TextRangeFilter } from '../components/common/TextRangeFilter';
 import { MultiSelectFilter } from '../components/common/MultiSelectFilter';
 
 export function OverviewPage() {
-  const [sparsityFilter, setSparsityFilter] = useState<NumericRange | undefined>(undefined);
+  const [densityFilter, setDensityFilter] = useState<NumericRange | undefined>(undefined);
   const [auxMemoryFilter, setAuxMemoryFilter] = useState<NumericRange | undefined>(undefined);
   const [selectedLlms, setSelectedLlms] = useState<string[]>([]);
   
   // Local state for text inputs to sync with TextRangeFilter
-  const [localSparsityMin, setLocalSparsityMin] = useState('');
-  const [localSparsityMax, setLocalSparsityMax] = useState('');
+  const [localDensityMin, setLocalDensityMin] = useState('');
+  const [localDensityMax, setLocalDensityMax] = useState('');
   const [localAuxMemoryMin, setLocalAuxMemoryMin] = useState('');
   const [localAuxMemoryMax, setLocalAuxMemoryMax] = useState('');
 
@@ -25,7 +25,7 @@ export function OverviewPage() {
     isLoading: rankingsLoading, 
     error: rankingsError 
   } = useOverallLeaderboard({
-    targetSparsity: sparsityFilter,
+    targetDensity: densityFilter,
     targetAuxMemory: auxMemoryFilter,
   });
   const { data: llms, isLoading: llmsLoading, error: llmsError } = useLLMs();
@@ -40,19 +40,22 @@ export function OverviewPage() {
     if (llmOptions.length > 0 && selectedLlms.length === 0) {
       setSelectedLlms(llmOptions);
     }
-  }, [llmOptions, selectedLlms.length]);
+  }, [llmOptions]);
 
   const filteredRankings = useMemo(() => {
     if (!rankings) return [];
     
     // Filter by selected LLMs client-side
+    if (llmOptions.length > 0 && selectedLlms.length === 0) {
+      return rankings; // Show all if no models are specifically selected yet
+    }
     return rankings.filter(ranking => selectedLlms.includes(ranking.llm.name));
-  }, [rankings, selectedLlms]);
+  }, [rankings, selectedLlms, llmOptions]);
 
   const handleApplyFilters = () => {
-    setSparsityFilter({
-      min: localSparsityMin ? parseFloat(localSparsityMin) : undefined,
-      max: localSparsityMax ? parseFloat(localSparsityMax) : undefined,
+    setDensityFilter({
+      min: localDensityMin ? parseFloat(localDensityMin) : undefined,
+      max: localDensityMax ? parseFloat(localDensityMax) : undefined,
     });
     setAuxMemoryFilter({
       min: localAuxMemoryMin ? parseInt(localAuxMemoryMin, 10) : undefined,
@@ -62,10 +65,10 @@ export function OverviewPage() {
 
   const handleClearFilters = () => {
     setSelectedLlms(llmOptions);
-    setSparsityFilter(undefined);
+    setDensityFilter(undefined);
     setAuxMemoryFilter(undefined);
-    setLocalSparsityMin('');
-    setLocalSparsityMax('');
+    setLocalDensityMin('');
+    setLocalDensityMax('');
     setLocalAuxMemoryMin('');
     setLocalAuxMemoryMax('');
   };
@@ -150,10 +153,10 @@ export function OverviewPage() {
           />
           <TextRangeFilter
             label="Filter by Density (%)"
-            minValue={localSparsityMin}
-            maxValue={localSparsityMax}
-            onMinChange={setLocalSparsityMin}
-            onMaxChange={setLocalSparsityMax}
+            minValue={localDensityMin}
+            maxValue={localDensityMax}
+            onMinChange={setLocalDensityMin}
+            onMaxChange={setLocalDensityMax}
             minDefault={0}
             maxDefault={100}
           />

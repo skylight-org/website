@@ -32,51 +32,105 @@ export class RankingService {
    */
   async calculateDatasetRanking(
     datasetId: string,
-    experimentalRunId: string,
     filters?: {
-      targetSparsity?: NumericRange;
+      targetDensity?: NumericRange;
       targetAuxMemory?: NumericRange;
       llmId?: string;
     }
   ): Promise<DatasetRanking[]> {
     // Fetch all data needed
-    const [dataset, configurations, results, datasetMetrics, allMetrics, allBaselines, allLLMs] = await Promise.all([
+    const [dataset, allMetrics, allBaselines, allLLMs, datasetMetrics] = await Promise.all([
       this.datasetRepository.findById(datasetId),
-      this.configurationRepository.findByDatasetId(datasetId, {
-        targetSparsity: filters?.targetSparsity,
-        targetAuxMemory: filters?.targetAuxMemory,
-        llmId: filters?.llmId,
-      }),
-      this.resultRepository.findByDatasetAndRun(datasetId, experimentalRunId),
-      this.datasetMetricRepository.findByDatasetId(datasetId),
       this.metricRepository.findAll(),
       this.baselineRepository.findAll(),
       this.llmRepository.findAll(),
+      this.datasetMetricRepository.findByDatasetId(datasetId),
     ]);
 
     if (!dataset) {
       throw new Error(`Dataset ${datasetId} not found`);
     }
 
+    // Step 1: Find configurations for the dataset
+    const configurations = await this.configurationRepository.findByDatasetId(datasetId, filters);
+    if (configurations.length === 0) {
+      return [];
+    }
+    const configurationIds = configurations.map(c => c.id);
+
+    // Step 2: Get all results for these configurations
+    const allResults = await this.resultRepository.findByConfigurationIds(configurationIds);
+
     // Create lookup maps
     const metricsMap = new Map(allMetrics.map(m => [m.id, m]));
     const baselinesMap = new Map(allBaselines.map(b => [b.id, b]));
     const llmsMap = new Map(allLLMs.map(l => [l.id, l]));
 
-    // Group results by configuration
+    // Step 3: Find the best result for each configuration
     const resultsByConfig = new Map<string, Result[]>();
-    results.forEach(result => {
+    allResults.forEach(result => {
       if (!resultsByConfig.has(result.configurationId)) {
         resultsByConfig.set(result.configurationId, []);
       }
       resultsByConfig.get(result.configurationId)!.push(result);
     });
 
-    // Calculate scores for each configuration
+    const bestResults: Result[] = [];
+    const metricForDatasetMetric = new Map<string, Metric>();
+    datasetMetrics.forEach(dm => {
+      const metric = metricsMap.get(dm.metricId);
+      if (metric) {
+        metricForDatasetMetric.set(dm.id, metric);
+      }
+    });
+
+    resultsByConfig.forEach((results, configId) => {
+      let bestResult: Result | undefined;
+
+      results.forEach(result => {
+        const metric = metricForDatasetMetric.get(result.datasetMetricId);
+        if (!metric) return;
+
+        if (!bestResult) {
+          bestResult = result;
+          return;
+        }
+
+        const isCurrentBestHigher = metric.higherIsBetter ? bestResult.value > result.value : bestResult.value < result.value;
+        if (isCurrentBestHigher) {
+          // No change
+        } else if (bestResult.value === result.value) {
+          // Tie-break with timestamp
+          if (result.createdAt > bestResult.createdAt) {
+            bestResult = result;
+          }
+        } else {
+          bestResult = result;
+        }
+      });
+
+      if (bestResult) {
+        bestResults.push(bestResult);
+      }
+    });
+    
+    // Group best results by configuration for scoring
+    const bestResultsByConfig = new Map<string, Result[]>();
+    bestResults.forEach(result => {
+      // This is a bit awkward, but calculateWeightedScore expects a list.
+      // In our case, it will be a list of one (the best result for the primary metric)
+      // plus any other non-primary metrics for that run.
+      const allResultsForConfigAndRun = allResults.filter(
+        r => r.configurationId === result.configurationId && r.experimentalRunId === result.experimentalRunId
+      );
+      bestResultsByConfig.set(result.configurationId, allResultsForConfigAndRun);
+    });
+
+    // Calculate scores for each configuration using the run of the best result
     const configScores: ConfigurationScore[] = [];
 
     for (const config of configurations) {
-      const configResults = resultsByConfig.get(config.id) || [];
+      const configResults = bestResultsByConfig.get(config.id) || [];
       if (configResults.length === 0) continue;
 
       const baseline = baselinesMap.get(config.baselineId);

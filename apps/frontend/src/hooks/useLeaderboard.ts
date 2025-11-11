@@ -5,7 +5,6 @@ import { api } from '../services/api';
 export function useDatasetLeaderboard(
   datasetId?: string,
   params?: {
-    experimentalRunId?: string;
     targetSparsity?: NumericRange;
     targetAuxMemory?: NumericRange;
     llmId?: string;
@@ -23,7 +22,7 @@ export function useOverallLeaderboard(params?: {
   experimentalRunId?: string; 
   benchmarkId?: string; 
   llmId?: string;
-  targetSparsity?: NumericRange;
+  targetDensity?: NumericRange;
   targetAuxMemory?: NumericRange;
 }) {
   return useQuery<AggregatedRanking[], Error>({
