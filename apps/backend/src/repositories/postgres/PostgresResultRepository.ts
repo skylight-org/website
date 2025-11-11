@@ -11,7 +11,8 @@ export class PostgresResultRepository implements IResultRepository {
   async findAll(): Promise<Result[]> {
     const { data, error } = await this.supabase
       .from('results')
-      .select('*');
+      .select('*')
+      .limit(10000);
 
     if (error) {
       throw new Error(`Failed to fetch results: ${error.message}`);
@@ -51,11 +52,27 @@ export class PostgresResultRepository implements IResultRepository {
     return (data || []).map(this.mapToResult);
   }
 
-  async findByMetricId(metricId: string): Promise<Result[]> {
+  async findByConfigurationIds(configurationIds: string[]): Promise<Result[]> {
+    if (configurationIds.length === 0) {
+      return [];
+    }
     const { data, error } = await this.supabase
       .from('results')
       .select('*')
-      .eq('metric_id', metricId);
+      .in('configuration_id', configurationIds)
+      .limit(10000);
+
+    if (error) {
+      throw new Error(`Failed to fetch results by configuration IDs: ${error.message}`);
+    }
+    return (data || []).map(this.mapToResult);
+  }
+
+  async findByDatasetMetricId(datasetMetricId: string): Promise<Result[]> {
+    const { data, error } = await this.supabase
+      .from('results')
+      .select('*')
+      .eq('dataset_metric_id', datasetMetricId);
 
     if (error) {
       throw new Error(`Failed to fetch results: ${error.message}`);
@@ -93,20 +110,31 @@ export class PostgresResultRepository implements IResultRepository {
     return (data || []).map(this.mapToResult);
   }
 
-  async findByDatasetAndRun(datasetId: string, experimentalRunId: string): Promise<Result[]> {
-    const { data, error } = await this.supabase
+  async countAll(): Promise<number> {
+    const { count, error } = await this.supabase
       .from('results')
-      .select(`
-        *,
-        configurations!inner(dataset_id)
-      `)
-      .eq('configurations.dataset_id', datasetId)
-      .eq('experimental_run_id', experimentalRunId);
+      .select('*', { count: 'exact', head: true });
 
     if (error) {
-      throw new Error(`Failed to fetch results: ${error.message}`);
+      throw new Error(`Failed to count results: ${error.message}`);
     }
+    return count || 0;
+  }
 
+  async findByDatasetAndRun(datasetId: string, experimentalRunId: string): Promise<Result[]> {
+    const { data, error } = await this.supabase.rpc('get_results_for_dataset_run', {
+      p_dataset_id: datasetId,
+      p_run_id: experimentalRunId
+    });
+    if (error) throw new Error(`Failed to fetch results: ${error.message}`);
+    return (data || []).map(this.mapToResult);
+  }
+  
+  async findBestResultsForDataset(datasetId: string): Promise<Result[]> {
+    const { data, error } = await this.supabase.rpc('get_best_results_for_dataset', {
+      p_dataset_id: datasetId,
+    });
+    if (error) throw new Error(`Failed to fetch best results for dataset: ${error.message}`);
     return (data || []).map(this.mapToResult);
   }
 
@@ -117,7 +145,7 @@ export class PostgresResultRepository implements IResultRepository {
     return {
       id: row.id,
       configurationId: row.configuration_id,
-      metricId: row.metric_id,
+      datasetMetricId: row.dataset_metric_id,
       experimentalRunId: row.experimental_run_id,
       value: parseFloat(row.value),
       standardDeviation: row.standard_deviation ? parseFloat(row.standard_deviation) : undefined,

@@ -213,4 +213,3 @@ return 2 * head_dim // page_size * bits_precision`}</code>
     </div>
   );
 }
-

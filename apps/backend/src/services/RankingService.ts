@@ -1,4 +1,4 @@
-import type { DatasetRanking, Metric, Baseline, LLM, Dataset, Configuration, Result, NumericRange } from '@sky-light/shared-types';
+import type { DatasetRanking, Metric, Baseline, LLM, Dataset, Configuration, Result, NumericRange, DatasetMetric } from '@sky-light/shared-types';
 import type { IBaselineRepository } from '../repositories/interfaces/IBaselineRepository';
 import type { ILLMRepository } from '../repositories/interfaces/ILLMRepository';
 import type { IDatasetRepository } from '../repositories/interfaces/IDatasetRepository';
@@ -32,51 +32,105 @@ export class RankingService {
    */
   async calculateDatasetRanking(
     datasetId: string,
-    experimentalRunId: string,
     filters?: {
-      targetSparsity?: NumericRange;
+      targetDensity?: NumericRange;
       targetAuxMemory?: NumericRange;
       llmId?: string;
     }
   ): Promise<DatasetRanking[]> {
     // Fetch all data needed
-    const [dataset, configurations, results, datasetMetrics, allMetrics, allBaselines, allLLMs] = await Promise.all([
+    const [dataset, allMetrics, allBaselines, allLLMs, datasetMetrics] = await Promise.all([
       this.datasetRepository.findById(datasetId),
-      this.configurationRepository.findByDatasetId(datasetId, {
-        targetSparsity: filters?.targetSparsity,
-        targetAuxMemory: filters?.targetAuxMemory,
-        llmId: filters?.llmId,
-      }),
-      this.resultRepository.findByDatasetAndRun(datasetId, experimentalRunId),
-      this.datasetMetricRepository.findByDatasetId(datasetId),
       this.metricRepository.findAll(),
       this.baselineRepository.findAll(),
       this.llmRepository.findAll(),
+      this.datasetMetricRepository.findByDatasetId(datasetId),
     ]);
 
     if (!dataset) {
       throw new Error(`Dataset ${datasetId} not found`);
     }
 
+    // Step 1: Find configurations for the dataset
+    const configurations = await this.configurationRepository.findByDatasetId(datasetId, filters);
+    if (configurations.length === 0) {
+      return [];
+    }
+    const configurationIds = configurations.map(c => c.id);
+
+    // Step 2: Get all results for these configurations
+    const allResults = await this.resultRepository.findByConfigurationIds(configurationIds);
+
     // Create lookup maps
     const metricsMap = new Map(allMetrics.map(m => [m.id, m]));
     const baselinesMap = new Map(allBaselines.map(b => [b.id, b]));
     const llmsMap = new Map(allLLMs.map(l => [l.id, l]));
 
-    // Group results by configuration
+    // Step 3: Find the best result for each configuration
     const resultsByConfig = new Map<string, Result[]>();
-    results.forEach(result => {
+    allResults.forEach(result => {
       if (!resultsByConfig.has(result.configurationId)) {
         resultsByConfig.set(result.configurationId, []);
       }
       resultsByConfig.get(result.configurationId)!.push(result);
     });
 
-    // Calculate scores for each configuration
+    const bestResults: Result[] = [];
+    const metricForDatasetMetric = new Map<string, Metric>();
+    datasetMetrics.forEach(dm => {
+      const metric = metricsMap.get(dm.metricId);
+      if (metric) {
+        metricForDatasetMetric.set(dm.id, metric);
+      }
+    });
+
+    resultsByConfig.forEach((results, configId) => {
+      let bestResult: Result | undefined;
+
+      results.forEach(result => {
+        const metric = metricForDatasetMetric.get(result.datasetMetricId);
+        if (!metric) return;
+
+        if (!bestResult) {
+          bestResult = result;
+          return;
+        }
+
+        const isCurrentBestHigher = metric.higherIsBetter ? bestResult.value > result.value : bestResult.value < result.value;
+        if (isCurrentBestHigher) {
+          // No change
+        } else if (bestResult.value === result.value) {
+          // Tie-break with timestamp
+          if (result.createdAt > bestResult.createdAt) {
+            bestResult = result;
+          }
+        } else {
+          bestResult = result;
+        }
+      });
+
+      if (bestResult) {
+        bestResults.push(bestResult);
+      }
+    });
+    
+    // Group best results by configuration for scoring
+    const bestResultsByConfig = new Map<string, Result[]>();
+    bestResults.forEach(result => {
+      // This is a bit awkward, but calculateWeightedScore expects a list.
+      // In our case, it will be a list of one (the best result for the primary metric)
+      // plus any other non-primary metrics for that run.
+      const allResultsForConfigAndRun = allResults.filter(
+        r => r.configurationId === result.configurationId && r.experimentalRunId === result.experimentalRunId
+      );
+      bestResultsByConfig.set(result.configurationId, allResultsForConfigAndRun);
+    });
+
+    // Calculate scores for each configuration using the run of the best result
     const configScores: ConfigurationScore[] = [];
 
     for (const config of configurations) {
-      const configResults = resultsByConfig.get(config.id) || [];
+      const configResults = bestResultsByConfig.get(config.id) || [];
       if (configResults.length === 0) continue;
 
       const baseline = baselinesMap.get(config.baselineId);
@@ -113,7 +167,7 @@ export class RankingService {
         currentRank = index + 1;
       }
 
-      rankings.push({
+      const rankingEntry = {
         rank: currentRank,
         dataset,
         baseline: configScore.baseline,
@@ -121,7 +175,19 @@ export class RankingService {
         configurationId: configScore.configuration.id,
         score: configScore.score,
         metricValues: configScore.metricValues,
-      });
+        targetSparsity: configScore.configuration.targetSparsity,
+        targetAuxMemory: configScore.configuration.targetAuxMemory,
+        configuration: configScore.configuration,
+      };
+      
+      // Debug: Log the first ranking to check metricValues
+      if (rankings.length === 0) {
+        console.log('DEBUG RankingService: First ranking entry');
+        console.log('  - metricValues:', rankingEntry.metricValues);
+        console.log('  - Has average_local_error?', 'average_local_error' in rankingEntry.metricValues);
+      }
+      
+      rankings.push(rankingEntry);
 
       previousScore = configScore.score;
     });
@@ -135,26 +201,35 @@ export class RankingService {
    */
   private calculateWeightedScore(
     results: Result[],
-    datasetMetrics: Array<{ metricId: string; weight: number; isPrimary: boolean }>,
+    datasetMetrics: DatasetMetric[],
     metricsMap: Map<string, Metric>
   ): { score: number; metricValues: Record<string, number> } {
     const metricValues: Record<string, number> = {};
     
+    // Create a map of datasetMetricId to datasetMetric for quick lookup
+    const datasetMetricsMap = new Map<string, DatasetMetric>();
+    datasetMetrics.forEach(dm => {
+      datasetMetricsMap.set(dm.id, dm);
+    });
+    
     // Build metric values map
     results.forEach(result => {
-      const metric = metricsMap.get(result.metricId);
-      if (metric) {
-        metricValues[metric.name] = result.value;
+      const datasetMetric = datasetMetricsMap.get(result.datasetMetricId);
+      if (datasetMetric) {
+        const metric = metricsMap.get(datasetMetric.metricId);
+        if (metric) {
+          metricValues[metric.name] = result.value;
+        }
       }
     });
 
     // Find primary metric
-    const primaryMetric = datasetMetrics.find(dm => dm.isPrimary);
+    const primaryDatasetMetric = datasetMetrics.find(dm => dm.isPrimary);
     
-    if (primaryMetric) {
+    if (primaryDatasetMetric) {
       // Use primary metric as score
-      const result = results.find(r => r.metricId === primaryMetric.metricId);
-      const metric = metricsMap.get(primaryMetric.metricId);
+      const result = results.find(r => r.datasetMetricId === primaryDatasetMetric.id);
+      const metric = metricsMap.get(primaryDatasetMetric.metricId);
       
       if (result && metric) {
         // Normalize score (if lower is better, invert it)
@@ -171,18 +246,20 @@ export class RankingService {
     let weightedSum = 0;
 
     results.forEach(result => {
-      const datasetMetric = datasetMetrics.find(dm => dm.metricId === result.metricId);
-      const metric = metricsMap.get(result.metricId);
-      
-      if (datasetMetric && metric) {
-        const weight = datasetMetric.weight;
-        // Normalize value based on metric direction
-        const normalizedValue = metric.higherIsBetter 
-          ? result.value 
-          : 100 - result.value;
+      const datasetMetric = datasetMetricsMap.get(result.datasetMetricId);
+      if (datasetMetric) {
+        const metric = metricsMap.get(datasetMetric.metricId);
         
-        weightedSum += normalizedValue * weight;
-        totalWeight += weight;
+        if (metric) {
+          const weight = datasetMetric.weight;
+          // Normalize value based on metric direction
+          const normalizedValue = metric.higherIsBetter 
+            ? result.value 
+            : 100 - result.value;
+          
+          weightedSum += normalizedValue * weight;
+          totalWeight += weight;
+        }
       }
     });
 

@@ -12,6 +12,7 @@ import type {
 } from '@sky-light/shared-types';
 
 // Use environment variable for API URL, fallback to local proxy for development
+// const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1"
 const API_BASE_URL = "https://skynetbackend.duckdns.org/api/v1"
 
 export class ApiError extends Error {
@@ -77,14 +78,12 @@ export const api = {
     getDataset: (
       datasetId: string, 
       params?: { 
-        experimentalRunId?: string;
         targetSparsity?: NumericRange;
         targetAuxMemory?: NumericRange;
         llmId?: string;
       }
     ): Promise<DatasetRanking[]> => {
       const queryParams: Record<string, string> = {};
-      if (params?.experimentalRunId) queryParams.experimentalRunId = params.experimentalRunId;
       
       // Handle sparsity range
       if (params?.targetSparsity) {
@@ -117,13 +116,44 @@ export const api = {
       experimentalRunId?: string; 
       benchmarkId?: string; 
       llmId?: string;
-      targetSparsity?: NumericRange;
+      targetDensity?: NumericRange;
       targetAuxMemory?: NumericRange;
     }): Promise<AggregatedRanking[]> => {
       const queryParams: Record<string, string> = {};
       if (params?.experimentalRunId) queryParams.experimentalRunId = params.experimentalRunId;
       if (params?.benchmarkId) queryParams.benchmarkId = params.benchmarkId;
       if (params?.llmId) queryParams.llmId = params.llmId;
+      
+      // Handle density range
+      if (params?.targetDensity) {
+        if (params.targetDensity.min !== undefined) {
+          queryParams.targetDensityMin = params.targetDensity.min.toString();
+        }
+        if (params.targetDensity.max !== undefined) {
+          queryParams.targetDensityMax = params.targetDensity.max.toString();
+        }
+      }
+      
+      // Handle aux memory range
+      if (params?.targetAuxMemory) {
+        if (params.targetAuxMemory.min !== undefined) {
+          queryParams.targetAuxMemoryMin = params.targetAuxMemory.min.toString();
+        }
+        if (params.targetAuxMemory.max !== undefined) {
+          queryParams.targetAuxMemoryMax = params.targetAuxMemory.max.toString();
+        }
+      }
+      
+      const query = Object.keys(queryParams).length > 0 
+        ? `?${new URLSearchParams(queryParams).toString()}` 
+        : '';
+      return fetchApi(`/leaderboards/overall${query}`);
+    },
+    getPlotData: (params?: {
+      targetSparsity?: NumericRange;
+      targetAuxMemory?: NumericRange;
+    }): Promise<DatasetRanking[]> => {
+      const queryParams: Record<string, string> = {};
       
       // Handle sparsity range
       if (params?.targetSparsity) {
@@ -145,10 +175,10 @@ export const api = {
         }
       }
       
-      const query = Object.keys(queryParams).length > 0 
-        ? `?${new URLSearchParams(queryParams).toString()}` 
+      const query = Object.keys(queryParams).length > 0
+        ? `?${new URLSearchParams(queryParams).toString()}`
         : '';
-      return fetchApi(`/leaderboards/overall${query}`);
+      return fetchApi(`/leaderboards/plot-data${query}`);
     },
     getOverview: (): Promise<OverviewStats> => fetchApi('/leaderboards/overview'),
     getAvailableSparsityValues: (): Promise<number[]> => fetchApi('/leaderboards/filters/sparsity'),

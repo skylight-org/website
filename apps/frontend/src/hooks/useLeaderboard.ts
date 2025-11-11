@@ -5,7 +5,6 @@ import { api } from '../services/api';
 export function useDatasetLeaderboard(
   datasetId?: string,
   params?: {
-    experimentalRunId?: string;
     targetSparsity?: NumericRange;
     targetAuxMemory?: NumericRange;
     llmId?: string;
@@ -23,7 +22,7 @@ export function useOverallLeaderboard(params?: {
   experimentalRunId?: string; 
   benchmarkId?: string; 
   llmId?: string;
-  targetSparsity?: NumericRange;
+  targetDensity?: NumericRange;
   targetAuxMemory?: NumericRange;
 }) {
   return useQuery<AggregatedRanking[], Error>({
@@ -38,6 +37,16 @@ export function useOverviewStats() {
     queryKey: ['leaderboard', 'overview'],
     queryFn: () => api.leaderboards.getOverview(),
     staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function usePlotData(params?: {
+  targetSparsity?: NumericRange;
+  targetAuxMemory?: NumericRange;
+}) {
+  return useQuery<DatasetRanking[], Error>({
+    queryKey: ['leaderboard', 'plot-data', params],
+    queryFn: () => api.leaderboards.getPlotData(params),
   });
 }
 
