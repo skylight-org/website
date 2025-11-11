@@ -15,7 +15,7 @@ export class AggregationService {
   async calculateOverallRanking(
     benchmarkId?: string,
     filters?: {
-      targetDensity?: NumericRange;
+      targetSparsity?: NumericRange;
       targetAuxMemory?: NumericRange;
       llmId?: string;
     }

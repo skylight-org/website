@@ -11,7 +11,10 @@ interface AggregatedTableProps {
 }
 
 export function AggregatedTable({ rankings }: AggregatedTableProps) {
-  const { sortedData, sortConfig, requestSort } = useSortableData(rankings);
+  const { sortedData, sortConfig, requestSort } = useSortableData(rankings, {
+    key: 'overallScore',
+    direction: 'desc',
+  });
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const { data: datasets } = useDatasets();

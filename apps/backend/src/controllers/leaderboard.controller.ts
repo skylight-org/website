@@ -65,24 +65,24 @@ export class LeaderboardController {
       const {
         experimentalRunId,
         benchmarkId,
-        targetDensityMin,
-        targetDensityMax,
+        targetSparsityMin,
+        targetSparsityMax,
         targetAuxMemoryMin,
         targetAuxMemoryMax,
         llmId,
       } = req.query;
 
       const filters: {
-        targetDensity?: NumericRange;
+        targetSparsity?: NumericRange;
         targetAuxMemory?: NumericRange;
         llmId?: string;
       } = {};
 
-      // Parse density range
-      if (targetDensityMin || targetDensityMax) {
-        filters.targetDensity = {
-          min: targetDensityMin ? parseFloat(targetDensityMin as string) : undefined,
-          max: targetDensityMax ? parseFloat(targetDensityMax as string) : undefined,
+      // Parse sparsity range
+      if (targetSparsityMin || targetSparsityMax) {
+        filters.targetSparsity = {
+          min: targetSparsityMin ? parseFloat(targetSparsityMin as string) : undefined,
+          max: targetSparsityMax ? parseFloat(targetSparsityMax as string) : undefined,
         };
       }
 
