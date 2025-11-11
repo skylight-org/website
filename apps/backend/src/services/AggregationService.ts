@@ -43,8 +43,9 @@ export class AggregationService {
       datasetRanks: Map<string, number>;
       datasetScores: Map<string, number>;
       ranks: number[];
-      sparsityValues: number[];
-      localErrorValues: number[];
+      sparsityValues: (number | undefined)[];
+      auxMemoryValues: (number | undefined)[];
+      localErrorValues: (number | undefined)[];
     }>();
 
     datasetRankings.forEach((rankings, datasetIdx) => {
@@ -61,6 +62,7 @@ export class AggregationService {
             datasetScores: new Map(),
             ranks: [],
             sparsityValues: [],
+            auxMemoryValues: [],
             localErrorValues: [],
           });
         }
@@ -69,9 +71,8 @@ export class AggregationService {
         entry.datasetRanks.set(dataset.id, ranking.rank);
         entry.datasetScores.set(dataset.id, ranking.score);
         entry.ranks.push(ranking.rank);
-        if (ranking.targetSparsity !== undefined) {
-          entry.sparsityValues.push(ranking.targetSparsity);
-        }
+        entry.sparsityValues.push(ranking.targetSparsity);
+        entry.auxMemoryValues.push(ranking.targetAuxMemory);
         // Debug: Log first few rankings to see metricValues
         if (datasetIdx === 0 && rankings.indexOf(ranking) === 0) {
           console.log('DEBUG AggregationService: First dataset, first ranking');
@@ -95,7 +96,11 @@ export class AggregationService {
       
       // Calculate average sparsity if any values are present
       const avgSparsity = data.sparsityValues.length > 0
-        ? data.sparsityValues.reduce((sum, s) => sum + s, 0) / data.sparsityValues.length
+        ? data.sparsityValues.filter((v): v is number => v !== undefined).reduce((sum, s) => sum + s, 0) / data.sparsityValues.length
+        : undefined;
+      
+      const avgAuxMemory = data.auxMemoryValues.length > 0
+        ? data.auxMemoryValues.filter((v): v is number => v !== undefined).reduce((sum, s) => sum + s, 0) / data.auxMemoryValues.length
         : undefined;
       
       // Calculate average local error if any values are present
@@ -123,6 +128,7 @@ export class AggregationService {
         bestDatasetRank: Math.min(...data.ranks),
         worstDatasetRank: Math.max(...data.ranks),
         avgSparsity,
+        avgAuxMemory,
         avgLocalError,
       });
     });
@@ -184,8 +190,9 @@ export class AggregationService {
       datasetRanks: Map<string, number>;
       datasetScores: Map<string, number>;
       ranks: number[];
-      sparsityValues: number[];
-      localErrorValues: number[];
+      sparsityValues: (number | undefined)[];
+      auxMemoryValues: (number | undefined)[];
+      localErrorValues: (number | undefined)[];
     }>();
 
     filteredRankings.forEach((rankings, datasetIdx) => {
@@ -202,6 +209,7 @@ export class AggregationService {
             datasetScores: new Map(),
             ranks: [],
             sparsityValues: [],
+            auxMemoryValues: [],
             localErrorValues: [],
           });
         }
@@ -210,9 +218,8 @@ export class AggregationService {
         entry.datasetRanks.set(dataset.id, ranking.rank);
         entry.datasetScores.set(dataset.id, ranking.score);
         entry.ranks.push(ranking.rank);
-        if (ranking.targetSparsity !== undefined) {
-          entry.sparsityValues.push(ranking.targetSparsity);
-        }
+        entry.sparsityValues.push(ranking.targetSparsity);
+        entry.auxMemoryValues.push(ranking.targetAuxMemory);
         if (ranking.metricValues?.average_local_error !== undefined) {
           entry.localErrorValues.push(ranking.metricValues.average_local_error);
         }
@@ -228,7 +235,11 @@ export class AggregationService {
       
       // Calculate average sparsity if any values are present
       const avgSparsity = data.sparsityValues.length > 0
-        ? data.sparsityValues.reduce((sum, s) => sum + s, 0) / data.sparsityValues.length
+        ? data.sparsityValues.filter((v): v is number => v !== undefined).reduce((sum, s) => sum + s, 0) / data.sparsityValues.length
+        : undefined;
+        
+      const avgAuxMemory = data.auxMemoryValues.length > 0
+        ? data.auxMemoryValues.filter((v): v is number => v !== undefined).reduce((sum, s) => sum + s, 0) / data.auxMemoryValues.length
         : undefined;
       
       // Calculate average local error if any values are present
@@ -248,6 +259,7 @@ export class AggregationService {
         bestDatasetRank: Math.min(...data.ranks),
         worstDatasetRank: Math.max(...data.ranks),
         avgSparsity,
+        avgAuxMemory,
         avgLocalError,
       };
       

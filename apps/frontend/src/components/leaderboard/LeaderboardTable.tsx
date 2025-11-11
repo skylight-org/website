@@ -67,6 +67,13 @@ export function LeaderboardTable({ entries, metrics = [] }: LeaderboardTableProp
               onSort={requestSort}
               align="right"
             />
+            <SortableHeader
+              label="Aux Memory"
+              sortKey="targetAuxMemory"
+              sortConfig={sortConfig}
+              onSort={requestSort}
+              align="right"
+            />
             {metricNames.map(name => {
               const metric = metrics.find(m => m.name === name);
               const displayLabel = (
@@ -120,6 +127,11 @@ export function LeaderboardTable({ entries, metrics = [] }: LeaderboardTableProp
               <td className="px-4 py-4 text-right text-sm text-gray-300">
                 {entry.targetSparsity !== undefined && entry.targetSparsity !== null
                   ? entry.targetSparsity.toFixed(2)
+                  : '-'}
+              </td>
+              <td className="px-4 py-4 text-right text-sm text-gray-300">
+                {entry.targetAuxMemory !== undefined && entry.targetAuxMemory !== null
+                  ? entry.targetAuxMemory.toLocaleString()
                   : '-'}
               </td>
               {metricNames.map(name => (

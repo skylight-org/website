@@ -122,6 +122,7 @@ export class RankingService {
         score: configScore.score,
         metricValues: configScore.metricValues,
         targetSparsity: configScore.configuration.targetSparsity,
+        targetAuxMemory: configScore.configuration.targetAuxMemory,
       };
       
       // Debug: Log the first ranking to check metricValues

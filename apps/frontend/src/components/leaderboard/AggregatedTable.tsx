@@ -176,7 +176,7 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
                   </td>
                   <td className="px-4 py-4 text-right">
                     <span className="text-gray-400">
-                      {(ranking as any).avgAuxMemory?.toFixed(0) || '-'}
+                      {ranking.avgAuxMemory?.toLocaleString(undefined, { maximumFractionDigits: 0 }) || '-'}
                     </span>
                   </td>
                 </tr>
