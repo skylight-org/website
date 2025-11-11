@@ -5,6 +5,7 @@ export interface IResultRepository {
   findById(id: string): Promise<Result | null>;
   findByConfigurationId(configurationId: string): Promise<Result[]>;
   findByConfigurationIds(configurationIds: string[]): Promise<Result[]>;
+  findByDatasetId(datasetId: string): Promise<Result[]>;
   findByDatasetAndRun(datasetId: string, experimentalRunId: string): Promise<Result[]>;
   countAll(): Promise<number>;
 }

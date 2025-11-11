@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { usePlotData } from '../../hooks/useLeaderboard';
 import { useLLMs } from '../../hooks/useLLMs';
 import { LoadingSpinner } from '../common/LoadingSpinner';
@@ -27,7 +27,7 @@ const COLORS = [
 export function LeaderboardPlotView() {
   const [selectedLlms, setSelectedLlms] = useState<string[]>([]);
   const { data: plotData, isLoading, error } = usePlotData();
-  const { data: allLlms } = useLLMs();
+  useLLMs();
 
   // Process data for plotting
   const { series, paretoSeries } = useMemo(() => {
@@ -119,7 +119,7 @@ export function LeaderboardPlotView() {
               borderColor: '#374151',
               color: '#F9FAFB',
             }}
-            formatter={(value, name, props) => {
+            formatter={(_value, _name, props) => {
               const { payload } = props;
               return (
                 <div>

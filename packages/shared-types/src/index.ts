@@ -148,6 +148,7 @@ export interface AggregatedRanking {
   targetSparsity?: number;
   targetAuxMemory?: number;
   avgLocalError?: number;
+  avgTargetSparsity?: number;
 }
 
 // ============================================================================

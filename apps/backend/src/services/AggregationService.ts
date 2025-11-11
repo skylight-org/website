@@ -1,4 +1,4 @@
-import type { AggregatedRanking, DatasetRanking, Baseline, LLM, NumericRange } from '@sky-light/shared-types';
+import type { AggregatedRanking, DatasetRanking, Baseline, LLM, NumericRange, Configuration } from '@sky-light/shared-types';
 import type { IDatasetRepository } from '../repositories/interfaces/IDatasetRepository';
 import { RankingService } from './RankingService';
 
@@ -45,9 +45,10 @@ export class AggregationService {
       targetAuxMemory?: number;
       datasetRanks: Map<string, number>;
       datasetScores: Map<string, number>;
-      datasetDetails: Map<string, { sparsity?: number; auxMemory?: number; localError?: number; configuration?: any }>;
+      datasetDetails: Map<string, { sparsity?: number; auxMemory?: number; localError?: number; configuration: Configuration }>;
       ranks: number[];
       localErrorValues: (number | undefined)[];
+      sparsityValues: (number | undefined)[];
     }>();
 
     datasetRankings.forEach((rankings, datasetIdx) => {
@@ -67,6 +68,7 @@ export class AggregationService {
             datasetDetails: new Map(),
             ranks: [],
             localErrorValues: [],
+            sparsityValues: [],
           });
         }
 
@@ -91,6 +93,9 @@ export class AggregationService {
         if (ranking.metricValues?.average_local_error !== undefined) {
           entry.localErrorValues.push(ranking.metricValues.average_local_error);
         }
+        if (ranking.targetSparsity !== undefined) {
+          entry.sparsityValues.push(ranking.targetSparsity);
+        }
       });
     });
 
@@ -105,6 +110,10 @@ export class AggregationService {
         ? data.localErrorValues.filter((v): v is number => v !== undefined).reduce((sum, e) => sum + e, 0) / data.localErrorValues.length
         : undefined;
       
+      const avgTargetSparsity = data.sparsityValues.length > 0
+        ? data.sparsityValues.filter((v): v is number => v !== undefined).reduce((sum, s) => sum + s, 0) / data.sparsityValues.length
+        : undefined;
+
       aggregated.push({
         rank: 0, // Will be assigned after sorting
         baseline: data.baseline,
@@ -121,6 +130,7 @@ export class AggregationService {
         targetSparsity: data.targetSparsity,
         targetAuxMemory: data.targetAuxMemory,
         avgLocalError,
+        avgTargetSparsity,
       });
     });
 

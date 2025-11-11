@@ -21,7 +21,7 @@ export class PostgresResultRepository implements IResultRepository {
     return (data || []).map(this.mapToResult);
   }
 
-  async findById(id: string): Promise<Result | undefined> {
+  async findById(id: string): Promise<Result | null> {
     const { data, error } = await this.supabase
       .from('results')
       .select('*')
@@ -31,12 +31,12 @@ export class PostgresResultRepository implements IResultRepository {
     if (error) {
       if (error.code === 'PGRST116') {
         // Not found
-        return undefined;
+        return null;
       }
       throw new Error(`Failed to fetch result: ${error.message}`);
     }
 
-    return data ? this.mapToResult(data) : undefined;
+    return data ? this.mapToResult(data) : null;
   }
 
   async findByConfigurationId(configurationId: string): Promise<Result[]> {

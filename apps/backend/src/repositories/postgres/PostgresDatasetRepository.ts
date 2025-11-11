@@ -1,6 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { IDatasetRepository } from '../interfaces/IDatasetRepository';
-import { Dataset } from '../../models/Dataset';
+import type { Dataset } from '@sky-light/shared-types';
 
 /**
  * PostgreSQL implementation of DatasetRepository using Supabase
