@@ -47,6 +47,13 @@ export class LeaderboardController {
         Object.keys(filters).length > 0 ? filters : undefined
       );
 
+      // Debug: Log first entry to check average_local_error in metricValues
+      if (leaderboard.length > 0) {
+        console.log('DEBUG DatasetLeaderboardController: First leaderboard entry');
+        console.log('  - metricValues:', leaderboard[0].metricValues);
+        console.log('  - Has average_local_error?', 'average_local_error' in leaderboard[0].metricValues);
+      }
+
       res.json(leaderboard);
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch dataset leaderboard' });
@@ -95,6 +102,13 @@ export class LeaderboardController {
         benchmarkId as string | undefined,
         Object.keys(filters).length > 0 ? filters : undefined
       );
+
+      // Debug: Log first entry to check avgLocalError
+      if (leaderboard.length > 0) {
+        console.log('DEBUG LeaderboardController: First leaderboard entry');
+        console.log('  - avgLocalError:', leaderboard[0].avgLocalError);
+        console.log('  - avgSparsity:', leaderboard[0].avgSparsity);
+      }
 
       res.json(leaderboard);
     } catch (error) {

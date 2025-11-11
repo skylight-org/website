@@ -101,8 +101,11 @@ export interface DatasetRanking {
     score: number;
     metricValues: Record<string, number>;
     targetSparsity?: number;
+<<<<<<< HEAD
     targetAuxMemory?: number;
     configuration: Configuration;
+=======
+>>>>>>> eaecfca8cb800209812107652ea47170ba258004
 }
 export interface AggregatedRanking {
     rank: number;
@@ -122,10 +125,14 @@ export interface AggregatedRanking {
     totalNumDatasets: number;
     bestDatasetRank: number;
     worstDatasetRank: number;
+<<<<<<< HEAD
     targetSparsity?: number;
     targetAuxMemory?: number;
     avgLocalError?: number;
     avgTargetSparsity?: number;
+=======
+    avgSparsity?: number;
+>>>>>>> eaecfca8cb800209812107652ea47170ba258004
 }
 export interface NumericRange {
     min?: number;
