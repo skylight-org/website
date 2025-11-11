@@ -37,7 +37,7 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
     console.log('First ranking:', rankings[0]);
     console.log('First ranking datasetScores:', rankings[0].datasetScores);
     console.log('First ranking avgLocalError:', rankings[0].avgLocalError);
-    console.log('First ranking avgSparsity:', rankings[0].avgSparsity);
+    console.log('First ranking avgTargetSparsity:', rankings[0].avgTargetSparsity);
   }
   
   const toggleRowExpansion = (rankingKey: string) => {
@@ -117,11 +117,11 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
             <SortableHeader
               label={
                 <div className="flex items-center gap-1">
-                  Density (%)
-                  <InfoTooltip content="The target density level for this configuration." />
+                  Avg Density (%)
+                  <InfoTooltip content="The average target density level across all datasets." />
                 </div>
               }
-              sortKey="targetSparsity"
+              sortKey="avgTargetSparsity"
               sortConfig={sortConfig}
               onSort={requestSort}
               align="right"
@@ -190,7 +190,7 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
                   </td>
                   <td className="px-4 py-4 text-right">
                     <span className="text-gray-400">
-                      {ranking.targetSparsity?.toFixed(2) || '-'}
+                      {ranking.avgTargetSparsity?.toFixed(2) || '-'}
                     </span>
                   </td>
                   <td className="px-4 py-4 text-right">
@@ -202,7 +202,7 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
                 
                 {isExpanded && (
                   <tr key={`${rankingKey}-expanded`}>
-                    <td colSpan={6} className="p-0 bg-dark-bg">
+                    <td colSpan={7} className="p-0 bg-dark-bg">
                       <div className="border-l-4 border-accent-gold/20 bg-dark-bg/30">
                         <div className="max-h-96 overflow-y-auto">
                           <table className="w-full table-fixed">
@@ -257,7 +257,7 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
                                     
                                     return Object.entries(groupedData)
                                       .sort(([a], [b]) => a.localeCompare(b))  // Sort benchmarks alphabetically
-                                      .flatMap(([benchmarkName, datasets]) => 
+                                      .flatMap(([, datasets]) => 
                                         datasets
                                           .sort((a, b) => b.score - a.score)  // Sort by score within benchmark
                                           .map(({ datasetId, dataset, score, benchmark, details }) => {

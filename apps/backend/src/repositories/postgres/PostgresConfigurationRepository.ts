@@ -1,5 +1,5 @@
-import { SupabaseClient, PostgrestQueryBuilder } from '@supabase/supabase-js';
-import { IConfigurationRepository } from '../interfaces/IConfigurationRepository';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { IConfigurationRepository, ConfigurationFilters } from '../interfaces/IConfigurationRepository';
 import { Configuration } from '../../models/Configuration';
 import type { NumericRange } from '@sky-light/shared-types';
 
@@ -10,12 +10,40 @@ export class PostgresConfigurationRepository implements IConfigurationRepository
     this.supabase = supabase;
   }
 
-  private get baseQuery(): PostgrestQueryBuilder<any, any, any[], any> {
+  private get baseQuery() {
     return this.supabase.from('configurations').select('*');
   }
 
-  async findAll(): Promise<Configuration[]> {
-    const { data, error } = await this.baseQuery;
+  async findAll(filters?: ConfigurationFilters): Promise<Configuration[]> {
+    let query = this.baseQuery;
+    
+    if (filters?.baselineId) {
+      query = query.eq('baseline_id', filters.baselineId);
+    }
+    if (filters?.datasetId) {
+      query = query.eq('dataset_id', filters.datasetId);
+    }
+    if (filters?.llmId) {
+      query = query.eq('llm_id', filters.llmId);
+    }
+    if (filters?.targetSparsity) {
+      if (filters.targetSparsity.min !== undefined) {
+        query = query.gte('target_sparsity', filters.targetSparsity.min);
+      }
+      if (filters.targetSparsity.max !== undefined) {
+        query = query.lte('target_sparsity', filters.targetSparsity.max);
+      }
+    }
+    if (filters?.targetAuxMemory) {
+      if (filters.targetAuxMemory.min !== undefined) {
+        query = query.gte('target_aux_memory', filters.targetAuxMemory.min);
+      }
+      if (filters.targetAuxMemory.max !== undefined) {
+        query = query.lte('target_aux_memory', filters.targetAuxMemory.max);
+      }
+    }
+    
+    const { data, error } = await query;
     if (error) throw new Error(`Failed to fetch configurations: ${error.message}`);
     return (data || []).map(this.mapToConfiguration);
   }
@@ -29,38 +57,16 @@ export class PostgresConfigurationRepository implements IConfigurationRepository
     return data ? this.mapToConfiguration(data) : null;
   }
 
-  async findByDatasetId(datasetId: string, filters?: {
-    targetDensity?: NumericRange;
-    targetAuxMemory?: NumericRange;
-    llmId?: string;
-  }): Promise<Configuration[]> {
-    let query = this.baseQuery.eq('dataset_id', datasetId);
+  async findByDatasetId(datasetId: string, filters?: ConfigurationFilters): Promise<Configuration[]> {
+    return this.findAll({ ...filters, datasetId });
+  }
 
-    if (filters?.targetDensity) {
-      if (filters.targetDensity.min !== undefined) {
-        query = query.gte('target_sparsity', filters.targetDensity.min);
-      }
-      if (filters.targetDensity.max !== undefined) {
-        query = query.lte('target_sparsity', filters.targetDensity.max);
-      }
-    }
+  async findByBaselineId(baselineId: string, filters?: ConfigurationFilters): Promise<Configuration[]> {
+    return this.findAll({ ...filters, baselineId });
+  }
 
-    if (filters?.targetAuxMemory) {
-      if (filters.targetAuxMemory.min !== undefined) {
-        query = query.gte('target_aux_memory', filters.targetAuxMemory.min);
-      }
-      if (filters.targetAuxMemory.max !== undefined) {
-        query = query.lte('target_aux_memory', filters.targetAuxMemory.max);
-      }
-    }
-    
-    if (filters?.llmId) {
-      query = query.eq('llm_id', filters.llmId);
-    }
-
-    const { data, error } = await query;
-    if (error) throw new Error(`Failed to fetch configurations for dataset: ${error.message}`);
-    return (data || []).map(this.mapToConfiguration);
+  async findByLLMId(llmId: string, filters?: ConfigurationFilters): Promise<Configuration[]> {
+    return this.findAll({ ...filters, llmId });
   }
 
   async getUniqueSparsityValues(): Promise<number[]> {

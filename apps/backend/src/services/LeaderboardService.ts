@@ -54,8 +54,8 @@ export class LeaderboardService {
   async getPlotData(filters?: {
     targetSparsity?: NumericRange;
     targetAuxMemory?: NumericRange;
+    llmId?: string;
   }): Promise<DatasetRanking[]> {
-    const runId = await this.getLatestRunId();
     const datasets = await this.datasetRepository.findAll();
     
     if (datasets.length === 0) {
@@ -63,7 +63,7 @@ export class LeaderboardService {
     }
 
     const allRankings = await Promise.all(
-      datasets.map(d => this.rankingService.calculateDatasetRanking(d.id, runId, filters))
+      datasets.map(d => this.rankingService.calculateDatasetRanking(d.id, filters))
     );
 
     return allRankings.flat();
@@ -100,6 +100,11 @@ export class LeaderboardService {
       totalResults: resultCount,
       lastUpdated: latestRun?.runDate || new Date(),
     };
+  }
+
+  private async getLatestRunId(): Promise<string | null> {
+    const latestRun = await this.experimentalRunRepository.findLatestCompleted();
+    return latestRun?.id || null;
   }
 
   /**
