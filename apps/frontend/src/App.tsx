@@ -9,6 +9,7 @@ import { DatasetsPage } from './pages/DatasetsPage';
 import { DatasetDetailPage } from './pages/DatasetDetailPage';
 import { DocumentationPage } from './pages/DocumentationPage';
 import { DocumentationBaselinesPage } from './pages/DocumentationBaselinesPage';
+import { DocumentationAuxMemoryPage } from './pages/DocumentationAuxMemoryPage';
 import { BaselineDetailPage } from './pages/BaselineDetailPage';
 import { ContributePage } from './pages/ContributePage';
 
@@ -52,6 +53,7 @@ function AppContent() {
             <Route path="/documentation" element={<DocumentationPage />} />
             <Route path="/documentation/baselines" element={<DocumentationBaselinesPage />} />
             <Route path="/documentation/baselines/:baselineId" element={<BaselineDetailPage />} />
+            <Route path="/documentation/auxiliary-memory" element={<DocumentationAuxMemoryPage />} />
             <Route path="/contribute" element={<ContributePage />} />
           </Routes>
           <Footer />

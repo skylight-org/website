@@ -31,32 +31,61 @@ export function DocumentationPage() {
 
       {/* Documentation Categories */}
       <section>
-        {/* Baselines Card */}
-        <Link
-          to="/documentation/baselines"
-          className="group block max-w-2xl bg-dark-surface border border-dark-border rounded-lg p-8 hover:border-accent-gold transition-colors"
-        >
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-lg bg-accent-gold/10 flex items-center justify-center">
-              <svg className="w-6 h-6 text-accent-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl">
+          {/* Baselines Card */}
+          <Link
+            to="/documentation/baselines"
+            className="group block bg-dark-surface border border-dark-border rounded-lg p-8 hover:border-accent-gold transition-colors"
+          >
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 rounded-lg bg-accent-gold/10 flex items-center justify-center">
+                <svg className="w-6 h-6 text-accent-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-white group-hover:text-accent-gold transition-colors">
+                Baseline Methods
+              </h2>
+            </div>
+            <p className="text-gray-300 mb-4">
+              Explore the sparse attention baseline methods evaluated in our benchmark. 
+              Each baseline represents a unique approach to efficient attention computation.
+            </p>
+            <div className="flex items-center gap-2 text-accent-gold font-medium">
+              <span>View baselines</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-white group-hover:text-accent-gold transition-colors">
-              Baseline Methods
-            </h2>
-          </div>
-          <p className="text-gray-300 mb-4">
-            Explore the sparse attention baseline methods evaluated in our benchmark. 
-            Each baseline represents a unique approach to efficient attention computation.
-          </p>
-          <div className="flex items-center gap-2 text-accent-gold font-medium">
-            <span>View baselines</span>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </div>
-        </Link>
+          </Link>
+          
+          {/* Auxiliary Memory Card */}
+          <Link
+            to="/documentation/auxiliary-memory"
+            className="group block bg-dark-surface border border-dark-border rounded-lg p-8 hover:border-accent-gold transition-colors"
+          >
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 rounded-lg bg-accent-gold/10 flex items-center justify-center">
+                <svg className="w-6 h-6 text-accent-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-white group-hover:text-accent-gold transition-colors">
+                Auxiliary Memory
+              </h2>
+            </div>
+            <p className="text-gray-300 mb-4">
+              Learn how auxiliary memory is computed for different sparse attention methods. 
+              Understand the memory requirements and trade-offs for each approach.
+            </p>
+            <div className="flex items-center gap-2 text-accent-gold font-medium">
+              <span>View guide</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </Link>
+        </div>
       </section>
 
       {/* Quick Links */}
