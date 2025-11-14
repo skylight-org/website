@@ -20,4 +20,4 @@ EXPOSE 3000
 # Set the command to run the backend using the 'dev' script.
 # This script uses 'tsx watch' for hot-reloading, monitoring the files copied into the container.
 # The expressJs backend listens on port 3000 by convention.
-CMD ["npm", "run", "dev", "--workspace=apps/backend"]
+# CMD ["npm", "run", "dev", "--workspace=apps/backend"]
