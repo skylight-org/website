@@ -107,7 +107,6 @@ export class LeaderboardController {
       if (leaderboard.length > 0) {
         console.log('DEBUG LeaderboardController: First leaderboard entry');
         console.log('  - avgLocalError:', leaderboard[0].avgLocalError);
-        console.log('  - avgSparsity:', leaderboard[0].avgSparsity);
       }
 
       res.json(leaderboard);

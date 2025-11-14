@@ -13,6 +13,16 @@ services:
     ports:
       - "6543:3000"
 
+    volumes:
+      - .:/app
+
+        #environment:
+        #- SUPABASE_URL= 
+        #- SUPABASE_KEY=
+
+
+    command: npm run dev --workspace=apps/backend
+
     # Since there are no volumes, this container is fully self-contained
     # and runs independently of your local code changes.
     restart: always
