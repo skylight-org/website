@@ -1,0 +1,51 @@
+/**
+ * Additional metadata for baselines including abstracts and paper links.
+ * This is used to enrich baseline information in the UI.
+ */
+
+export interface BaselineMetadata {
+  abstract: string;
+  paperUrl: string;
+}
+
+export const BASELINE_METADATA: Record<string, BaselineMetadata> = {
+  'DoubleSparsity': {
+    abstract: 'The inference process for large language models is slow and memory-intensive, with one of the most critical bottlenecks being excessive Key-Value (KV) cache accesses. This paper introduces "Double Sparsity," a novel post-training sparse attention technique designed to alleviate this bottleneck by reducing KV cache access. Double Sparsity combines token sparsity, which focuses on utilizing only the important tokens for computing self-attention, with channel sparsity, an approach that uses important feature channels for identifying important tokens. Our key insight is that the pattern of channel sparsity is relatively static, allowing us to use offline calibration to make it efficient at runtime, thereby enabling accurate and efficient identification of important tokens. Moreover, this method can be combined with offloading to achieve significant memory usage reduction. Experimental results demonstrate that Double Sparsity can achieve 1/16 token and channel sparsity with minimal impact on accuracy across various tasks, including wiki-2 perplexity, key-value retrieval, and long context benchmarks with models including Llama-2-7B, Llama-2-70B, and Mixtral-8x7B. It brings up to a 14.1× acceleration in attention operations and a 1.9× improvement in end-to-end inference on GPUs. With offloading, it achieves a decoding speed acceleration of 16.3× compared to state-of-the-art solutions at a sequence length of 256K.',
+    paperUrl: 'https://arxiv.org/pdf/2408.07092'
+  },
+  
+  'HashAttention': {
+    abstract: 'Leveraging long contexts is crucial for advanced AI systems, but attention computation poses a scalability challenge. While scaled dot-product attention (SDPA) exhibits token sparsity, i.e. only a few pivotal tokens significantly contribute to output, exploiting this sparsity remains challenging. Existing methods either suffer from quality degradation or require substantial additional resources. We show that identifying pivotal tokens is a Maximum Inner Product Search (MIPS) problem. However, existing MIPS solutions are not well-suited for SDPA, as they are not GPU-friendly and often underperform due to the separated query and key distributions. This paper introduces HashAttention, framing pivotal token identification as a recommendation problem. Given a query, HashAttention encodes keys and queries in Hamming space, capturing the required semantic similarity, using learned mapping functions. HashAttention efficiently identifies pivotal tokens for a given query using bitwise operations and computes attention using only these tokens, improving the overall attention efficiency. Trained on generic data, HashAttention reduces tokens used by up to 16× with minimal quality loss, requiring only 32 bits of auxiliary memory per token. Sparsity can be further improved to 32× through task-specific fine-tuning. On A100 GPU, at 32× sparsity, incorporating HashAttention reduces attention latency by up to 4.3× in GPT-FAST and 2.54× in FlashDecode, and achieves up to 3.12× higher throughput for GPT-FAST.',
+    paperUrl: 'https://arxiv.org/pdf/2412.14468'
+  },
+
+  'MagicPig': {
+    abstract: 'Large language models (LLMs) with long context windows have gained significant attention. However, the KV cache, stored to avoid re-computation, becomes a bottleneck. Various dynamic sparse or TopK-based attention approximation methods have been proposed to leverage the common insight that attention is sparse. In this paper, we first show that TopK attention itself suffers from quality degradation in certain downstream tasks because attention is not always as sparse as expected. Rather than selecting the keys and values with the highest attention scores, sampling with theoretical guarantees can provide a better estimation for attention output. To make the sampling-based approximation practical in LLM generation, we propose MagicPIG, a heterogeneous system based on Locality Sensitive Hashing (LSH). MagicPIG significantly reduces the workload of attention computation while preserving high accuracy for diverse tasks. MagicPIG stores the LSH hash tables and runs the attention computation on the CPU, which allows it to serve longer contexts and larger batch sizes with high approximation accuracy. MagicPIG can improve decoding throughput by up to 5× across various GPU hardware and achieve 54ms decoding latency on a single RTX 4090 for Llama-3.1-8B-Instruct model with a context of 96k tokens.',
+    paperUrl: 'https://arxiv.org/pdf/2410.16179'
+  },
+
+  'PQCache': {
+    abstract: 'As the field of Large Language Models (LLMs) continues to evolve, the context length in inference is steadily growing. Key-Value Cache (KVCache), the intermediate representations of tokens within LLM inference, has now become the primary memory bottleneck due to limited GPU memory. Current methods selectively determine suitable keys and values for self-attention computation in LLMs to address the issue. However, they either fall short in maintaining model quality or result in high serving latency. Drawing inspiration from advanced embedding retrieval techniques prevalent in the data management community, we consider the storage and retrieval of KVCache as a typical embedding retrieval problem. We propose PQCache, which employs Product Quantization (PQ) to manage KVCache, maintaining model quality while ensuring low serving latency. During the prefilling phase, we apply PQ to tokens\' keys for each LLM layer and head. During the autoregressive decoding phase, we use PQ codes and centroids to approximately identify important preceding tokens, then fetch the corresponding key-value pairs for self-attention computation. Through meticulous design of overlapping and caching, we minimize any additional computation and communication overhead during both phases. Extensive experiments demonstrate that PQCache achieves both effectiveness and efficiency, with 4.60% score improvement over existing methods on InfiniteBench and low system latency in both prefilling and decoding.',
+    paperUrl: 'https://arxiv.org/pdf/2407.12820'
+  },
+
+  'Quest': {
+    abstract: 'As the demand for long-context large language models (LLMs) increases, models with context windows of up to 128K or 1M tokens are becoming increasingly prevalent. However, long-context LLM inference is challenging since the inference speed decreases significantly as the sequence length grows. This slowdown is primarily caused by loading a large KV cache during self-attention. Previous works have shown that a small portion of critical tokens will dominate the attention outcomes. However, we observe the criticality of a token highly depends on the query. To this end, we propose Quest, a query-aware KV cache selection algorithm. Quest keeps track of the minimal and maximal Key values in KV cache pages and estimates the criticality of a given page using Query vectors. By only loading the Top-K critical KV cache pages for attention, Quest significantly speeds up self-attention without sacrificing accuracy. We show that Quest can achieve up to 2.23x self-attention speedup, which reduces inference latency by 7.03x while performing well on tasks with long dependencies with negligible accuracy loss.',
+    paperUrl: 'https://arxiv.org/pdf/2406.10774'
+  },
+
+  // Add aliases for different naming conventions
+  'vAttention(HashAttention)': {
+    abstract: 'Leveraging long contexts is crucial for advanced AI systems, but attention computation poses a scalability challenge. While scaled dot-product attention (SDPA) exhibits token sparsity, i.e. only a few pivotal tokens significantly contribute to output, exploiting this sparsity remains challenging. Existing methods either suffer from quality degradation or require substantial additional resources. We show that identifying pivotal tokens is a Maximum Inner Product Search (MIPS) problem. However, existing MIPS solutions are not well-suited for SDPA, as they are not GPU-friendly and often underperform due to the separated query and key distributions. This paper introduces HashAttention, framing pivotal token identification as a recommendation problem. Given a query, HashAttention encodes keys and queries in Hamming space, capturing the required semantic similarity, using learned mapping functions. HashAttention efficiently identifies pivotal tokens for a given query using bitwise operations and computes attention using only these tokens, improving the overall attention efficiency. Trained on generic data, HashAttention reduces tokens used by up to 16× with minimal quality loss, requiring only 32 bits of auxiliary memory per token. Sparsity can be further improved to 32× through task-specific fine-tuning. On A100 GPU, at 32× sparsity, incorporating HashAttention reduces attention latency by up to 4.3× in GPT-FAST and 2.54× in FlashDecode, and achieves up to 3.12× higher throughput for GPT-FAST.',
+    paperUrl: 'https://arxiv.org/pdf/2412.14468'
+  },
+};
+
+/**
+ * Get metadata for a baseline by name.
+ * Returns undefined if no metadata is available.
+ */
+export function getBaselineMetadata(baselineName: string): BaselineMetadata | undefined {
+  return BASELINE_METADATA[baselineName];
+}
+
