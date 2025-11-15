@@ -82,18 +82,6 @@ export function OverviewPage() {
     setLocalAuxMemoryMax('');
   };
 
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
-
-  if (error) {
-    return <ErrorMessage message={error.message} />;
-  }
-
-  if (!filteredRankings || !llms) {
-    return <div className="text-center py-12 text-gray-400">No data available.</div>;
-  }
-
   return (
     <div className="space-y-8">
       <Breadcrumb />
@@ -187,7 +175,17 @@ export function OverviewPage() {
       {/* Leaderboard Table Section */}
       <div className="bg-dark-surface border border-dark-border rounded-lg">
         <h2 className="text-xl font-bold text-white p-6">Overall Rankings</h2>
-        <AggregatedTable rankings={filteredRankings} />
+        {isLoading ? (
+          <LoadingSpinner />
+        ) : error ? (
+          <div className="p-6">
+            <ErrorMessage message={error.message} />
+          </div>
+        ) : !filteredRankings || !llms ? (
+          <div className="text-center py-12 text-gray-400">No data available.</div>
+        ) : (
+          <AggregatedTable rankings={filteredRankings} />
+        )}
       </div>
 
       {/* Stats */}
