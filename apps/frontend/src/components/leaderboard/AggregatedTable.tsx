@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type { AggregatedRanking } from '@sky-light/shared-types';
 import { InfoTooltip } from '../common/InfoTooltip';
 import { SortableHeader } from '../common/SortableHeader';
@@ -10,6 +10,10 @@ interface AggregatedTableProps {
   rankings: AggregatedRanking[];
 }
 
+const getNestedValue = (obj: any, path: string): any => {
+  return path.split('.').reduce((acc, part) => acc?.[part], obj);
+};
+
 export function AggregatedTable({ rankings }: AggregatedTableProps) {
   const { sortedData, sortConfig, requestSort } = useSortableData(rankings, {
     key: 'overallScore',
@@ -19,6 +23,35 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const { data: datasets } = useDatasets();
   const { data: benchmarks } = useBenchmarks();
+  
+  const rankMap = useMemo(() => {
+    const map = new Map<number, number>();
+    
+    if (!sortConfig || sortConfig.direction === null) {
+      sortedData.forEach((_, idx) => map.set(idx, idx + 1));
+      return map;
+    }
+    
+    let currentRank = 1;
+    
+    sortedData.forEach((entry, idx) => {
+      if (idx === 0) {
+        map.set(idx, currentRank);
+      } else {
+        const currentValue = getNestedValue(entry, sortConfig.key as string);
+        const previousValue = getNestedValue(sortedData[idx - 1], sortConfig.key as string);
+        
+        if (currentValue === previousValue) {
+          map.set(idx, map.get(idx - 1)!);
+        } else {
+          currentRank++;
+          map.set(idx, currentRank);
+        }
+      }
+    });
+    
+    return map;
+  }, [sortedData, sortConfig]);
   
   // Replacer function to remove 'search_space' keys from JSON output
   const jsonReplacer = (key: string, value: any) => {
@@ -69,6 +102,12 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
         <table className="w-full">
           <thead className="sticky top-0 bg-dark-surface z-10">
             <tr className="border-b border-dark-border">
+            <th className="px-4 py-3 text-center text-sm font-semibold text-gray-300">
+              <div className="flex items-center justify-center gap-1">
+                Rank
+                <InfoTooltip content="Position in the leaderboard based on overall score." />
+              </div>
+            </th>
             <SortableHeader
               label={
                 <div className="flex items-center gap-1">
@@ -158,6 +197,11 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
                   onClick={() => toggleRowExpansion(rankingKey)}
                   title="Click to see dataset breakdown"
                 >
+                  <td className="px-4 py-4 text-center">
+                    <span className="font-bold text-white text-lg">
+                      #{rankMap.get(idx)}
+                    </span>
+                  </td>
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-2">
                       <svg 
@@ -205,7 +249,7 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
                 
                 {isExpanded && (
                   <tr key={`${rankingKey}-expanded`}>
-                    <td colSpan={7} className="p-0 bg-dark-bg">
+                    <td colSpan={8} className="p-0 bg-dark-bg">
                       <div className="border-l-4 border-accent-gold/20 bg-dark-bg/30">
                         <div className="max-h-96 overflow-y-auto">
                           <table className="w-full table-fixed">

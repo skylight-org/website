@@ -102,8 +102,8 @@ export function OverviewPage() {
         <h1 className="text-4xl font-bold text-white mb-4">
           Sparse Attention Leaderboard
         </h1>
-        <p className="text-lg text-gray-400 max-w-3xl">
-          Compare performance of sparse attention baselines across multiple benchmarks and datasets.
+        <p className="text-lg text-gray-400 max-w-4xl">
+        Sparse attention methods reduce the quadratic complexity of transformers, enabling longer sequences and faster inference with less memory. This leaderboard compares state-of-the-art sparse attention techniques across state-of-the-art benchmarks, measuring their accuracy-efficiency trade-offs.
         </p>
       </section>
 
