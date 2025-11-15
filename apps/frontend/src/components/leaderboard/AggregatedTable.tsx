@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import type { AggregatedRanking } from '@sky-light/shared-types';
 import { InfoTooltip } from '../common/InfoTooltip';
 import { SortableHeader } from '../common/SortableHeader';
@@ -212,7 +213,7 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
         <tbody>
           {paginatedData.map((ranking, pageIdx) => {
             const globalIdx = (currentPage - 1) * pageSize + pageIdx;
-            const rankingKey = `${ranking.baseline.id}-${ranking.llm.id}`;
+            const rankingKey = `row-${globalIdx}`;
             const isExpanded = expandedRows.has(rankingKey);
             
             return (
@@ -247,7 +248,13 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
                     </div>
               </td>
               <td className="px-4 py-4">
-                <div className="font-medium text-white">{ranking.baseline.name}</div>
+                <Link
+                  to={`/documentation/baselines/${ranking.baseline.id}`}
+                  className="font-medium text-white hover:text-accent-gold transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {ranking.baseline.name}
+                </Link>
                 <div className="text-xs text-gray-400 max-w-xs truncate">{ranking.baseline.description}</div>
                 <div className="text-xs text-gray-500 mt-1">
                   {`Evaluated on ${ranking.numDatasets}/${ranking.totalNumDatasets} datasets`}
@@ -374,7 +381,17 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
                                 </td>
                               )}
                               <td className="w-[20%] px-4 py-3">
-                                <div className="text-sm text-white truncate">{dataset?.name || datasetId}</div>
+                                {dataset ? (
+                                  <Link
+                                    to={`/datasets/${datasetId}`}
+                                    className="text-sm text-white hover:text-accent-gold transition-colors truncate block"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    {dataset.name}
+                                  </Link>
+                                ) : (
+                                  <div className="text-sm text-white truncate">{datasetId}</div>
+                                )}
                                 <div className="text-xs text-gray-400">{benchmark?.name}</div>
                               </td>
                               <td className="w-[10%] px-4 py-3 text-right">
