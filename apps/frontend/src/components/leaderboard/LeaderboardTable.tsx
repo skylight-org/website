@@ -1,6 +1,7 @@
 import type { DatasetRanking, Metric } from '@sky-light/shared-types';
 import { SortableHeader } from '../common/SortableHeader';
 import { useSortableData } from '../../hooks/useSortableData';
+import { InfoTooltip } from '../common/InfoTooltip';
 
 interface LeaderboardTableProps {
   entries: DatasetRanking[];
@@ -38,42 +39,72 @@ export function LeaderboardTable({ entries, metrics = [] }: LeaderboardTableProp
         <thead>
           <tr className="border-b border-dark-border">
             <SortableHeader
-              label="Rank"
+              label={
+                <div className="flex items-center gap-1">
+                  Rank
+                  <InfoTooltip content="Position in the leaderboard based on score for this dataset." />
+                </div>
+              }
               sortKey="rank"
               sortConfig={sortConfig}
               onSort={requestSort}
               align="left"
             />
             <SortableHeader
-              label="Baseline"
+              label={
+                <div className="flex items-center gap-1">
+                  Baseline
+                  <InfoTooltip content="The sparse attention implementation being evaluated." />
+                </div>
+              }
               sortKey="baseline.name"
               sortConfig={sortConfig}
               onSort={requestSort}
               align="left"
             />
             <SortableHeader
-              label="LLM"
+              label={
+                <div className="flex items-center gap-1">
+                  LLM
+                  <InfoTooltip content="The Large Language Model used for testing." />
+                </div>
+              }
               sortKey="llm.name"
               sortConfig={sortConfig}
               onSort={requestSort}
               align="left"
             />
             <SortableHeader
-              label="Score"
+              label={
+                <div className="flex items-center gap-1">
+                  Score
+                  <InfoTooltip content="Performance score on this dataset. Higher is better. Used as secondary sort." />
+                </div>
+              }
               sortKey="score"
               sortConfig={sortConfig}
               onSort={requestSort}
               align="right"
             />
             <SortableHeader
-              label="Avg Density (%)"
+              label={
+                <div className="flex items-center gap-1">
+                  Avg Density (%)
+                  <InfoTooltip content="Average attention density - percentage of tokens used in attention computation." />
+                </div>
+              }
               sortKey="metricValues.average_density"
               sortConfig={sortConfig}
               onSort={requestSort}
               align="right"
             />
             <SortableHeader
-              label="Aux Memory"
+              label={
+                <div className="flex items-center gap-1">
+                  Aux Memory
+                  <InfoTooltip content="Auxiliary memory used by the sparse attention method (in bits per token)." />
+                </div>
+              }
               sortKey="targetAuxMemory"
               sortConfig={sortConfig}
               onSort={requestSort}
