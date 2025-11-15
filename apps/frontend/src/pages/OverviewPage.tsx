@@ -107,32 +107,6 @@ export function OverviewPage() {
         </p>
       </section>
 
-      {/* Stats */}
-      {stats && (
-        <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          <div className="bg-dark-surface border border-dark-border rounded-lg p-6">
-            <div className="text-3xl font-bold text-white mb-1">{stats.totalBaselines}</div>
-            <div className="text-sm text-gray-400">Baselines</div>
-          </div>
-          <div className="bg-dark-surface border border-dark-border rounded-lg p-6">
-            <div className="text-3xl font-bold text-white mb-1">{stats.totalBenchmarks}</div>
-            <div className="text-sm text-gray-400">Benchmarks</div>
-          </div>
-          <div className="bg-dark-surface border border-dark-border rounded-lg p-6">
-            <div className="text-3xl font-bold text-white mb-1">{stats.totalDatasets}</div>
-            <div className="text-sm text-gray-400">Datasets</div>
-          </div>
-          <div className="bg-dark-surface border border-dark-border rounded-lg p-6">
-            <div className="text-3xl font-bold text-white mb-1">{stats.totalLLMs}</div>
-            <div className="text-sm text-gray-400">LLMs</div>
-          </div>
-          <div className="bg-dark-surface border border-dark-border rounded-lg p-6">
-            <div className="text-3xl font-bold text-white mb-1">{stats.totalResults}</div>
-            <div className="text-sm text-gray-400">Results</div>
-          </div>
-        </section>
-      )}
-
       {/* Filters Section */}
       <form onSubmit={(e) => { e.preventDefault(); handleApplyFilters(); }}>
         <div className="bg-dark-surface border border-dark-border rounded-lg p-6">
@@ -161,6 +135,7 @@ export function OverviewPage() {
               options={llmOptions}
               selectedValues={selectedLlms}
               onChange={setSelectedLlms}
+              tooltip="Select which LLMs to include in the leaderboard rankings."
             />
             <TextRangeFilter
               label="Filter by Density (%)"
@@ -170,6 +145,7 @@ export function OverviewPage() {
               onMaxChange={setLocalDensityMax}
               minDefault={0}
               maxDefault={100}
+              tooltip="Filter results by target density percentage (100% - sparsity). Higher density means more attention computation."
             />
             <TextRangeFilter
               label="Filter by Aux Memory"
@@ -179,6 +155,7 @@ export function OverviewPage() {
               onMaxChange={setLocalAuxMemoryMax}
               minDefault={0}
               maxDefault={2048}
+              tooltip="Filter results by auxiliary memory size. This represents additional memory used by the sparse attention method."
             />
             <div className="flex items-center justify-center pt-6">
               <label htmlFor="showAll" className="flex items-center cursor-pointer text-sm text-gray-300">
@@ -205,6 +182,32 @@ export function OverviewPage() {
         <h2 className="text-xl font-bold text-white p-6">Overall Rankings</h2>
         <AggregatedTable rankings={filteredRankings} />
       </div>
+
+      {/* Stats */}
+      {stats && (
+        <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="bg-dark-surface border border-dark-border rounded-lg p-6">
+            <div className="text-3xl font-bold text-white mb-1">{stats.totalBaselines}</div>
+            <div className="text-sm text-gray-400">Baselines</div>
+          </div>
+          <div className="bg-dark-surface border border-dark-border rounded-lg p-6">
+            <div className="text-3xl font-bold text-white mb-1">{stats.totalBenchmarks}</div>
+            <div className="text-sm text-gray-400">Benchmarks</div>
+          </div>
+          <div className="bg-dark-surface border border-dark-border rounded-lg p-6">
+            <div className="text-3xl font-bold text-white mb-1">{stats.totalDatasets}</div>
+            <div className="text-sm text-gray-400">Datasets</div>
+          </div>
+          <div className="bg-dark-surface border border-dark-border rounded-lg p-6">
+            <div className="text-3xl font-bold text-white mb-1">{stats.totalLLMs}</div>
+            <div className="text-sm text-gray-400">LLMs</div>
+          </div>
+          <div className="bg-dark-surface border border-dark-border rounded-lg p-6">
+            <div className="text-3xl font-bold text-white mb-1">{stats.totalResults}</div>
+            <div className="text-sm text-gray-400">Results</div>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
