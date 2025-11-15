@@ -73,6 +73,13 @@ export function LeaderboardTable({ entries, metrics = [] }: LeaderboardTableProp
               align="right"
             />
             <SortableHeader
+              label="Local Error"
+              sortKey="metricValues.average_local_error"
+              sortConfig={sortConfig}
+              onSort={requestSort}
+              align="right"
+            />
+            <SortableHeader
               label="Aux Memory"
               sortKey="targetAuxMemory"
               sortConfig={sortConfig}
@@ -133,6 +140,12 @@ export function LeaderboardTable({ entries, metrics = [] }: LeaderboardTableProp
                 {entry.metricValues.average_density !== undefined &&
                 entry.metricValues.average_density !== null
                   ? entry.metricValues.average_density.toFixed(2)
+                  : '-'}
+              </td>
+              <td className="px-4 py-4 text-right text-sm text-gray-300">
+                {entry.metricValues.average_local_error !== undefined &&
+                entry.metricValues.average_local_error !== null
+                  ? entry.metricValues.average_local_error.toPrecision(2)
                   : '-'}
               </td>
               <td className="px-4 py-4 text-right text-sm text-gray-300">
