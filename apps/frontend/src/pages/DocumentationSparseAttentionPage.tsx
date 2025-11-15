@@ -71,10 +71,12 @@ export function DocumentationSparseAttentionPage() {
           </p>
 
           <div className="bg-black/30 border border-dark-border/60 rounded-lg p-6 my-4">
-            <div className="text-center text-gray-200 text-base mb-4">
-              {'\\['}
-              {'\\text{Attention}(Q, K, V) = \\text{softmax}\\left(\\frac{QK^T}{\\sqrt{d_k}}\\right) \\times V'}
-              {'\\]'}
+            <div className="overflow-x-auto">
+              <div className="text-center text-gray-200 text-base mb-4 min-w-max">
+                {'\\['}
+                {'\\text{Attention}(Q, K, V) = \\text{softmax}\\left(\\frac{QK^T}{\\sqrt{d_k}}\\right) \\times V'}
+                {'\\]'}
+              </div>
             </div>
             <div className="text-sm text-gray-300 space-y-1 border-t border-dark-border/40 pt-4">
               <div><strong className="text-white">where:</strong></div>
@@ -141,10 +143,12 @@ export function DocumentationSparseAttentionPage() {
           </p>
 
           <div className="bg-black/30 border border-dark-border/60 rounded-lg p-6 my-4">
-            <div className="text-center text-gray-200 text-base mb-4">
-              {'\\['}
-              {'\\text{SparseAttention}(Q, K, V) = \\text{softmax}\\left(M \\odot \\frac{QK^T}{\\sqrt{d_k}}\\right) \\times V'}
-              {'\\]'}
+            <div className="overflow-x-auto">
+              <div className="text-center text-gray-200 text-base mb-4 min-w-max">
+                {'\\['}
+                {'\\text{SparseAttention}(Q, K, V) = \\text{softmax}\\left(M \\odot \\frac{QK^T}{\\sqrt{d_k}}\\right) \\times V'}
+                {'\\]'}
+              </div>
             </div>
             <div className="text-sm text-gray-300 space-y-1 border-t border-dark-border/40 pt-4">
               <div><strong className="text-white">where:</strong></div>
@@ -257,8 +261,10 @@ export function DocumentationSparseAttentionPage() {
                   Computes full attention scores, then selects the top-k highest-scoring tokens 
                   for each query. Serves as an accuracy upper bound for sparse attention methods.
                 </p>
-                <div className="text-xs text-gray-400 mt-2">
-                  Auxiliary Memory: {'\\(\\text{head\\_dim} \\times \\text{bits\\_precision}\\)'} (full KV cache)
+                <div className="text-xs text-gray-400 mt-2 overflow-x-auto">
+                  <div className="min-w-max">
+                    Auxiliary Memory: {'\\(\\text{head_dim} \\times \\text{bits_precision}\\)'} (full KV cache)
+                  </div>
                 </div>
               </div>
 
@@ -269,8 +275,10 @@ export function DocumentationSparseAttentionPage() {
                   Queries attend primarily to keys in the same or nearby hash buckets, enabling 
                   sublinear complexity.
                 </p>
-                <div className="text-xs text-gray-400 mt-2">
-                  Auxiliary Memory: {'\\(\\text{hat\\_bits} \\times \\text{group\\_size}\\)'} per KV head
+                <div className="text-xs text-gray-400 mt-2 overflow-x-auto">
+                  <div className="min-w-max">
+                    Auxiliary Memory: {'\\(\\text{hat_bits} \\times \\text{group_size}\\)'} per KV head
+                  </div>
                 </div>
                 <div className="text-xs text-gray-500 mt-1 font-mono">
                   Example models: Reformer, Routing Transformers
@@ -308,8 +316,10 @@ export function DocumentationSparseAttentionPage() {
                   representations for initial ranking, then applies full precision attention to 
                   selected tokens.
                 </p>
-                <div className="text-xs text-gray-400 mt-2">
-                  Auxiliary Memory: {'\\(\\text{label\\_bits} \\times (\\text{head\\_dim} / \\text{group\\_factor}) \\times \\text{group\\_size}\\)'}
+                <div className="text-xs text-gray-400 mt-2 overflow-x-auto">
+                  <div className="min-w-max">
+                    Auxiliary Memory: {'\\(\\text{label_bits} \\times (\\text{head_dim} / \\text{group_factor}) \\times \\text{group_size}\\)'}
+                  </div>
                 </div>
               </div>
 
@@ -343,8 +353,10 @@ export function DocumentationSparseAttentionPage() {
                   Organizes the KV cache into fixed-size pages, maintaining summary vectors for 
                   each page. First scores pages, then evaluates individual tokens within high-scoring pages.
                 </p>
-                <div className="text-xs text-gray-400 mt-2">
-                  Auxiliary Memory: {'\\(2 \\times \\text{head\\_dim} / \\text{page\\_size} \\times \\text{bits\\_precision}\\)'}
+                <div className="text-xs text-gray-400 mt-2 overflow-x-auto">
+                  <div className="min-w-max">
+                    Auxiliary Memory: {'\\(2 \\times \\text{head_dim} / \\text{page_size} \\times \\text{bits_precision}\\)'}
+                  </div>
                 </div>
               </div>
 
@@ -378,8 +390,10 @@ export function DocumentationSparseAttentionPage() {
                   uniform sample of the KV cache, ensuring coverage of the entire sequence while 
                   focusing on likely relevant tokens.
                 </p>
-                <div className="text-xs text-gray-400 mt-2">
-                  Auxiliary Memory: {'\\(\\text{selection\\_method\\_bits} + (\\text{sample\\_rate} \\times \\text{head\\_dim} \\times \\text{bits})\\)'}
+                <div className="text-xs text-gray-400 mt-2 overflow-x-auto">
+                  <div className="min-w-max">
+                    Auxiliary Memory: {'\\(\\text{selection_method_bits} + (\\text{sample_rate} \\times \\text{head_dim} \\times \\text{bits})\\)'}
+                  </div>
                 </div>
                 <div className="text-xs text-gray-500 mt-1 font-mono">
                   Deployed in: vLLM, FasterTransformer hybrid schedulers
