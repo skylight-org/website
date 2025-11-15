@@ -41,6 +41,20 @@ export function DocumentationSparseAttentionPage() {
             relationships. This approach enables transformers to scale to significantly longer 
             sequences while maintaining computational efficiency and memory feasibility.
           </p>
+          <div className="bg-accent-gold/5 border border-accent-gold/30 rounded-lg p-5 space-y-2 text-sm text-gray-200">
+            <div className="font-semibold text-accent-gold tracking-wide uppercase text-xs">
+              Working Definition
+            </div>
+            <p>
+              A sparse attention layer constrains each query token to score at most {'\\(k\\)'} key tokens, with {'\\(k \\ll n\\)'}.
+              This drops the compute and memory footprint from {'\\(O(n^2)\\)'} to approximately {'\\(O(n \\times k)\\)'} while keeping the
+              expressivity of attention where it matters most.
+            </p>
+            <p>
+              Different sparsity patterns—local windows, dilated strides, learned routing, or block-level masks—define how the {'\\(k\\)'}
+              keys are chosen and, ultimately, whether a method favors throughput, accuracy, or simplicity.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -149,6 +163,11 @@ export function DocumentationSparseAttentionPage() {
               identify and compute only the most relevant subset—typically reducing effective computation 
               to {'\\(O(n \\times k)\\)'} where {'\\(k \\ll n\\)'}, or even sublinear complexity in some cases.
             </p>
+            <div className="text-xs text-gray-300 mt-4 space-y-1">
+              <div>Coverage budget {'\\(k\\)'} must scale with head dimension and task difficulty.</div>
+              <div>Choosing too small a {'\\(k\\)'} risks missing long-range dependencies (under-coverage).</div>
+              <div>Choosing too large a {'\\(k\\)'} erodes the speed gains (over-coverage).</div>
+            </div>
           </div>
 
           <h3 className="text-xl font-semibold text-white mt-6 mb-3">The Selection Problem</h3>
@@ -191,6 +210,9 @@ export function DocumentationSparseAttentionPage() {
                 <div className="text-xs text-gray-400 mt-2">
                   Complexity: {'\\(O(n \\times w)\\)'} where {'\\(w\\)'} is window size
                 </div>
+                <div className="text-xs text-gray-500 mt-1 font-mono">
+                  Example models: Longformer, Vision Transformers with Swin-like windows
+                </div>
               </div>
 
               <div>
@@ -210,6 +232,9 @@ export function DocumentationSparseAttentionPage() {
                   Attends to tokens at regular intervals, capturing long-range dependencies 
                   with linear complexity.
                 </p>
+                <div className="text-xs text-gray-500 mt-1 font-mono">
+                  Example models: BigBird global/strided pattern, Star-Transformer
+                </div>
               </div>
             </div>
           </div>
@@ -247,6 +272,9 @@ export function DocumentationSparseAttentionPage() {
                 <div className="text-xs text-gray-400 mt-2">
                   Auxiliary Memory: {'\\(\\text{hat\\_bits} \\times \\text{group\\_size}\\)'} per KV head
                 </div>
+                <div className="text-xs text-gray-500 mt-1 font-mono">
+                  Example models: Reformer, Routing Transformers
+                </div>
               </div>
 
               <div>
@@ -255,6 +283,9 @@ export function DocumentationSparseAttentionPage() {
                   Uses neural networks to predict which tokens should attend to each other, 
                   potentially learning domain-specific attention patterns.
                 </p>
+                <div className="text-xs text-gray-500 mt-1 font-mono">
+                  Techniques: Routing networks, k-NN router heads, mixture-of-experts attention
+                </div>
               </div>
             </div>
           </div>
@@ -288,6 +319,9 @@ export function DocumentationSparseAttentionPage() {
                   Applies product quantization to key vectors, enabling efficient approximate 
                   nearest neighbor search in the compressed space.
                 </p>
+                <div className="text-xs text-gray-500 mt-1 font-mono">
+                  Used in: PQ-KV caches for LLM serving, retrieval-augmented sparse layers
+                </div>
               </div>
             </div>
           </div>
@@ -320,6 +354,9 @@ export function DocumentationSparseAttentionPage() {
                   Divides the attention matrix into blocks and applies sparsity at the block level, 
                   balancing granularity with computational efficiency.
                 </p>
+                <div className="text-xs text-gray-500 mt-1 font-mono">
+                  Hardware-friendly pattern used by Triton block-sparse kernels
+                </div>
               </div>
             </div>
           </div>
@@ -344,7 +381,48 @@ export function DocumentationSparseAttentionPage() {
                 <div className="text-xs text-gray-400 mt-2">
                   Auxiliary Memory: {'\\(\\text{selection\\_method\\_bits} + (\\text{sample\\_rate} \\times \\text{head\\_dim} \\times \\text{bits})\\)'}
                 </div>
+                <div className="text-xs text-gray-500 mt-1 font-mono">
+                  Deployed in: vLLM, FasterTransformer hybrid schedulers
+                </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Real-World Architectures */}
+      <section className="bg-dark-surface border border-dark-border rounded-lg p-8">
+        <h2 className="text-2xl font-bold text-white mb-4">Real-World Architectures & Use Cases</h2>
+        <div className="space-y-5 text-gray-300">
+          <p>
+            Sparse attention is no longer a purely academic concept; production models rely on it to make long-context reasoning affordable.
+            Understanding which architectures use which sparsity patterns helps map research ideas to practical deployments.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-black/30 border border-dark-border/60 rounded-lg p-5 space-y-2">
+              <div className="text-accent-gold font-semibold text-lg">Longformer / BigBird</div>
+              <p className="text-sm">
+                Mix local windows with dilated or random global tokens, enabling 4K–16K token contexts on commodity accelerators.
+                BigBird adds theoretical guarantees (universal approximation and Turing completeness) under its sparsity pattern.
+              </p>
+            </div>
+            <div className="bg-black/30 border border-dark-border/60 rounded-lg p-5 space-y-2">
+              <div className="text-accent-gold font-semibold text-lg">Reformer & Routing Transformers</div>
+              <p className="text-sm">
+                Use LSH or learnable routers to bucket similar tokens, approximating nearest-neighbor attention with subquadratic cost.
+              </p>
+            </div>
+            <div className="bg-black/30 border border-dark-border/60 rounded-lg p-5 space-y-2">
+              <div className="text-accent-gold font-semibold text-lg">StreamingLLM / Quest / FlashInfer</div>
+              <p className="text-sm">
+                Inference-time sparsity maintains a digest of prior tokens, pairing sliding windows with memory pages to support million-token streams.
+              </p>
+            </div>
+            <div className="bg-black/30 border border-dark-border/60 rounded-lg p-5 space-y-2">
+              <div className="text-accent-gold font-semibold text-lg">Vision & Multimodal Models</div>
+              <p className="text-sm">
+                Swin Transformers, Perceiver IO, and ViT variants employ block-sparse or hierarchical attention to manage high-resolution patches.
+              </p>
             </div>
           </div>
         </div>
