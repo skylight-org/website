@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { AggregatedRanking } from '@sky-light/shared-types';
 import { InfoTooltip } from '../common/InfoTooltip';
 import { SortableHeader } from '../common/SortableHeader';
+import { Pagination } from '../common/Pagination';
 import { useSortableData } from '../../hooks/useSortableData';
 import { useDatasets } from '../../hooks/useDatasets';
 import { useBenchmarks } from '../../hooks/useBenchmarks';
@@ -21,8 +22,15 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
   });
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const { data: datasets } = useDatasets();
   const { data: benchmarks } = useBenchmarks();
+
+  useEffect(() => {
+    setCurrentPage(1);
+    setExpandedRows(new Set());
+  }, [sortConfig]);
   
   const rankMap = useMemo(() => {
     const map = new Map<number, number>();
@@ -52,6 +60,25 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
     
     return map;
   }, [sortedData, sortConfig]);
+
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    return sortedData.slice(startIndex, endIndex);
+  }, [sortedData, currentPage, pageSize]);
+
+  const totalPages = Math.ceil(sortedData.length / pageSize);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    setExpandedRows(new Set());
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1);
+    setExpandedRows(new Set());
+  };
   
   // Replacer function to remove 'search_space' keys from JSON output
   const jsonReplacer = (key: string, value: any) => {
@@ -98,7 +125,7 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
 
   return (
     <div className="relative">
-      <div className="overflow-x-auto overflow-y-auto max-h-[680px]">
+      <div className="overflow-x-auto">
         <table className="w-full">
           <thead className="sticky top-0 bg-dark-surface z-10">
             <tr className="border-b border-dark-border">
@@ -183,7 +210,8 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
           </tr>
         </thead>
         <tbody>
-          {sortedData.map((ranking, idx) => {
+          {paginatedData.map((ranking, pageIdx) => {
+            const globalIdx = (currentPage - 1) * pageSize + pageIdx;
             const rankingKey = `${ranking.baseline.id}-${ranking.llm.id}`;
             const isExpanded = expandedRows.has(rankingKey);
             
@@ -192,14 +220,14 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
                 <tr 
                   key={rankingKey}
                   className={`border-b border-dark-border hover:bg-dark-surface-hover transition-colors cursor-pointer select-none ${
-                idx < 3 ? 'bg-yellow-500/5' : ''
+                globalIdx < 3 ? 'bg-yellow-500/5' : ''
               }`}
                   onClick={() => toggleRowExpansion(rankingKey)}
                   title="Click to see dataset breakdown"
                 >
                   <td className="px-4 py-4 text-center">
                     <span className="font-bold text-white text-lg">
-                      #{rankMap.get(idx)}
+                      #{rankMap.get(globalIdx)}
                     </span>
                   </td>
                   <td className="px-4 py-4">
@@ -384,10 +412,14 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
       </table>
     </div>
     
-    {/* Scroll indicator - shows when there's more content */}
-    {rankings.length > 10 && (
-      <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-dark-surface to-transparent pointer-events-none" />
-    )}
+    <Pagination
+      currentPage={currentPage}
+      totalPages={totalPages}
+      pageSize={pageSize}
+      totalItems={sortedData.length}
+      onPageChange={handlePageChange}
+      onPageSizeChange={handlePageSizeChange}
+    />
   </div>
   );
 }
