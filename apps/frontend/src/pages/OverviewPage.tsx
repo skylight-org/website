@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import type { NumericRange } from '@sky-light/shared-types';
 import { useOverallLeaderboard, useOverviewStats } from '../hooks/useLeaderboard';
 import { useLLMs } from '../hooks/useLLMs';
@@ -103,7 +104,13 @@ export function OverviewPage() {
           Sparse Attention Leaderboard
         </h1>
         <p className="text-lg text-gray-400 max-w-4xl">
-        Sparse attention methods reduce the quadratic complexity of transformers, enabling longer sequences and faster inference with less memory. This leaderboard compares state-of-the-art sparse attention techniques across state-of-the-art benchmarks, measuring their accuracy-efficiency trade-offs.
+          <Link 
+            to="/documentation/sparse-attention" 
+            className="text-accent-gold hover:underline"
+          >
+            Sparse attention
+          </Link>
+          {' '}methods reduce the quadratic complexity of transformers, enabling longer sequences and faster inference with less memory. This leaderboard compares state-of-the-art sparse attention techniques across state-of-the-art benchmarks, measuring their accuracy-efficiency trade-offs.
         </p>
       </section>
 

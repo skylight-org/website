@@ -213,8 +213,20 @@ export function Sidebar() {
                 ) : null}
               </div>
 
-            {/* Auxiliary Memory Sub-section */}
-            <Link
+              {/* Sparse Attention Guide */}
+              <Link
+                to="/documentation/sparse-attention"
+                className={`block px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  location.pathname === '/documentation/sparse-attention'
+                    ? 'bg-dark-surface-hover text-accent-gold'
+                    : 'text-gray-400 hover:bg-dark-surface-hover hover:text-white'
+                }`}
+              >
+                Sparse Attention
+              </Link>
+
+              {/* Auxiliary Memory Sub-section */}
+              <Link
                 to="/documentation/auxiliary-memory"
                 className={`block px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   location.pathname === '/documentation/auxiliary-memory'
