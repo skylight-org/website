@@ -5,7 +5,6 @@ interface InfoTooltipProps {
   content: string;
 }
 
-type TooltipPosition = 'center' | 'left' | 'right';
 type TooltipDirection = 'down' | 'up';
 
 interface TooltipCoordinates {
@@ -15,7 +14,6 @@ interface TooltipCoordinates {
 
 export function InfoTooltip({ content }: InfoTooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
-  const [position, setPosition] = useState<TooltipPosition>('center');
   const [direction, setDirection] = useState<TooltipDirection>('down');
   const [coordinates, setCoordinates] = useState<TooltipCoordinates>({ top: 0, left: 0 });
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -40,14 +38,11 @@ export function InfoTooltip({ content }: InfoTooltipProps) {
     const leftEdge = centerPosition - tooltipWidth / 2;
     const rightEdge = centerPosition + tooltipWidth / 2;
 
-    let optimalPosition: TooltipPosition = 'center';
     let leftCoordinate = centerPosition - tooltipWidth / 2;
     
     if (leftEdge < margin) {
-      optimalPosition = 'left';
       leftCoordinate = buttonRect.left;
     } else if (rightEdge > viewportWidth - margin) {
-      optimalPosition = 'right';
       leftCoordinate = buttonRect.right - tooltipWidth;
     }
 
@@ -55,7 +50,6 @@ export function InfoTooltip({ content }: InfoTooltipProps) {
       ? buttonRect.bottom + spacing
       : buttonRect.top - tooltipEstimatedHeight - spacing;
 
-    setPosition(optimalPosition);
     setDirection(optimalDirection);
     setCoordinates({ top: topCoordinate, left: leftCoordinate });
   }, []);
