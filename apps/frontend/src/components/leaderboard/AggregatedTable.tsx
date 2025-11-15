@@ -22,6 +22,7 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
     direction: 'desc',
   });
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [expandedDatasets, setExpandedDatasets] = useState<Set<string>>(new Set());
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -111,6 +112,18 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
         newSet.delete(rankingKey);
       } else {
         newSet.add(rankingKey);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleDatasetExpansion = (datasetKey: string) => {
+    setExpandedDatasets(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(datasetKey)) {
+        newSet.delete(datasetKey);
+      } else {
+        newSet.add(datasetKey);
       }
       return newSet;
     });
@@ -335,51 +348,39 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
                                       return acc;
                                     }, {} as Record<string, any[]>);
                                     
-                                    let isFirstRow = true;
-                                    
                                     return Object.entries(groupedData)
                                       .sort(([a], [b]) => a.localeCompare(b))  // Sort benchmarks alphabetically
                                       .flatMap(([, datasets]) => 
                                         datasets
                                           .sort((a, b) => b.score - a.score)  // Sort by score within benchmark
-                                          .map(({ datasetId, dataset, score, benchmark, details }) => {
-                                            const currentIsFirst = isFirstRow;
-                                            isFirstRow = false;
+                                          .flatMap(({ datasetId, dataset, score, benchmark, details }) => {
+                                            const datasetKey = `${rankingKey}-${datasetId}`;
+                                            const isDatasetExpanded = expandedDatasets.has(datasetKey);
                                             
-                                            return (
+                                            return [
                             <tr 
                               key={datasetId}
-                              className="border-t border-dark-border/30 hover:bg-dark-surface/20 transition-colors"
+                              className="border-t border-dark-border/30 hover:bg-dark-surface/20 transition-colors cursor-pointer"
+                              onClick={() => toggleDatasetExpansion(datasetKey)}
                             >
-                              {currentIsFirst && (
-                                <td className="w-[40%] px-4 py-3 align-top" rowSpan={Object.keys(ranking.datasetScores).length}>
-                                  <div className="text-sm text-white">{ranking.llm.name}</div>
-                                  <div className="text-xs text-gray-400 mb-2">{ranking.baseline.name}</div>
-                                  <div className="mt-2 p-2 bg-black/30 rounded">
-                                    <div className="flex justify-between items-center mb-1">
-                                      <p className="text-xs text-gray-500 uppercase tracking-wide">Sparse Attention Config</p>
-                                      <button
-                                        onClick={() => {
-                                          const configToCopy = details.configuration?.additionalParams?.sparse_attention_config ?? { name: 'DenseAttention', description: 'Standard full attention mechanism.' };
-                                          handleCopy(
-                                            JSON.stringify(configToCopy, jsonReplacer, 2),
-                                            `${ranking.llm.id}-${ranking.baseline.id}-${datasetId}`
-                                          );
-                                        }}
-                                        className="text-xs text-gray-400 hover:text-white transition-colors"
-                                      >
-                                        {copiedKey === `${ranking.llm.id}-${ranking.baseline.id}-${datasetId}` ? 'Copied!' : 'Copy'}
-                                      </button>
+                              <td className="w-[40%] px-4 py-3">
+                                <div className="flex items-center gap-2">
+                                  <svg 
+                                    className={`w-3 h-3 text-gray-400 transition-transform flex-shrink-0 ${isDatasetExpanded ? 'rotate-90' : ''}`} 
+                                    fill="none" 
+                                    stroke="currentColor" 
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                  </svg>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="text-xs text-gray-500 truncate">{ranking.llm.name} - {ranking.baseline.name}</div>
+                                    <div className="text-xs text-gray-600 truncate">
+                                      Click to {isDatasetExpanded ? 'hide' : 'view'} config
                                     </div>
-                                    <pre className="text-xs text-gray-300 font-mono overflow-x-auto">
-{details.configuration?.additionalParams?.sparse_attention_config
-  ? JSON.stringify(details.configuration.additionalParams.sparse_attention_config, jsonReplacer, 2)
-  : JSON.stringify({ name: 'DenseAttention', description: 'Standard full attention mechanism.' }, null, 2)
-}
-                                    </pre>
                                   </div>
-                                </td>
-                              )}
+                                </div>
+                              </td>
                               <td className="w-[20%] px-4 py-3">
                                 {dataset ? (
                                   <Link
@@ -407,9 +408,41 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
                               </td>
                               <td className="w-[10%] px-4 py-3 text-right text-sm text-gray-400">
                                 {details.auxMemory?.toLocaleString() || '-'}
-              </td>
-                            </tr>
-                                            );
+                              </td>
+                            </tr>,
+                            isDatasetExpanded && (
+                              <tr key={`${datasetId}-config`} className="border-t border-dark-border/30">
+                                <td colSpan={6} className="px-4 py-3 bg-black/20">
+                                  <div className="p-3 bg-black/30 rounded">
+                                    <div className="flex justify-between items-center mb-2">
+                                      <p className="text-xs text-gray-500 uppercase tracking-wide">
+                                        Sparse Attention Config for {dataset?.name || datasetId}
+                                      </p>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          const configToCopy = details.configuration?.additionalParams?.sparse_attention_config ?? { name: 'DenseAttention', description: 'Standard full attention mechanism.' };
+                                          handleCopy(
+                                            JSON.stringify(configToCopy, jsonReplacer, 2),
+                                            datasetKey
+                                          );
+                                        }}
+                                        className="text-xs px-2 py-1 text-gray-400 hover:text-white hover:bg-dark-surface rounded transition-colors"
+                                      >
+                                        {copiedKey === datasetKey ? 'Copied!' : 'Copy'}
+                                      </button>
+                                    </div>
+                                    <pre className="text-xs text-gray-300 font-mono overflow-x-auto max-h-96">
+{details.configuration?.additionalParams?.sparse_attention_config
+  ? JSON.stringify(details.configuration.additionalParams.sparse_attention_config, jsonReplacer, 2)
+  : JSON.stringify({ name: 'DenseAttention', description: 'Standard full attention mechanism.' }, null, 2)
+}
+                                    </pre>
+                                  </div>
+                                </td>
+                              </tr>
+                            )
+                          ].filter(Boolean);
                                           })
                                       );
                                   })()}

@@ -37,9 +37,19 @@ export function useSortableData<T>(data: T[], initialSort?: SortConfig<T>) {
     }
 
     return [...data].sort((a, b) => {
+      // Primary sort
       const aValue = getNestedValue(a, sortConfig.key as string);
       const bValue = getNestedValue(b, sortConfig.key as string);
-      return compareValues(aValue, bValue, sortConfig.direction);
+      const primaryComparison = compareValues(aValue, bValue, sortConfig.direction);
+      
+      // If primary sort values are equal and not sorting by 'score', use score as secondary sort (descending)
+      if (primaryComparison === 0 && sortConfig.key !== 'score') {
+        const aScore = getNestedValue(a, 'score');
+        const bScore = getNestedValue(b, 'score');
+        return compareValues(aScore, bScore, 'desc');
+      }
+      
+      return primaryComparison;
     });
   }, [data, sortConfig]);
 
