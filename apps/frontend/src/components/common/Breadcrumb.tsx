@@ -1,11 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useDatasets } from '../../hooks/useDatasets';
 import { useBaselines } from '../../hooks/useBaselines';
+import { useLLMs } from '../../hooks/useLLMs';
 
 export function Breadcrumb() {
   const location = useLocation();
   const { data: datasets } = useDatasets();
   const { data: baselines } = useBaselines();
+  const { data: llms } = useLLMs();
   
   const pathSegments = location.pathname.split('/').filter(Boolean);
   
@@ -25,6 +27,15 @@ export function Breadcrumb() {
       const dataset = datasets.find(d => d.id === pathSegments[1]);
       if (dataset) {
         breadcrumbs.push({ label: dataset.name, path: location.pathname });
+      }
+    }
+  } else if (pathSegments[0] === 'models') {
+    breadcrumbs.push({ label: 'Models', path: '/models' });
+    // If viewing a specific model
+    if (pathSegments.length === 2 && llms) {
+      const model = llms.find(l => l.id === pathSegments[1]);
+      if (model) {
+        breadcrumbs.push({ label: model.name, path: location.pathname });
       }
     }
   } else if (pathSegments[0] === 'contribute') {
