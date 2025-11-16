@@ -163,7 +163,6 @@ export function LeaderboardTable({ entries, metrics = [] }: LeaderboardTableProp
               </td>
               <td className="px-4 py-4">
                 <div className="font-medium text-white">{entry.baseline.name}</div>
-                <div className="text-xs text-gray-400">{entry.baseline.version}</div>
               </td>
               <td className="px-4 py-4">
                 <div className="font-medium text-white">{entry.llm.name}</div>
