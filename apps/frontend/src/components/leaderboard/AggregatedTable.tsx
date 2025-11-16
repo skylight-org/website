@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import type { AggregatedRanking } from '@sky-light/shared-types';
 import { InfoTooltip } from '../common/InfoTooltip';
 import { SortableHeader } from '../common/SortableHeader';
+import { Pagination } from '../common/Pagination';
 import { useSortableData } from '../../hooks/useSortableData';
 import { useDatasets } from '../../hooks/useDatasets';
 import { useBenchmarks } from '../../hooks/useBenchmarks';
@@ -10,15 +12,75 @@ interface AggregatedTableProps {
   rankings: AggregatedRanking[];
 }
 
+const getNestedValue = (obj: any, path: string): any => {
+  return path.split('.').reduce((acc, part) => acc?.[part], obj);
+};
+
 export function AggregatedTable({ rankings }: AggregatedTableProps) {
   const { sortedData, sortConfig, requestSort } = useSortableData(rankings, {
     key: 'overallScore',
     direction: 'desc',
   });
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [expandedDatasets, setExpandedDatasets] = useState<Set<string>>(new Set());
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const { data: datasets } = useDatasets();
   const { data: benchmarks } = useBenchmarks();
+
+  useEffect(() => {
+    setCurrentPage(1);
+    setExpandedRows(new Set());
+  }, [sortConfig]);
+  
+  const rankMap = useMemo(() => {
+    const map = new Map<number, number>();
+    
+    if (!sortConfig || sortConfig.direction === null) {
+      sortedData.forEach((_, idx) => map.set(idx, idx + 1));
+      return map;
+    }
+    
+    let currentRank = 1;
+    
+    sortedData.forEach((entry, idx) => {
+      if (idx === 0) {
+        map.set(idx, currentRank);
+      } else {
+        const currentValue = getNestedValue(entry, sortConfig.key as string);
+        const previousValue = getNestedValue(sortedData[idx - 1], sortConfig.key as string);
+        
+        if (currentValue === previousValue) {
+          map.set(idx, map.get(idx - 1)!);
+        } else {
+          currentRank++;
+          map.set(idx, currentRank);
+        }
+      }
+    });
+    
+    return map;
+  }, [sortedData, sortConfig]);
+
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    return sortedData.slice(startIndex, endIndex);
+  }, [sortedData, currentPage, pageSize]);
+
+  const totalPages = Math.ceil(sortedData.length / pageSize);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    setExpandedRows(new Set());
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1);
+    setExpandedRows(new Set());
+  };
   
   // Replacer function to remove 'search_space' keys from JSON output
   const jsonReplacer = (key: string, value: any) => {
@@ -55,6 +117,18 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
     });
   };
 
+  const toggleDatasetExpansion = (datasetKey: string) => {
+    setExpandedDatasets(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(datasetKey)) {
+        newSet.delete(datasetKey);
+      } else {
+        newSet.add(datasetKey);
+      }
+      return newSet;
+    });
+  };
+
   if (rankings.length === 0) {
     return (
       <div className="text-center py-12 text-gray-400">
@@ -65,10 +139,16 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
 
   return (
     <div className="relative">
-      <div className="overflow-x-auto overflow-y-auto max-h-[680px]">
+      <div className="overflow-x-auto">
         <table className="w-full">
           <thead className="sticky top-0 bg-dark-surface z-10">
             <tr className="border-b border-dark-border">
+            <th className="px-4 py-3 text-center text-sm font-semibold text-gray-300">
+              <div className="flex items-center justify-center gap-1">
+                Rank
+                <InfoTooltip content="Position in the leaderboard based on overall score." />
+              </div>
+            </th>
             <SortableHeader
               label={
                 <div className="flex items-center gap-1">
@@ -144,8 +224,9 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
           </tr>
         </thead>
         <tbody>
-          {sortedData.map((ranking, idx) => {
-            const rankingKey = `${ranking.baseline.id}-${ranking.llm.id}`;
+          {paginatedData.map((ranking, pageIdx) => {
+            const globalIdx = (currentPage - 1) * pageSize + pageIdx;
+            const rankingKey = `row-${globalIdx}`;
             const isExpanded = expandedRows.has(rankingKey);
             
             return (
@@ -153,11 +234,16 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
                 <tr 
                   key={rankingKey}
                   className={`border-b border-dark-border hover:bg-dark-surface-hover transition-colors cursor-pointer select-none ${
-                idx < 3 ? 'bg-yellow-500/5' : ''
+                globalIdx < 3 ? 'bg-yellow-500/5' : ''
               }`}
                   onClick={() => toggleRowExpansion(rankingKey)}
                   title="Click to see dataset breakdown"
                 >
+                  <td className="px-4 py-4 text-center">
+                    <span className="font-bold text-white text-lg">
+                      #{rankMap.get(globalIdx)}
+                    </span>
+                  </td>
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-2">
                       <svg 
@@ -175,7 +261,13 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
                     </div>
               </td>
               <td className="px-4 py-4">
-                <div className="font-medium text-white">{ranking.baseline.name}</div>
+                <Link
+                  to={`/documentation/baselines/${ranking.baseline.id}`}
+                  className="font-medium text-white hover:text-accent-gold transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {ranking.baseline.name}
+                </Link>
                 <div className="text-xs text-gray-400 max-w-xs truncate">{ranking.baseline.description}</div>
                 <div className="text-xs text-gray-500 mt-1">
                   {`Evaluated on ${ranking.numDatasets}/${ranking.totalNumDatasets} datasets`}
@@ -205,7 +297,7 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
                 
                 {isExpanded && (
                   <tr key={`${rankingKey}-expanded`}>
-                    <td colSpan={7} className="p-0 bg-dark-bg">
+                    <td colSpan={8} className="p-0 bg-dark-bg">
                       <div className="border-l-4 border-accent-gold/20 bg-dark-bg/30">
                         <div className="max-h-96 overflow-y-auto">
                           <table className="w-full table-fixed">
@@ -256,53 +348,51 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
                                       return acc;
                                     }, {} as Record<string, any[]>);
                                     
-                                    let isFirstRow = true;
-                                    
                                     return Object.entries(groupedData)
                                       .sort(([a], [b]) => a.localeCompare(b))  // Sort benchmarks alphabetically
                                       .flatMap(([, datasets]) => 
                                         datasets
                                           .sort((a, b) => b.score - a.score)  // Sort by score within benchmark
-                                          .map(({ datasetId, dataset, score, benchmark, details }) => {
-                                            const currentIsFirst = isFirstRow;
-                                            isFirstRow = false;
+                                          .flatMap(({ datasetId, dataset, score, benchmark, details }) => {
+                                            const datasetKey = `${rankingKey}-${datasetId}`;
+                                            const isDatasetExpanded = expandedDatasets.has(datasetKey);
                                             
-                                            return (
+                                            return [
                             <tr 
                               key={datasetId}
-                              className="border-t border-dark-border/30 hover:bg-dark-surface/20 transition-colors"
+                              className="border-t border-dark-border/30 hover:bg-dark-surface/20 transition-colors cursor-pointer"
+                              onClick={() => toggleDatasetExpansion(datasetKey)}
                             >
-                              {currentIsFirst && (
-                                <td className="w-[40%] px-4 py-3 align-top" rowSpan={Object.keys(ranking.datasetScores).length}>
-                                  <div className="text-sm text-white">{ranking.llm.name}</div>
-                                  <div className="text-xs text-gray-400 mb-2">{ranking.baseline.name}</div>
-                                  <div className="mt-2 p-2 bg-black/30 rounded">
-                                    <div className="flex justify-between items-center mb-1">
-                                      <p className="text-xs text-gray-500 uppercase tracking-wide">Sparse Attention Config</p>
-                                      <button
-                                        onClick={() => {
-                                          const configToCopy = details.configuration?.additionalParams?.sparse_attention_config ?? { name: 'DenseAttention', description: 'Standard full attention mechanism.' };
-                                          handleCopy(
-                                            JSON.stringify(configToCopy, jsonReplacer, 2),
-                                            `${ranking.llm.id}-${ranking.baseline.id}-${datasetId}`
-                                          );
-                                        }}
-                                        className="text-xs text-gray-400 hover:text-white transition-colors"
-                                      >
-                                        {copiedKey === `${ranking.llm.id}-${ranking.baseline.id}-${datasetId}` ? 'Copied!' : 'Copy'}
-                                      </button>
+                              <td className="w-[40%] px-4 py-3">
+                                <div className="flex items-center gap-2">
+                                  <svg 
+                                    className={`w-3 h-3 text-gray-400 transition-transform flex-shrink-0 ${isDatasetExpanded ? 'rotate-90' : ''}`} 
+                                    fill="none" 
+                                    stroke="currentColor" 
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                  </svg>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="text-xs text-gray-500 truncate">{ranking.llm.name} - {ranking.baseline.name}</div>
+                                    <div className="text-xs text-gray-600 truncate">
+                                      Click to {isDatasetExpanded ? 'hide' : 'view'} config
                                     </div>
-                                    <pre className="text-xs text-gray-300 font-mono overflow-x-auto">
-{details.configuration?.additionalParams?.sparse_attention_config
-  ? JSON.stringify(details.configuration.additionalParams.sparse_attention_config, jsonReplacer, 2)
-  : JSON.stringify({ name: 'DenseAttention', description: 'Standard full attention mechanism.' }, null, 2)
-}
-                                    </pre>
                                   </div>
-                                </td>
-                              )}
+                                </div>
+                              </td>
                               <td className="w-[20%] px-4 py-3">
-                                <div className="text-sm text-white truncate">{dataset?.name || datasetId}</div>
+                                {dataset ? (
+                                  <Link
+                                    to={`/datasets/${datasetId}`}
+                                    className="text-sm text-white hover:text-accent-gold transition-colors truncate block"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    {dataset.name}
+                                  </Link>
+                                ) : (
+                                  <div className="text-sm text-white truncate">{datasetId}</div>
+                                )}
                                 <div className="text-xs text-gray-400">{benchmark?.name}</div>
                               </td>
                               <td className="w-[10%] px-4 py-3 text-right">
@@ -318,9 +408,41 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
                               </td>
                               <td className="w-[10%] px-4 py-3 text-right text-sm text-gray-400">
                                 {details.auxMemory?.toLocaleString() || '-'}
-              </td>
-                            </tr>
-                                            );
+                              </td>
+                            </tr>,
+                            isDatasetExpanded && (
+                              <tr key={`${datasetId}-config`} className="border-t border-dark-border/30">
+                                <td colSpan={6} className="px-4 py-3 bg-black/20">
+                                  <div className="p-3 bg-black/30 rounded">
+                                    <div className="flex justify-between items-center mb-2">
+                                      <p className="text-xs text-gray-500 uppercase tracking-wide">
+                                        Sparse Attention Config for {dataset?.name || datasetId}
+                                      </p>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          const configToCopy = details.configuration?.additionalParams?.sparse_attention_config ?? { name: 'DenseAttention', description: 'Standard full attention mechanism.' };
+                                          handleCopy(
+                                            JSON.stringify(configToCopy, jsonReplacer, 2),
+                                            datasetKey
+                                          );
+                                        }}
+                                        className="text-xs px-2 py-1 text-gray-400 hover:text-white hover:bg-dark-surface rounded transition-colors"
+                                      >
+                                        {copiedKey === datasetKey ? 'Copied!' : 'Copy'}
+                                      </button>
+                                    </div>
+                                    <pre className="text-xs text-gray-300 font-mono overflow-x-auto max-h-96">
+{details.configuration?.additionalParams?.sparse_attention_config
+  ? JSON.stringify(details.configuration.additionalParams.sparse_attention_config, jsonReplacer, 2)
+  : JSON.stringify({ name: 'DenseAttention', description: 'Standard full attention mechanism.' }, null, 2)
+}
+                                    </pre>
+                                  </div>
+                                </td>
+                              </tr>
+                            )
+                          ].filter(Boolean);
                                           })
                                       );
                                   })()}
@@ -340,10 +462,14 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
       </table>
     </div>
     
-    {/* Scroll indicator - shows when there's more content */}
-    {rankings.length > 10 && (
-      <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-dark-surface to-transparent pointer-events-none" />
-    )}
+    <Pagination
+      currentPage={currentPage}
+      totalPages={totalPages}
+      pageSize={pageSize}
+      totalItems={sortedData.length}
+      onPageChange={handlePageChange}
+      onPageSizeChange={handlePageSizeChange}
+    />
   </div>
   );
 }

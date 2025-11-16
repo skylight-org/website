@@ -29,6 +29,41 @@ export function DocumentationPage() {
         </div>
       </section>
 
+      {/* Featured Documentation */}
+      <section>
+        <div className="bg-gradient-to-br from-accent-gold/20 to-accent-gold/5 border border-accent-gold/30 rounded-lg p-8 mb-8">
+          <Link
+            to="/documentation/sparse-attention"
+            className="group block"
+          >
+            <div className="flex items-start gap-6">
+              <div className="w-16 h-16 rounded-lg bg-accent-gold/20 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                <svg className="w-8 h-8 text-accent-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h2 className="text-2xl font-bold text-white group-hover:text-accent-gold transition-colors mb-3">
+                  Understanding Sparse Attention
+                </h2>
+                <p className="text-gray-200 mb-4">
+                  A comprehensive guide to sparse attention mechanisms—from foundational concepts 
+                  and the quadratic complexity problem to advanced implementation strategies and 
+                  evaluation metrics. Learn how sparse attention enables transformers to scale to 
+                  unprecedented context lengths.
+                </p>
+                <div className="flex items-center gap-2 text-accent-gold font-medium">
+                  <span>Read guide</span>
+                  <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </Link>
+        </div>
+      </section>
+
       {/* Documentation Categories */}
       <section>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl">

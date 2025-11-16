@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { InfoTooltip } from './InfoTooltip';
 
 interface MultiSelectFilterProps {
   label: string;
@@ -6,6 +7,7 @@ interface MultiSelectFilterProps {
   selectedValues: string[];
   onChange: (values: string[]) => void;
   className?: string;
+  tooltip?: string;
 }
 
 export function MultiSelectFilter({
@@ -13,7 +15,8 @@ export function MultiSelectFilter({
   options,
   selectedValues,
   onChange,
-  className = ''
+  className = '',
+  tooltip
 }: MultiSelectFilterProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -54,7 +57,10 @@ export function MultiSelectFilter({
 
   return (
     <div className={`flex flex-col gap-2 ${className}`} ref={dropdownRef}>
-      <label className="text-sm font-medium text-gray-300">{label}</label>
+      <label className="text-sm font-medium text-gray-300 flex items-center gap-1">
+        {label}
+        {tooltip && <InfoTooltip content={tooltip} />}
+      </label>
       <div className="relative">
         <button
           type="button"

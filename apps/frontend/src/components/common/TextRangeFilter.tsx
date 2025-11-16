@@ -1,3 +1,5 @@
+import { InfoTooltip } from './InfoTooltip';
+
 interface TextRangeFilterProps {
   label: string;
   minValue: string;
@@ -7,6 +9,7 @@ interface TextRangeFilterProps {
   minDefault?: number;
   maxDefault?: number;
   unit?: string;
+  tooltip?: string;
 }
 
 export function TextRangeFilter({
@@ -18,11 +21,15 @@ export function TextRangeFilter({
   minDefault = 0,
   maxDefault = 1.0,
   unit = '',
+  tooltip
 }: TextRangeFilterProps) {
 
   return (
     <div className="flex flex-col gap-2">
-      <label className="text-sm font-medium text-gray-300">{label}</label>
+      <label className="text-sm font-medium text-gray-300 flex items-center gap-1">
+        {label}
+        {tooltip && <InfoTooltip content={tooltip} />}
+      </label>
       <div className="grid grid-cols-2 gap-2">
         {/* Min Input */}
         <div className="relative">
