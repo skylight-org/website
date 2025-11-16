@@ -101,6 +101,18 @@ export function LeaderboardTable({ entries, metrics = [] }: LeaderboardTableProp
             <SortableHeader
               label={
                 <div className="flex items-center gap-1">
+                  Local Error
+                  <InfoTooltip content="Average local error of the sparse attention method." />
+                </div>
+              }
+              sortKey="metricValues.average_local_error"
+              sortConfig={sortConfig}
+              onSort={requestSort}
+              align="right"
+            />
+            <SortableHeader
+              label={
+                <div className="flex items-center gap-1">
                   Aux Memory
                   <InfoTooltip content="Auxiliary memory used by the sparse attention method (in bits per token)." />
                 </div>
@@ -164,6 +176,12 @@ export function LeaderboardTable({ entries, metrics = [] }: LeaderboardTableProp
                 {entry.metricValues.average_density !== undefined &&
                 entry.metricValues.average_density !== null
                   ? entry.metricValues.average_density.toFixed(2)
+                  : '-'}
+              </td>
+              <td className="px-4 py-4 text-right text-sm text-gray-300">
+                {entry.metricValues.average_local_error !== undefined &&
+                entry.metricValues.average_local_error !== null
+                  ? entry.metricValues.average_local_error.toPrecision(2)
                   : '-'}
               </td>
               <td className="px-4 py-4 text-right text-sm text-gray-300">
