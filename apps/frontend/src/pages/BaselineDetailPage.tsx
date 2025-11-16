@@ -3,7 +3,6 @@ import { useBaselines } from '../hooks/useBaselines';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import { Breadcrumb } from '../components/common/Breadcrumb';
-import { getBaselineMetadata } from '../data/baselineMetadata';
 
 export function BaselineDetailPage() {
   const { baselineId } = useParams<{ baselineId: string }>();
@@ -22,11 +21,6 @@ export function BaselineDetailPage() {
   if (!baseline) {
     return <ErrorMessage message="Baseline not found" />;
   }
-
-  // Get additional metadata if available
-  const metadata = getBaselineMetadata(baseline.name);
-  const paperUrl = baseline.paperUrl || metadata?.paperUrl;
-  const abstract = baseline.abstract || metadata?.abstract;
 
   return (
     <div className="space-y-8">
@@ -64,10 +58,10 @@ export function BaselineDetailPage() {
         </div>
 
         {/* Paper Link */}
-        {paperUrl && (
+        {baseline.paperUrl && (
           <div className="mt-6 pt-6 border-t border-dark-border">
             <a
-              href={paperUrl}
+              href={baseline.paperUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-2 bg-accent-gold text-dark-bg font-medium rounded-lg hover:bg-accent-gold-hover transition-colors"
@@ -91,29 +85,15 @@ export function BaselineDetailPage() {
         )}
       </div>
 
-      {/* Abstract Section */}
-      {abstract && (
-        <div className="bg-dark-surface rounded-lg border border-dark-border p-6">
-          <h2 className="text-2xl font-bold text-white mb-4">Abstract</h2>
-          <div className="prose prose-invert max-w-none">
-            <p className="text-gray-300 leading-relaxed text-justify">
-              {abstract}
-            </p>
-          </div>
-        </div>
-      )}
-
       {/* About Section */}
-      {baseline.description && !abstract && (
-        <div className="bg-dark-surface rounded-lg border border-dark-border p-6">
-          <h2 className="text-2xl font-bold text-white mb-4">About This Baseline</h2>
-          <div className="prose prose-invert max-w-none">
-            <p className="text-gray-300 leading-relaxed">
-              {baseline.description}
-            </p>
-          </div>
+      <div className="bg-dark-surface rounded-lg border border-dark-border p-6">
+        <h2 className="text-2xl font-bold text-white mb-4">About This Baseline</h2>
+        <div className="prose prose-invert max-w-none">
+          <p className="text-gray-300 leading-relaxed">
+            {baseline.description}
+          </p>
         </div>
-      )}
+      </div>
 
       {/* Performance Note */}
       <div className="bg-dark-surface rounded-lg border border-dark-border p-6">
