@@ -9,7 +9,7 @@ import { ErrorMessage } from '../components/common/ErrorMessage';
 import { Breadcrumb } from '../components/common/Breadcrumb';
 import { Toggle } from '../components/common/Toggle';
 import { TextRangeFilter } from '../components/common/TextRangeFilter';
-import type { AggregatedRanking, NumericRange } from '@sky-light/shared-types';
+import type { NumericRange } from '@sky-light/shared-types';
 
 export function ModelDetailPage() {
   const { modelId } = useParams<{ modelId: string }>();
@@ -75,21 +75,6 @@ export function ModelDetailPage() {
     return filtered;
   }, [rankings, datasets, showAllDatasets, densityFilter, auxMemoryFilter]);
 
-  // Calculate stats for the model
-  const modelStats = useMemo(() => {
-    if (!rankings) return { totalConfigs: 0, avgScore: 0, bestConfig: null };
-    
-    const totalScore = rankings.reduce((sum, r) => sum + r.overallScore, 0);
-    const avgScore = rankings.length > 0 ? totalScore / rankings.length : 0;
-    const bestConfig = rankings.length > 0 ? rankings[0] : null;
-    
-    return {
-      totalConfigs: rankings.length,
-      avgScore,
-      bestConfig
-    };
-  }, [rankings]);
-
   // Handle applying filters
   const handleApplyFilters = () => {
     const newDensityFilter: NumericRange | undefined = 
@@ -121,65 +106,36 @@ export function ModelDetailPage() {
     setAuxMemoryFilter(undefined);
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <LoadingSpinner size="lg" />
-      </div>
-    );
-  }
-
-  if (llmError || !llm) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <ErrorMessage message="Failed to load model details" />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-8">
       <Breadcrumb />
       
       {/* Model Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-white mb-2">{llm.name}</h1>
-        <div className="flex items-center gap-4 text-gray-400">
-          <span>{llm.provider}</span>
-          {llm.parameterCount && (
-            <span>{formatParameterCount(llm.parameterCount)} parameters</span>
-          )}
-          {llm.contextLength && (
-            <span>{llm.contextLength.toLocaleString()} context</span>
-          )}
+      {llmError ? (
+        <ErrorMessage message="Failed to load model details" />
+      ) : isLoading ? (
+        <div className="animate-pulse">
+          <div className="h-8 w-64 bg-dark-surface rounded mb-2"></div>
+          <div className="h-6 w-48 bg-dark-surface rounded"></div>
         </div>
-      </div>
-
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-dark-surface border border-dark-border rounded-lg p-6">
-          <div className="text-sm text-gray-400 mb-1">Total Configurations</div>
-          <div className="text-2xl font-bold text-white">{modelStats.totalConfigs}</div>
-        </div>
-        <div className="bg-dark-surface border border-dark-border rounded-lg p-6">
-          <div className="text-sm text-gray-400 mb-1">Average Score</div>
-          <div className="text-2xl font-bold text-accent-gold">{modelStats.avgScore.toFixed(1)}</div>
-        </div>
-        <div className="bg-dark-surface border border-dark-border rounded-lg p-6">
-          <div className="text-sm text-gray-400 mb-1">Best Configuration</div>
-          <div className="text-lg font-semibold text-white">
-            {modelStats.bestConfig?.baseline.name || 'N/A'}
+      ) : llm ? (
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-2">{llm.name}</h1>
+          <div className="flex items-center gap-4 text-gray-400">
+            <span>{llm.provider}</span>
+            {llm.parameterCount && (
+              <span>{formatParameterCount(llm.parameterCount)} parameters</span>
+            )}
+            {llm.contextLength && (
+              <span>{llm.contextLength.toLocaleString()} context</span>
+            )}
           </div>
-          {modelStats.bestConfig && (
-            <div className="text-sm text-accent-gold">
-              Score: {modelStats.bestConfig.overallScore.toFixed(1)}
-            </div>
-          )}
         </div>
-      </div>
+      ) : null}
 
       {/* Filters */}
-      <div className="bg-dark-surface border border-dark-border rounded-lg p-6 space-y-4">
+      {!llmError && (
+        <div className="bg-dark-surface border border-dark-border rounded-lg p-6 space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-sm font-medium text-white mb-1">Show All Datasets Only</h3>
@@ -245,12 +201,27 @@ export function ModelDetailPage() {
           </div>
         </div>
       </div>
+      )}
 
       {/* Leaderboard */}
-      <div>
+      {!llmError && (
+        <div>
         <h2 className="text-xl font-semibold text-white mb-4">Configurations Leaderboard</h2>
-        <AggregatedTable rankings={filteredRankings} />
+        <div className="bg-dark-surface border border-dark-border rounded-lg">
+          {isLoading ? (
+            <div className="flex items-center justify-center min-h-[400px]">
+              <LoadingSpinner />
+            </div>
+          ) : filteredRankings.length === 0 ? (
+            <div className="text-center py-12 text-gray-400">
+              No configurations found matching your filters.
+            </div>
+          ) : (
+            <AggregatedTable rankings={filteredRankings} />
+          )}
+        </div>
       </div>
+      )}
     </div>
   );
 }

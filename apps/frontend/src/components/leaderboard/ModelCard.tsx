@@ -13,7 +13,6 @@ interface BaselineConfig {
 interface ModelStats {
   llm: LLM;
   configurations: BaselineConfig[];
-  allConfigurations: BaselineConfig[];
   totalDatasets: number;
   averageScore: number;
 }
