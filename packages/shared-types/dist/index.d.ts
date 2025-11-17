@@ -5,6 +5,7 @@ export interface Baseline {
     version: string;
     paperUrl?: string;
     codeUrl?: string;
+    abstract?: string;
     createdAt: Date;
     updatedAt: Date;
 }

@@ -1,7 +1,9 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useDatasets } from '../hooks/useDatasets';
 import { useBenchmarks } from '../hooks/useBenchmarks';
 import { useDatasetLeaderboard } from '../hooks/useLeaderboard';
+import { useLLMs } from '../hooks/useLLMs';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import { DatasetCard } from '../components/leaderboard/DatasetCard';
@@ -10,11 +12,16 @@ import { MultiSelectFilter } from '../components/common/MultiSelectFilter';
 import type { Dataset, Benchmark } from '@sky-light/shared-types';
 
 export function DatasetsPage() {
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const llmIdFilter = searchParams.get('llmId');
+
   const [selectedBenchmarks, setSelectedBenchmarks] = useState<string[]>([]);
   const [datasetSearchQuery, setDatasetSearchQuery] = useState('');
 
   const { data: datasets, isLoading: datasetsLoading, error: datasetsError } = useDatasets();
   const { data: benchmarks, isLoading: benchmarksLoading } = useBenchmarks();
+  const { data: llms } = useLLMs();
 
   const isLoading = datasetsLoading || benchmarksLoading;
   
@@ -68,7 +75,11 @@ export function DatasetsPage() {
       <div>
         <h1 className="text-3xl font-bold text-white mb-2">Datasets</h1>
         <p className="text-gray-400">
-          Compare baseline performance across datasets
+          {llmIdFilter && llms ? (
+            <>Showing datasets for <span className="text-accent-gold font-medium">{llms.find(l => l.id === llmIdFilter)?.name || 'Unknown Model'}</span></>
+          ) : (
+            'Compare baseline performance across datasets'
+          )}
         </p>
       </div>
 
@@ -109,16 +120,19 @@ export function DatasetsPage() {
           </div>
           
           {/* Clear Filters Button */}
-          {(selectedBenchmarks.length < (benchmarks?.length || 0) || datasetSearchQuery) && (
+          {(selectedBenchmarks.length < (benchmarks?.length || 0) || datasetSearchQuery || llmIdFilter) && (
             <div className="flex items-end">
               <button
                 onClick={() => {
                   setSelectedBenchmarks(benchmarks?.map(b => b.name) || []);
                   setDatasetSearchQuery('');
+                  if (llmIdFilter) {
+                    window.location.href = '/datasets';
+                  }
                 }}
                 className="px-4 py-2 rounded-lg text-sm font-medium bg-dark-bg text-gray-300 hover:text-white hover:bg-dark-surface-hover transition-colors"
               >
-                Clear filters
+                Clear {llmIdFilter ? 'all' : ''} filters
               </button>
             </div>
           )}
@@ -142,6 +156,7 @@ export function DatasetsPage() {
               key={dataset.id} 
               dataset={dataset}
               benchmark={benchmarks?.find(b => b.id === dataset.benchmarkId)}
+              llmId={llmIdFilter || undefined}
             />
           ))}
         </div>
@@ -154,9 +169,10 @@ export function DatasetsPage() {
 interface DatasetCardWithDataProps {
   dataset: Dataset;
   benchmark?: Benchmark;
+  llmId?: string;
 }
 
-function DatasetCardWithData({ dataset, benchmark }: DatasetCardWithDataProps) {
-  const { data: entries } = useDatasetLeaderboard(dataset.id);
+function DatasetCardWithData({ dataset, benchmark, llmId }: DatasetCardWithDataProps) {
+  const { data: entries } = useDatasetLeaderboard(dataset.id, { llmId });
   return <DatasetCard dataset={dataset} topEntries={entries || []} benchmark={benchmark} />;
 }
