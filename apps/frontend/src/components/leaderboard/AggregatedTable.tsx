@@ -97,6 +97,157 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
     });
   };
   
+  const handleDownload = (config: any, fileName: string) => {
+    const jsonString = JSON.stringify(config, jsonReplacer, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+  
+  const handleDownloadPythonScript = (config: any, baselineName: string, datasetName: string, llmName: string) => {
+    const configJson = JSON.stringify(config, jsonReplacer, 2);
+    const configIndented = configJson.split('\n').map((line, idx) => idx === 0 ? line : `    ${line}`).join('\n');
+    
+    const pythonScript = `#!/usr/bin/env python3
+"""
+Benchmark Script for ${baselineName} on ${datasetName}
+
+This script was generated from the Sky Light leaderboard.
+It runs the ${baselineName} sparse attention configuration that achieved
+good results on the ${datasetName} dataset with ${llmName}.
+
+Configuration exported from: https://sky-light-leaderboard.com
+
+Usage:
+    python benchmark_${baselineName.toLowerCase().replace(/\s+/g, '_')}.py
+"""
+
+import os
+import json
+from pathlib import Path
+
+import torch
+
+from sparse_attention_hub.metric_logging.logger import MicroMetricLogger
+from sparse_attention_hub.sparse_attention.research_attention import ResearchAttentionConfig
+from sparse_attention_hub.adapters import ModelAdapterHF
+# Import your benchmark class here
+# from benchmark.ruler32k import Ruler32K
+# from benchmark.longbench import LongBench
+
+def load_config_from_dict(config_dict):
+    """
+    Parse the config dictionary and create the appropriate masker configuration.
+    
+    You may need to customize this function based on your specific baseline type.
+    Refer to the sparse-attention-hub documentation for the correct config class.
+    """
+    # TODO: Implement config parsing based on config_dict['name']
+    # Example for DoubleSparsity:
+    # if config_dict['name'] == 'DoubleSparsity':
+    #     from sparse_attention_hub.sparse_attention.research_attention.maskers.fixed.implementations import (
+    #         DoubleSparsityTopKMaskerConfig
+    #     )
+    #     return DoubleSparsityTopKMaskerConfig(**config_dict['params'])
+    
+    raise NotImplementedError(
+        f"Config parsing for '{config_dict.get('name', 'unknown')}' not implemented. "
+        "Please refer to sparse-attention-hub documentation."
+    )
+
+def main():
+    # Model configuration
+    model_name = "${llmName}"  # Modify as needed
+    device = 0
+    
+    # Load sparse attention config
+    # This config was exported from Sky Light leaderboard
+    config_dict = ${configIndented}
+    
+    # Option 1: Parse config programmatically (recommended)
+    # masker_config = load_config_from_dict(config_dict)
+    # sparse_attention_config = ResearchAttentionConfig(masker_configs=[masker_config])
+    
+    # Option 2: Manually specify config (for quick testing)
+    # Uncomment and modify based on your baseline:
+    # from sparse_attention_hub.sparse_attention.research_attention.maskers.fixed.implementations import (
+    #     DoubleSparsityTopKMaskerConfig
+    # )
+    # sparse_attention_config = ResearchAttentionConfig(masker_configs=[
+    #     DoubleSparsityTopKMaskerConfig(
+    #         heavy_size=4096,
+    #         group_factor=2,
+    #         label_bits=2,
+    #         sorted_channel_file="/path/to/sorted_channels.json",
+    #         channel_selection="q_proj"
+    #     )
+    # ])
+    
+    print(f"  ✓ Loading model: {model_name}")
+    # Adjust model_kwargs based on your hardware
+    # flash_attention_3 is for Hopper GPUs (H100)
+    # flash_attention_2 is commonly supported on other GPUs (A100, etc.)
+    adapter = ModelAdapterHF(
+        model_name=model_name,
+        sparse_attention_config=sparse_attention_config,
+        model_kwargs={"torch_dtype": torch.bfloat16, "attn_implementation": "flash_attention_2"},
+        device=device
+    )
+    
+    # Configure your benchmark
+    # Example for Ruler32K:
+    # benchmark = Ruler32K(['${datasetName}'])
+    
+    # Example for LongBench:
+    # benchmark = LongBench(['${datasetName}'])
+    
+    # Set up results directory
+    result_dir = Path(f"./results_${baselineName.toLowerCase().replace(/\s+/g, '_')}_${datasetName}/")
+    result_dir.mkdir(exist_ok=True, parents=True)
+    
+    # Configure metric logging
+    metric_logger = MicroMetricLogger()
+    metric_logger.configure_logging(
+        log_path=result_dir,
+        enabled_metrics=[
+            "research_attention_density",
+            "research_attention_output_error",
+        ],
+    )
+    metric_logger.flush()
+    
+    # Run benchmark
+    print(f"  ✓ Running benchmark on dataset: ${datasetName}")
+    benchmark.run_benchmark(
+        adapter, 
+        result_dir,
+        request_kwargs={"max_requests": None, "max_context_length": 1000000},
+        generation_kwargs={"max_new_tokens": 500}
+    )
+    
+    print(f"  ✓ Results saved to: {result_dir}")
+
+if __name__ == "__main__":
+    main()
+`;
+    
+    const blob = new Blob([pythonScript], { type: 'text/x-python' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `benchmark_${baselineName.toLowerCase().replace(/\s+/g, '_')}_${datasetName}.py`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+  
   console.log('AggregatedTable rankings:', rankings);
   if (rankings.length > 0) {
     console.log('First ranking:', rankings[0]);
@@ -414,19 +565,47 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
                                       <p className="text-xs text-gray-500 uppercase tracking-wide">
                                         Sparse Attention Config for {dataset?.name || datasetId}
                                       </p>
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          const configToCopy = details.configuration?.additionalParams?.sparse_attention_config ?? { name: 'DenseAttention', description: 'Standard full attention mechanism.' };
-                                          handleCopy(
-                                            JSON.stringify(configToCopy, jsonReplacer, 2),
-                                            datasetKey
-                                          );
-                                        }}
-                                        className="text-xs px-2 py-1 text-gray-400 hover:text-white hover:bg-dark-surface rounded transition-colors"
-                                      >
-                                        {copiedKey === datasetKey ? 'Copied!' : 'Copy'}
-                                      </button>
+                                      <div className="flex gap-2">
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            const configToCopy = details.configuration?.additionalParams?.sparse_attention_config ?? { name: 'DenseAttention', description: 'Standard full attention mechanism.' };
+                                            handleCopy(
+                                              JSON.stringify(configToCopy, jsonReplacer, 2),
+                                              datasetKey
+                                            );
+                                          }}
+                                          className="text-xs px-2 py-1 text-gray-400 hover:text-white hover:bg-dark-surface rounded transition-colors"
+                                        >
+                                          {copiedKey === datasetKey ? 'Copied!' : 'Copy'}
+                                        </button>
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            const configToDownload = details.configuration?.additionalParams?.sparse_attention_config ?? { name: 'DenseAttention', description: 'Standard full attention mechanism.' };
+                                            const fileName = `${ranking.baseline.name.toLowerCase().replace(/\s+/g, '_')}_${dataset?.name || datasetId}_config.json`;
+                                            handleDownload(configToDownload, fileName);
+                                          }}
+                                          className="text-xs px-2 py-1 text-gray-400 hover:text-white hover:bg-dark-surface rounded transition-colors"
+                                        >
+                                          JSON
+                                        </button>
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            const configForScript = details.configuration?.additionalParams?.sparse_attention_config ?? { name: 'DenseAttention', description: 'Standard full attention mechanism.' };
+                                            handleDownloadPythonScript(
+                                              configForScript,
+                                              ranking.baseline.name,
+                                              dataset?.name || datasetId,
+                                              ranking.llm.name
+                                            );
+                                          }}
+                                          className="text-xs px-2 py-1 text-gray-400 hover:text-white hover:bg-dark-surface rounded transition-colors"
+                                        >
+                                          Python Script
+                                        </button>
+                                      </div>
                                     </div>
                                     <pre className="text-xs text-gray-300 font-mono overflow-x-auto max-h-96">
 {details.configuration?.additionalParams?.sparse_attention_config
