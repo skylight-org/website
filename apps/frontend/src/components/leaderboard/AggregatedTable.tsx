@@ -268,7 +268,6 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
                 >
                   {ranking.baseline.name}
                 </Link>
-                <div className="text-xs text-gray-400 max-w-xs truncate">{ranking.baseline.description}</div>
                 <div className="text-xs text-gray-500 mt-1">
                   {`Evaluated on ${ranking.numDatasets}/${ranking.totalNumDatasets} datasets`}
                 </div>
@@ -375,9 +374,6 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
                                   </svg>
                                   <div className="flex-1 min-w-0">
                                     <div className="text-xs text-gray-500 truncate">{ranking.llm.name} - {ranking.baseline.name}</div>
-                                    <div className="text-xs text-gray-600 truncate">
-                                      Click to {isDatasetExpanded ? 'hide' : 'view'} config
-                                    </div>
                                   </div>
                                 </div>
                               </td>
