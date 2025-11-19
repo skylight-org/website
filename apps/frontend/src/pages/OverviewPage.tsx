@@ -89,7 +89,7 @@ export function OverviewPage() {
       {/* Hero Section */}
       <section>
         <h1 className="text-4xl font-bold text-white mb-4">
-          Sparse Attention Leaderboard
+          Arena
         </h1>
         <p className="text-lg text-gray-400 max-w-4xl">
           <Link 

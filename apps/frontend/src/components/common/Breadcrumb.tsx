@@ -16,7 +16,7 @@ export function Breadcrumb() {
   }
 
   const breadcrumbs: { label: string; path: string }[] = [
-    { label: 'Overview', path: '/website' }
+    { label: 'Home', path: '/models' }
   ];
 
   // Build breadcrumbs based on path
@@ -38,6 +38,8 @@ export function Breadcrumb() {
         breadcrumbs.push({ label: model.name, path: location.pathname });
       }
     }
+  } else if (pathSegments[0] === 'arena') {
+    breadcrumbs.push({ label: 'Arena', path: '/arena' });
   } else if (pathSegments[0] === 'contribute') {
     breadcrumbs.push({ label: 'Contribute', path: '/contribute' });
   } else if (pathSegments[0] === 'documentation') {
