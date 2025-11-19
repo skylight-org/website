@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { useLLMs } from '../hooks/useLLMs';
 import { useOverallLeaderboard } from '../hooks/useLeaderboard';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
@@ -110,7 +111,16 @@ export function ModelsPage() {
       <Breadcrumb />
       
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">Models</h1>
+        <h1 className="text-4xl font-bold text-white mb-4">Overview</h1>
+        <p className="text-lg text-gray-400 max-w-4xl mb-6">
+          <Link 
+            to="/documentation/sparse-attention" 
+            className="text-accent-gold hover:underline"
+          >
+            Sparse attention
+          </Link>
+          {' '}methods reduce the quadratic complexity of transformers, enabling longer sequences and faster inference with less memory. This leaderboard compares state-of-the-art sparse attention techniques across state-of-the-art benchmarks, measuring their accuracy-efficiency trade-offs.
+        </p>
         <p className="text-gray-400">
           Explore model performance across all datasets. Click on a model to see detailed configurations.
         </p>

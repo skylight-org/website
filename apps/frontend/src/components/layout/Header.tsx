@@ -56,7 +56,7 @@ export function Header() {
   };
 
   const navItems = [
-    { path: '/models', label: 'Models' },
+    { path: '/models', label: 'Overview' },
     { path: '/datasets', label: 'Datasets' },
     { path: '/arena', label: 'Arena' },
   ];

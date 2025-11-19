@@ -92,13 +92,7 @@ export function OverviewPage() {
           Arena
         </h1>
         <p className="text-lg text-gray-400 max-w-4xl">
-          <Link 
-            to="/documentation/sparse-attention" 
-            className="text-accent-gold hover:underline"
-          >
-            Sparse attention
-          </Link>
-          {' '}methods reduce the quadratic complexity of transformers, enabling longer sequences and faster inference with less memory. This leaderboard compares state-of-the-art sparse attention techniques across state-of-the-art benchmarks, measuring their accuracy-efficiency trade-offs.
+          Compare sparse attention methods head-to-head across benchmarks. Filter by model, density, and auxiliary memory to find the best configurations for your use case.
         </p>
       </section>
 

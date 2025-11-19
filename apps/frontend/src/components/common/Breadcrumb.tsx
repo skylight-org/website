@@ -30,7 +30,7 @@ export function Breadcrumb() {
       }
     }
   } else if (pathSegments[0] === 'models') {
-    breadcrumbs.push({ label: 'Models', path: '/models' });
+    breadcrumbs.push({ label: 'Overview', path: '/models' });
     // If viewing a specific model
     if (pathSegments.length === 2 && llms) {
       const model = llms.find(l => l.id === pathSegments[1]);
