@@ -48,7 +48,7 @@ jobs:
           VITE_API_BASE_URL: "https://skynetbackend.duckdns.org"
           # Set base path if using repository name in URL (e.g., /website/)
           # Leave as '/' if using custom domain or username.github.io
-          VITE_BASE_PATH: '/website'
+          VITE_BASE_PATH: '/'
         run: npm run build
         
       - name: Setup Pages
