@@ -16,7 +16,7 @@ export function Breadcrumb() {
   }
 
   const breadcrumbs: { label: string; path: string }[] = [
-    { label: 'Overview', path: '/website' }
+    { label: 'Home', path: '/models' }
   ];
 
   // Build breadcrumbs based on path
@@ -30,7 +30,7 @@ export function Breadcrumb() {
       }
     }
   } else if (pathSegments[0] === 'models') {
-    breadcrumbs.push({ label: 'Models', path: '/models' });
+    breadcrumbs.push({ label: 'Overview', path: '/models' });
     // If viewing a specific model
     if (pathSegments.length === 2 && llms) {
       const model = llms.find(l => l.id === pathSegments[1]);
@@ -38,6 +38,8 @@ export function Breadcrumb() {
         breadcrumbs.push({ label: model.name, path: location.pathname });
       }
     }
+  } else if (pathSegments[0] === 'arena') {
+    breadcrumbs.push({ label: 'Arena', path: '/arena' });
   } else if (pathSegments[0] === 'contribute') {
     breadcrumbs.push({ label: 'Contribute', path: '/contribute' });
   } else if (pathSegments[0] === 'documentation') {

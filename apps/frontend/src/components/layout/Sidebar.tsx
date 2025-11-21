@@ -69,9 +69,9 @@ export function Sidebar() {
   };
 
   const navItems = [
-    { path: '/website', label: 'Overview' },
+    { path: '/models', label: 'Overview' },
     { path: '/datasets', label: 'Datasets' },
-    { path: '/models', label: 'Models' },
+    { path: '/arena', label: 'Arena' },
   ];
 
 
@@ -79,7 +79,7 @@ export function Sidebar() {
     return (
       <aside className="fixed left-0 top-0 h-screen w-16 bg-dark-surface border-r border-dark-border rounded-tr-2xl rounded-br-2xl flex flex-col items-center py-6 z-50">
         {/* Logo (collapsed) */}
-        <Link to="/" className="flex-1 flex items-start pt-2">
+        <Link to="/models" className="flex-1 flex items-start pt-2">
           <img 
             src="/website/sky-light-logo-icon.png"
             alt="Sky Light"
@@ -111,7 +111,7 @@ export function Sidebar() {
     <aside className="fixed left-0 top-0 h-screen w-64 bg-dark-surface border-r border-dark-border rounded-tr-2xl rounded-br-2xl flex flex-col z-50">
       {/* Logo/Title */}
       <div className="p-6 border-b border-dark-border">
-        <Link to="/website" className="flex flex-col items-center">
+        <Link to="/models" className="flex flex-col items-center">
           <img
             src="/website/sky-light-logo.png"
             alt="Sky Light" 

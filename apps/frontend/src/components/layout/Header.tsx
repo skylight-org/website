@@ -56,9 +56,9 @@ export function Header() {
   };
 
   const navItems = [
-    { path: '/website', label: 'Overview' },
+    { path: '/models', label: 'Overview' },
     { path: '/datasets', label: 'Datasets' },
-    { path: '/models', label: 'Models' },
+    { path: '/arena', label: 'Arena' },
   ];
 
   return (
@@ -66,7 +66,7 @@ export function Header() {
       {/* Top Navigation Bar */}
       <header className="fixed top-0 left-0 right-0 h-16 bg-dark-surface border-b border-dark-border z-50 flex items-center justify-between px-4">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2">
+        <Link to="/models" className="flex items-center gap-2">
           <img 
             src="/website/sky-light-logo-icon.png"
             alt="Sky Light" 
