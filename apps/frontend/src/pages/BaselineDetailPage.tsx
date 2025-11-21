@@ -120,7 +120,7 @@ export function BaselineDetailPage() {
         <h2 className="text-2xl font-bold text-white mb-4">Performance Metrics</h2>
         <p className="text-gray-300">
           To view detailed performance metrics and rankings for this baseline across different 
-          datasets, please visit the <a href="/website" className="text-accent-gold hover:underline">Overview page</a>.
+          datasets, please visit the <a href="/" className="text-accent-gold hover:underline">Overview page</a>.
         </p>
       </div>
     </div>

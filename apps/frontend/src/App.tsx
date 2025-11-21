@@ -73,7 +73,7 @@ function AppContent() {
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter basename="/website">
+      <BrowserRouter basename="/">
         <SidebarProvider>
           <AppContent />
         </SidebarProvider>
