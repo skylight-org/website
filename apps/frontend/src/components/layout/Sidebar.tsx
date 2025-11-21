@@ -81,7 +81,7 @@ export function Sidebar() {
         {/* Logo (collapsed) */}
         <Link to="/models" className="flex-1 flex items-start pt-2">
           <img 
-            src="/website/sky-light-logo-icon.png"
+            src="/sky-light-logo-icon.png"
             alt="Sky Light"
             className="w-10 h-10 object-contain"
           />
@@ -113,7 +113,7 @@ export function Sidebar() {
       <div className="p-6 border-b border-dark-border">
         <Link to="/models" className="flex flex-col items-center">
           <img
-            src="/website/sky-light-logo.png"
+            src="/sky-light-logo.png"
             alt="Sky Light" 
             className="w-full h-auto object-contain mb-2"
           />

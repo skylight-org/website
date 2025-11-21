@@ -68,7 +68,7 @@ export function Header() {
         {/* Logo */}
         <Link to="/models" className="flex items-center gap-2">
           <img 
-            src="/website/sky-light-logo-icon.png"
+            src="/sky-light-logo-icon.png"
             alt="Sky Light" 
             className="w-8 h-8 object-contain"
           />
