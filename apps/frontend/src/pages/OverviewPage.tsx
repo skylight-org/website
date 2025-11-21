@@ -1,5 +1,4 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import type { NumericRange } from '@sky-light/shared-types';
 import { useOverallLeaderboard, useOverviewStats } from '../hooks/useLeaderboard';
 import { useLLMs } from '../hooks/useLLMs';
