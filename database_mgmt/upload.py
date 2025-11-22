@@ -115,94 +115,6 @@ class SupabaseUploader:
         
         return None
 
-    def infer_baseline_name(self, record: Dict[str, Any]) -> str:
-        """
-        Infer the baseline/method name from the record.
-        """
-        # Check if this is dense (no sparse attention)
-        config = record.get('config', {})
-        sparse_config = config.get('sparse_attention_config')
-        
-        if not sparse_config:
-            return 'dense'
-        
-        # Get baseline name from record
-        baseline_name = record.get('baseline', '').lower()
-        
-        # Check masker configs for specific patterns
-        masker_configs = sparse_config.get('masker_configs', [])
-        
-        # Look for specific method signatures
-        has_oracle_topk = False
-        has_adaptive_sampling = False
-        has_quest = False
-        has_double_sparsity = False
-        has_hat = False
-        
-        for masker in masker_configs:
-            masker_name = masker.get('name', '').lower()
-            
-            if 'oracletopk' in masker_name:
-                has_oracle_topk = True
-            elif 'adaptivesampling' in masker_name:
-                has_adaptive_sampling = True
-            elif 'quest' in masker_name:
-                has_quest = True
-                # Check for page_size to confirm Quest
-                if 'page_size' in masker:
-                    return 'Quest'
-            elif 'doublesparsity' in masker_name:
-                has_double_sparsity = True
-                # Check for group_factor to confirm DoubleSparsity
-                if 'group_factor' in masker:
-                    return 'DoubleSparsity'
-            elif 'hat' in masker_name or 'hashattention' in masker_name:
-                has_hat = True
-                # Check for hat_bits to confirm HashAttention
-                if 'hat_bits' in masker:
-                    return 'HashAttention'
-        
-        # Determine baseline based on combinations
-        if 'vattention' in baseline_name:
-            # Check for specific vAttention variants
-            if 'hashattention' in baseline_name.replace(' ', '').lower() or has_hat:
-                return 'vAttention(HashAttention)'
-            elif has_oracle_topk:
-                return 'vAttention(OracleTopK)'
-        elif has_hat:
-            return 'HashAttention'
-        elif has_oracle_topk and not has_adaptive_sampling:
-            return 'OracleTopK'
-        elif has_quest:
-            return 'Quest'
-        elif has_double_sparsity:
-            return 'DoubleSparsity'
-        
-        # Use original baseline field as fallback
-        return record.get('baseline', 'unknown')
-
-    def extract_target_density(self, record: Dict[str, Any]) -> Optional[float]:
-        """
-        Extract target density from record.
-        """
-        # First check density_target
-        density_target = record.get('density_target')
-        if density_target is not None:
-            return float(density_target)
-        
-        # Check if dense baseline
-        baseline_name = self.infer_baseline_name(record)
-        if baseline_name.lower() == 'dense':
-            return 100.0
-        
-        # Use average_density if available
-        average_density = record.get('average_density')
-        if average_density is not None:
-            # Convert to percentage
-            return round(average_density * 100, 2)
-        
-        return None
-
     def create_experimental_run(self, name: str = None) -> str:
         """Create a new experimental run."""
         try:
@@ -398,7 +310,7 @@ class SupabaseUploader:
                     },
                     'average_local_error': {
                         'display_name': 'Average Local Error',
-                        'description': 'Average attention output error across all layers',
+                        'description': 'Average attention layer output error',
                         'higher_is_better': False
                     },
                     'overall_score': {
@@ -411,6 +323,11 @@ class SupabaseUploader:
                         'display_name': 'Average Density',
                         'description': 'Average attention density across all layers',
                         'unit': '%',
+                        'higher_is_better': False
+                    },
+                    'aux_memory': {
+                        'display_name': 'Auxiliary Memory',
+                        'description': 'Auxiliary memory usage in bytes per token per KV head',
                         'higher_is_better': False
                     },
                 }
@@ -510,11 +427,14 @@ class SupabaseUploader:
         descriptions = {
             'dense': 'Full dense attention (baseline)',
             'OracleTopK': 'Oracle Top-K attention selection',
-            'vAttention(OracleTopK)': 'vAttention with Oracle Top-K',
-            'vAttention(HashAttention)': 'vAttention with Hash-based Attention',
-            'HashAttention': 'Hash-based Attention (HAT)',
+            'OracleTopP': 'Oracle Top-P attention selection',
+            'vAttention(OracleTopK)': 'vAttention: verified Sparse Attention with Oracle Top-K',
+            'vAttention(HashAttention)': 'vAttention: verified Sparse Attention with HashAttention',
+            'HashAttention': 'HashAttention: Semantic Sparsity for Faster Inference',
             'Quest': 'QUEST: Query-aware Sparsity for Efficient Long-context Transformers',
-            'DoubleSparsity': 'Double Sparsity: Joint Token and Channel Sparsity',
+            'DoubleSparsity': 'Post-Training Sparse Attention with Double Sparsity',
+            'PQCache': 'PQCache: Product Quantization-based KVCache for Long Context LLM Inference',
+            'vAttention(PQCache)': 'vAttention: verified Sparse Attention with PQCache',
         }
         return descriptions.get(name, f"Sparse attention method: {name}")
 
@@ -573,14 +493,12 @@ class SupabaseUploader:
         dataset_id: str,
         llm_id: str,
         target_sparsity: Optional[float],
-        aux_memory: Optional[int],
         config: Dict[str, Any]
     ) -> str:
         """Create or get configuration."""
         # Build cache key
         sparsity_key = target_sparsity if target_sparsity is not None else -1
-        aux_mem_key = aux_memory if aux_memory is not None else -1
-        cache_key = (baseline_id, dataset_id, llm_id, sparsity_key, aux_mem_key)
+        cache_key = (baseline_id, dataset_id, llm_id, sparsity_key)
         
         with self.cache_lock:
             if cache_key in self.config_cache:
@@ -601,11 +519,6 @@ class SupabaseUploader:
             else:
                 query = query.is_('target_sparsity', 'null')
             
-            if aux_memory is not None:
-                query = query.eq('target_aux_memory', aux_memory)
-            else:
-                query = query.is_('target_aux_memory', 'null')
-            
             response = query.execute()
             
             if response.data:
@@ -618,7 +531,6 @@ class SupabaseUploader:
                         'dataset_id': dataset_id,
                         'llm_id': llm_id,
                         'target_sparsity': target_sparsity,
-                        'target_aux_memory': aux_memory,
                         'additional_params': config  # Stored as JSONB
                     }).execute()
                     config_id = insert_response.data[0]['id']
@@ -681,28 +593,14 @@ class SupabaseUploader:
         """Process a single JSONL record and upload to database."""
         try:
             # Extract core fields
-            baseline_name = self.infer_baseline_name(record)
+            baseline_name = record['baseline']
             model_name = record['model_name']
             benchmark_name = record['benchmark']
             dataset_name = record['dataset']
             config = record.get('config', {})
             
-            # Extract metrics
-            if baseline_name == 'dense':
-                aux_memory = 0
-            else:
-                aux_memory_raw = record.get('aux_memory')
-                # Convert aux_memory to integer if it's a float
-                aux_memory = None
-                if aux_memory_raw is not None:
-                    try:
-                        # Round to nearest integer if float
-                        aux_memory = int(round(float(aux_memory_raw)))
-                    except (ValueError, TypeError):
-                        print(f"  Warning: Invalid aux_memory value: {aux_memory_raw}, setting to None")
-                        aux_memory = None
             
-            target_density = self.extract_target_density(record)
+            target_density = record["density_target"]
             
             # Per user request, storing DENSITY in the `target_sparsity` column
             # as the UI is interpreting the value as density.
@@ -734,7 +632,6 @@ class SupabaseUploader:
                 dataset_id=dataset_id,
                 llm_id=llm_id,
                 target_sparsity=target_sparsity,
-                aux_memory=aux_memory,
                 config=config
             )
             
@@ -794,6 +691,22 @@ class SupabaseUploader:
                     dataset_metric_id=score_dataset_metric_id,
                     run_id=self.experimental_run_id,
                     value=record['overall_score']
+                )
+            
+            # Track aux_memory if present
+            if 'aux_memory' in record and record['aux_memory'] is not None:
+                # Create/get the metric
+                aux_memory_metric_id = self.upsert_metric('aux_memory')
+                # Create dataset-metric relationship
+                aux_memory_dataset_metric_id = self.upsert_dataset_metric(
+                    dataset_id, aux_memory_metric_id, is_primary=False
+                )
+                # Insert the result
+                self.insert_result(
+                    config_id=config_id,
+                    dataset_metric_id=aux_memory_dataset_metric_id,
+                    run_id=self.experimental_run_id,
+                    value=record['aux_memory']
                 )
             
             return True
@@ -865,7 +778,7 @@ class SupabaseUploader:
         for record in records:
             try:
                 benchmarks_to_create.add(record['benchmark'])
-                baselines_to_create.add(self.infer_baseline_name(record))
+                baselines_to_create.add(record['baseline'])
                 llms_to_create.add(record['model_name'])
                 metrics_to_create.update(record.get('benchmark_metrics', {}).keys())
                 if 'average_local_error' in record and record['average_local_error'] is not None:
@@ -874,6 +787,8 @@ class SupabaseUploader:
                     metrics_to_create.add('average_density')
                 if 'overall_score' in record and record['overall_score'] is not None:
                     metrics_to_create.add('overall_score')
+                if 'aux_memory' in record and record['aux_memory'] is not None:
+                    metrics_to_create.add('aux_memory')
             except KeyError:
                 continue # Skip records with missing essential data
         
@@ -916,6 +831,11 @@ class SupabaseUploader:
 
                 if 'overall_score' in record and record['overall_score'] is not None:
                     metric_id = self.metric_cache.get('overall_score')
+                    if metric_id:
+                        self.upsert_dataset_metric(dataset_id, metric_id, is_primary=False)
+
+                if 'aux_memory' in record and record['aux_memory'] is not None:
+                    metric_id = self.metric_cache.get('aux_memory')
                     if metric_id:
                         self.upsert_dataset_metric(dataset_id, metric_id, is_primary=False)
             except Exception:
@@ -981,7 +901,7 @@ class SupabaseUploader:
             current_index = i + resume + 1 
             
             # Extract display info
-            baseline = self.infer_baseline_name(record)
+            baseline = record['baseline']
             dataset = record.get('dataset', 'unknown')
             model = record.get('model_name', 'unknown')
             
@@ -1061,7 +981,7 @@ def analyze_jsonl_file(filepath: Path):
     
     # First, collect statistics from ALL records
     for record in records:
-        baseline = uploader.infer_baseline_name(record)
+        baseline = record['baseline']
         model = record.get('model_name', 'MISSING')
         benchmark = record.get('benchmark', 'MISSING')
         dataset = record.get('dataset', 'MISSING')
@@ -1080,20 +1000,19 @@ def analyze_jsonl_file(filepath: Path):
         print(f"\nRecord {i+1}:")
         
         # Extract values
-        baseline = uploader.infer_baseline_name(record)
-        model = record.get('model_name', 'MISSING')
-        benchmark = record.get('benchmark', 'MISSING')
-        dataset = record.get('dataset', 'MISSING')
-        aux_memory = record.get('aux_memory', 'None')
-        density_target = record.get('density_target', 'None')
-        target_density = uploader.extract_target_density(record)
+        baseline = record['baseline']
+        model = record['model_name']
+        benchmark = record['benchmark']
+        dataset = record['dataset']
+        aux_memory = record['aux_memory']
+        target_density = record["density_target"]
         target_sparsity = 100.0 - target_density if target_density is not None else 'None'
         
         print(f"  Model: {model}")
         print(f"  Baseline: {baseline} (raw: {record.get('baseline', 'N/A')})")
         print(f"  Benchmark: {benchmark}")
         print(f"  Dataset: {dataset}")
-        print(f"  Target Density: {density_target}% -> Sparsity: {target_sparsity}%")
+        print(f"  Target Density: {target_density}% -> Sparsity: {target_sparsity}%")
         print(f"  Aux Memory: {aux_memory}")
         print(f"  Metrics: {list(record.get('benchmark_metrics', {}).keys())}")
     
@@ -1187,11 +1106,6 @@ def main():
         print("  export SUPABASE_KEY='your-anon-key'")
         sys.exit(1)
     
-    # Check if file exists
-    jsonl_path = Path(args.file)
-    if not jsonl_path.exists():
-        print(f"Error: File not found: {jsonl_path}")
-        sys.exit(1)
     
     # Create uploader and run
     try:
@@ -1199,6 +1113,16 @@ def main():
 
         if args.purge:
             uploader.purge_previous_runs()
+
+        if args.file is None:
+            print("No file provided")
+            sys.exit(0)
+
+        # Check if file exists
+        jsonl_path = Path(args.file)
+        if not jsonl_path.exists():
+            print(f"Error: File not found: {jsonl_path}")
+            sys.exit(1)
 
         success_count = uploader.upload_data(
             str(jsonl_path), 
