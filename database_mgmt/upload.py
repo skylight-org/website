@@ -555,42 +555,23 @@ class SupabaseUploader:
             print(f"Error upserting configuration: {e}")
             raise
 
-    def insert_result(
-        self,
-        config_id: str,
-        dataset_metric_id: str,
-        run_id: str,
-        value: float
-    ):
-        """Insert or update a result record."""
+    def batch_insert_results(self, results: List[Dict[str, Any]], batch_size: int = 20):
+        """Insert results in batches for better performance."""
         try:
-            # Check if result already exists
-            response = self.supabase.table('results').select('id')\
-                .eq('configuration_id', config_id)\
-                .eq('dataset_metric_id', dataset_metric_id)\
-                .eq('experimental_run_id', run_id)\
-                .execute()
-            
-            if response.data:
-                # Update existing
-                self.supabase.table('results').update({
-                    'value': value
-                }).eq('id', response.data[0]['id']).execute()
-            else:
-                # Insert new
-                self.supabase.table('results').insert({
-                    'configuration_id': config_id,
-                    'dataset_metric_id': dataset_metric_id,
-                    'experimental_run_id': run_id,
-                    'value': value
-                }).execute()
+            for i in range(0, len(results), batch_size):
+                batch = results[i:i+batch_size]
+                # Use upsert to handle duplicates (insert or update)
+                self.supabase.table('results').upsert(
+                    batch,
+                    on_conflict='configuration_id,dataset_metric_id,experimental_run_id'
+                ).execute()
             
         except Exception as e:
-            print(f"Error inserting result: {e}")
+            print(f"Error batch inserting results: {e}")
             raise
 
-    def process_record(self, record: Dict[str, Any]) -> bool:
-        """Process a single JSONL record and upload to database."""
+    def process_record(self, record: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Process a single JSONL record and return result records to be batch inserted."""
         try:
             # Extract core fields
             baseline_name = record['baseline']
@@ -611,7 +592,7 @@ class SupabaseUploader:
             # Skip if no metrics
             if not benchmark_metrics:
                 print(f"  Warning: No benchmark metrics found, skipping")
-                return False
+                return []
             
             # Upsert entities (will use cache if already created sequentially)
             benchmark_id = self.upsert_benchmark(benchmark_name)
@@ -635,16 +616,19 @@ class SupabaseUploader:
                 config=config
             )
             
-            # Insert results from benchmark_metrics
+            # Collect results to be batch inserted
+            results_to_insert = []
+            
+            # Add results from benchmark_metrics
             for metric_name, value in benchmark_metrics.items():
                 metric_id = metric_ids[metric_name]
                 dataset_metric_id = self.dataset_metric_cache[(dataset_id, metric_id)]
-                self.insert_result(
-                    config_id=config_id,
-                    dataset_metric_id=dataset_metric_id,
-                    run_id=self.experimental_run_id,
-                    value=value
-                )
+                results_to_insert.append({
+                    'configuration_id': config_id,
+                    'dataset_metric_id': dataset_metric_id,
+                    'experimental_run_id': self.experimental_run_id,
+                    'value': value
+                })
             
             # Also track average_local_error if present
             if 'average_local_error' in record and record['average_local_error'] is not None:
@@ -654,13 +638,13 @@ class SupabaseUploader:
                 error_dataset_metric_id = self.upsert_dataset_metric(
                     dataset_id, error_metric_id, is_primary=False
                 )
-                # Insert the result
-                self.insert_result(
-                    config_id=config_id,
-                    dataset_metric_id=error_dataset_metric_id,
-                    run_id=self.experimental_run_id,
-                    value=record['average_local_error']
-                )
+                # Add to results
+                results_to_insert.append({
+                    'configuration_id': config_id,
+                    'dataset_metric_id': error_dataset_metric_id,
+                    'experimental_run_id': self.experimental_run_id,
+                    'value': record['average_local_error']
+                })
 
             if 'average_density' in record and record['average_density'] is not None:
                 # Create/get the metric
@@ -669,13 +653,13 @@ class SupabaseUploader:
                 density_dataset_metric_id = self.upsert_dataset_metric(
                     dataset_id, density_metric_id, is_primary=False
                 )
-                # Insert the result, converting fraction to percentage
-                self.insert_result(
-                    config_id=config_id,
-                    dataset_metric_id=density_dataset_metric_id,
-                    run_id=self.experimental_run_id,
-                    value=record['average_density'] * 100
-                )
+                # Add to results, converting fraction to percentage
+                results_to_insert.append({
+                    'configuration_id': config_id,
+                    'dataset_metric_id': density_dataset_metric_id,
+                    'experimental_run_id': self.experimental_run_id,
+                    'value': record['average_density'] * 100
+                })
             
             # Also track overall_score if present
             if 'overall_score' in record and record['overall_score'] is not None:
@@ -685,13 +669,13 @@ class SupabaseUploader:
                 score_dataset_metric_id = self.upsert_dataset_metric(
                     dataset_id, score_metric_id, is_primary=False
                 )
-                # Insert the result
-                self.insert_result(
-                    config_id=config_id,
-                    dataset_metric_id=score_dataset_metric_id,
-                    run_id=self.experimental_run_id,
-                    value=record['overall_score']
-                )
+                # Add to results
+                results_to_insert.append({
+                    'configuration_id': config_id,
+                    'dataset_metric_id': score_dataset_metric_id,
+                    'experimental_run_id': self.experimental_run_id,
+                    'value': record['overall_score']
+                })
             
             # Track aux_memory if present
             if 'aux_memory' in record and record['aux_memory'] is not None:
@@ -701,22 +685,22 @@ class SupabaseUploader:
                 aux_memory_dataset_metric_id = self.upsert_dataset_metric(
                     dataset_id, aux_memory_metric_id, is_primary=False
                 )
-                # Insert the result
-                self.insert_result(
-                    config_id=config_id,
-                    dataset_metric_id=aux_memory_dataset_metric_id,
-                    run_id=self.experimental_run_id,
-                    value=record['aux_memory']
-                )
+                # Add to results
+                results_to_insert.append({
+                    'configuration_id': config_id,
+                    'dataset_metric_id': aux_memory_dataset_metric_id,
+                    'experimental_run_id': self.experimental_run_id,
+                    'value': record['aux_memory']
+                })
             
-            return True
+            return results_to_insert
             
         except KeyError as e:
             print(f"  Error: Missing required field {e}")
-            return False
+            return []
         except Exception as e:
             print(f"  Error processing record: {e}")
-            return False
+            return []
 
     def purge_previous_runs(self):
         """Delete all experimental runs and associated data created by this script."""
@@ -848,6 +832,7 @@ class SupabaseUploader:
         jsonl_filepath: str, 
         dry_run: bool = False, 
         limit: Optional[int] = None, 
+        experimental_run_name: Optional[str] = None,
         resume: int = 0
     ) -> int:
         """Main upload process, now fully sequential."""
@@ -868,7 +853,7 @@ class SupabaseUploader:
         
         # Create experimental run
         print("\n[2/4] Creating experimental run...")
-        self.experimental_run_id = self.create_experimental_run()
+        self.experimental_run_id = self.create_experimental_run(experimental_run_name)
         
         # Create all entities sequentially from ALL records to populate cache
         # This ensures all foreign keys exist regardless of limit/resume
@@ -891,10 +876,12 @@ class SupabaseUploader:
         else:
             print(f"  Will process {total_to_process} records (from file index {resume} to {resume + total_to_process - 1}).")
 
-        # Process records sequentially
-        print(f"\n[4/4] Processing records sequentially...")
+        # Process records sequentially and collect results for batch insertion
+        print(f"\n[4/4] Processing records and collecting results...")
         success_count = 0
         failed_records = []
+        all_results = []
+        batch_size = 100  # Insert every 100 records
 
         for i, record in enumerate(records_to_process):
             # 1-based index in the *original* file
@@ -906,11 +893,12 @@ class SupabaseUploader:
             model = record.get('model_name', 'unknown')
             
             try:
-                # This call will now use the pre-populated caches
-                result = self.process_record(record)
+                # This call will now return a list of result dictionaries
+                results = self.process_record(record)
                 
-                if result:
+                if results:
                     success_count += 1
+                    all_results.extend(results)
                     status = "✓"
                 else:
                     status = "✗"
@@ -918,10 +906,21 @@ class SupabaseUploader:
                 
                 # Progress update
                 print(f"[{i+1}/{total_to_process}] (File #{current_index}) {status} {baseline} on {dataset} with {model}")
+                
+                # Batch insert every batch_size records
+                if len(all_results) >= batch_size * 10:  # 10 results per record avg
+                    print(f"  Batch inserting {len(all_results)} results...")
+                    self.batch_insert_results(all_results)
+                    all_results = []
             
             except Exception as e:
                 failed_records.append((current_index, record))
                 print(f"[{i+1}/{total_to_process}] (File #{current_index}) ✗ {baseline} on {dataset} with {model} - CRITICAL Error: {str(e)}")
+        
+        # Insert any remaining results
+        if all_results:
+            print(f"\nInserting final batch of {len(all_results)} results...")
+            self.batch_insert_results(all_results)
         
         # Print summary
         print("\n" + "=" * 60)
@@ -982,9 +981,9 @@ def analyze_jsonl_file(filepath: Path):
     # First, collect statistics from ALL records
     for record in records:
         baseline = record['baseline']
-        model = record.get('model_name', 'MISSING')
-        benchmark = record.get('benchmark', 'MISSING')
-        dataset = record.get('dataset', 'MISSING')
+        model = record['model_name']
+        benchmark = record['benchmark']
+        dataset = record['dataset']
         
         baselines[baseline] += 1
         models[model] += 1
@@ -1067,13 +1066,19 @@ def main():
     parser.add_argument(
         '--file', 
         type=str,
-        default='/Users/kumaragrawal/Local/fall2025/vattn/website/data/jsonl_data/temp.jsonl',
+        default=None,
         help='Path to JSONL file with records'
     )
     parser.add_argument(
         '--dry-run',
         action='store_true',
         help='Show what would be uploaded without actually uploading'
+    )
+    parser.add_argument(
+        '--experimental-run-name',
+        type=str,
+        default="base_experiment",
+        help='Name of the experimental run'
     )
     parser.add_argument(
         '--limit',
@@ -1126,6 +1131,7 @@ def main():
 
         success_count = uploader.upload_data(
             str(jsonl_path), 
+            experimental_run_name=args.experimental_run_name,
             dry_run=args.dry_run,
             limit=args.limit,
             resume=args.resume
