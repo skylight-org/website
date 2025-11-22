@@ -8,7 +8,9 @@ to a Supabase PostgreSQL database following the schema defined in DB_Schema.md.
 Usage:
     export SUPABASE_URL="https://your-project.supabase.co"
     export SUPABASE_KEY="your-anon-key"
-    python upload.py [--file path/to/data.jsonl] [--limit 50] [--resume 10]
+    python upload.py [--file path/to/data.jsonl] [--limit 50] [--resume 10] \\
+                     [--models model1 model2] [--baselines baseline1 baseline2] \\
+                     [--force-push]
 """
 
 import os
@@ -555,16 +557,28 @@ class SupabaseUploader:
             print(f"Error upserting configuration: {e}")
             raise
 
-    def batch_insert_results(self, results: List[Dict[str, Any]], batch_size: int = 20):
+    def batch_insert_results(self, results: List[Dict[str, Any]], batch_size: int = 20, force_push: bool = False):
         """Insert results in batches for better performance."""
+        failed_batches = []
+        
         try:
             for i in range(0, len(results), batch_size):
                 batch = results[i:i+batch_size]
-                # Use upsert to handle duplicates (insert or update)
-                self.supabase.table('results').upsert(
-                    batch,
-                    on_conflict='configuration_id,dataset_metric_id,experimental_run_id'
-                ).execute()
+                try:
+                    # Use upsert to handle duplicates (insert or update)
+                    self.supabase.table('results').upsert(
+                        batch,
+                        #on_conflict='configuration_id,dataset_metric_id,experimental_run_id'
+                    ).execute()
+                except Exception as batch_error:
+                    if force_push:
+                        # Collect failed batches for retry
+                        failed_batches.append(batch)
+                        print(f"  Batch {i//batch_size + 1} failed, will retry with new experimental_run_id: {str(batch_error)[:100]}")
+                    else:
+                        raise
+            
+            return failed_batches
             
         except Exception as e:
             print(f"Error batch inserting results: {e}")
@@ -833,9 +847,27 @@ class SupabaseUploader:
         dry_run: bool = False, 
         limit: Optional[int] = None, 
         experimental_run_name: Optional[str] = None,
-        resume: int = 0
+        resume: int = 0,
+        force_push: bool = False,
+        models: Optional[List[str]] = None,
+        baselines: Optional[List[str]] = None
     ) -> int:
-        """Main upload process, now fully sequential."""
+        """
+        Main upload process, now fully sequential.
+        
+        Args:
+            jsonl_filepath: Path to JSONL file with records
+            dry_run: If True, only analyze without uploading
+            limit: Process only first N records (after filtering/resume)
+            experimental_run_name: Name for the experimental run
+            resume: Skip first N records
+            force_push: Retry failed batches with new experimental_run_ids (max 10 retries)
+            models: Filter to only upload records for specific models (None = all)
+            baselines: Filter to only upload records for specific baselines (None = all)
+        
+        Returns:
+            Number of successfully processed records
+        """
         print("=" * 60)
         print("Sky Light Data Upload to Supabase (Sequential Mode)")
         print("=" * 60)
@@ -859,14 +891,28 @@ class SupabaseUploader:
         # This ensures all foreign keys exist regardless of limit/resume
         self._create_entities_sequentially(records)
 
-        # Apply resume and limit
+        # Apply filters for models and baselines
         print(f"\n[3/4] Preparing to process records...")
+        
+        # Filter by models and baselines if specified
+        filtered_records = records
+        if models is not None:
+            print(f"  Filtering for models: {', '.join(models)}")
+            filtered_records = [r for r in filtered_records if r.get('model_name') in models]
+            print(f"  After model filter: {len(filtered_records)} records")
+        
+        if baselines is not None:
+            print(f"  Filtering for baselines: {', '.join(baselines)}")
+            filtered_records = [r for r in filtered_records if r.get('baseline') in baselines]
+            print(f"  After baseline filter: {len(filtered_records)} records")
+        
+        # Apply resume and limit
         if resume > 0:
             print(f"  Resuming from record index {resume} (skipping {resume} records)")
         if limit is not None:
             print(f"  Limiting to {limit} records")
 
-        records_to_process = records[resume:]
+        records_to_process = filtered_records[resume:]
         if limit is not None:
             records_to_process = records_to_process[:limit]
         
@@ -910,7 +956,7 @@ class SupabaseUploader:
                 # Batch insert every batch_size records
                 if len(all_results) >= batch_size * 10:  # 10 results per record avg
                     print(f"  Batch inserting {len(all_results)} results...")
-                    self.batch_insert_results(all_results)
+                    self.batch_insert_results(all_results, force_push=force_push)
                     all_results = []
             
             except Exception as e:
@@ -918,18 +964,72 @@ class SupabaseUploader:
                 print(f"[{i+1}/{total_to_process}] (File #{current_index}) ✗ {baseline} on {dataset} with {model} - CRITICAL Error: {str(e)}")
         
         # Insert any remaining results
+        failed_batches = []
         if all_results:
             print(f"\nInserting final batch of {len(all_results)} results...")
-            self.batch_insert_results(all_results)
+            failed_batches = self.batch_insert_results(all_results, force_push=force_push)
+        
+        # If force_push is enabled and there are failed batches, retry with new experimental_run_ids
+        if force_push and failed_batches:
+            print(f"\n[FORCE PUSH] Retrying {len(failed_batches)} failed batches with new experimental_run_ids...")
+            retry_count = 0
+            max_retries = 10
+            
+            while failed_batches and retry_count < max_retries:
+                retry_count += 1
+                print(f"\n  Retry attempt {retry_count}/{max_retries} with {len(failed_batches)} batches...")
+                
+                # Create a new experimental run for retry
+                retry_run_id = self.create_experimental_run(f"{experimental_run_name or 'Upload'} (Retry {retry_count})")
+                
+                # Update all failed batches with the new experimental_run_id
+                batches_to_retry = failed_batches
+                failed_batches = []
+                
+                for batch in batches_to_retry:
+                    # Update experimental_run_id for each result in the batch
+                    updated_batch = []
+                    for result in batch:
+                        updated_result = result.copy()
+                        updated_result['experimental_run_id'] = retry_run_id
+                        updated_batch.append(updated_result)
+                    
+                    # Try to insert the updated batch
+                    try:
+                        self.supabase.table('results').upsert(
+                            updated_batch,
+                            #on_conflict='configuration_id,dataset_metric_id,experimental_run_id'
+                        ).execute()
+                        print(f"    ✓ Batch successfully inserted with experimental_run_id: {retry_run_id}")
+                    except Exception as e:
+                        # Still failed, add to failed_batches for next retry
+                        failed_batches.append(updated_batch)
+                        print(f"    ✗ Batch still failed: {str(e)[:100]}")
+                
+                if not failed_batches:
+                    print(f"\n  All batches successfully pushed after {retry_count} retry(ies)!")
+                    break
+            
+            if failed_batches:
+                print(f"\n  WARNING: {len(failed_batches)} batches still failed after {max_retries} retries")
+        
+        # Flatten failed_batches to count individual results
+        total_failed_results = sum(len(batch) for batch in failed_batches) if failed_batches else 0
         
         # Print summary
         print("\n" + "=" * 60)
         print("Upload Summary")
         print("=" * 60)
         print(f"Total records in file: {total_in_file}")
+        if models is not None:
+            print(f"Filtered for models: {', '.join(models)}")
+        if baselines is not None:
+            print(f"Filtered for baselines: {', '.join(baselines)}")
         print(f"Total records processed: {total_to_process}")
         print(f"Successful: {success_count}")
         print(f"Failed: {len(failed_records)}")
+        if force_push and total_failed_results > 0:
+            print(f"Results still failed after force-push retries: {total_failed_results}")
 
         if failed_records:
             print(f"\nFailed records (first 10):")
@@ -1097,6 +1197,25 @@ def main():
         action='store_true',
         help='Delete all data from previous script uploads before running'
     )
+    parser.add_argument(
+        '--force-push',
+        action='store_true',
+        help='Retry failed batches with new experimental_run_ids (max 10 retries)'
+    )
+    parser.add_argument(
+        '--models',
+        type=str,
+        nargs='+',
+        default=None,
+        help='Filter to only upload records for specific models (space-separated list)'
+    )
+    parser.add_argument(
+        '--baselines',
+        type=str,
+        nargs='+',
+        default=None,
+        help='Filter to only upload records for specific baselines (space-separated list)'
+    )
     
     args = parser.parse_args()
 
@@ -1134,7 +1253,10 @@ def main():
             experimental_run_name=args.experimental_run_name,
             dry_run=args.dry_run,
             limit=args.limit,
-            resume=args.resume
+            resume=args.resume,
+            force_push=args.force_push,
+            models=args.models,
+            baselines=args.baselines
         )
 
         if args.dry_run:
