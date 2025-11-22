@@ -16,10 +16,13 @@ export function DatasetDetailPage() {
   const { datasetId } = useParams<{ datasetId: string }>();
   const [selectedLlms, setSelectedLlms] = useState<string[]>([]);
   const [densityFilter, setDensityFilter] = useState<NumericRange | undefined>(undefined);
+  const [auxMemoryFilter, setAuxMemoryFilter] = useState<NumericRange | undefined>(undefined);
   
   // Local state for text inputs
   const [localDensityMin, setLocalDensityMin] = useState<string>('');
   const [localDensityMax, setLocalDensityMax] = useState<string>('');
+  const [localAuxMemoryMin, setLocalAuxMemoryMin] = useState<string>('');
+  const [localAuxMemoryMax, setLocalAuxMemoryMax] = useState<string>('');
 
   const { data: datasets } = useDatasets();
   const { data: benchmarks } = useBenchmarks();
@@ -42,11 +45,16 @@ export function DatasetDetailPage() {
     }
   }, [uniqueLlms]);
   
-  // Sync local state with density filter when it changes
+  // Sync local state with filters when they change
   useEffect(() => {
     setLocalDensityMin(densityFilter?.min?.toString() ?? '');
     setLocalDensityMax(densityFilter?.max?.toString() ?? '');
   }, [densityFilter]);
+  
+  useEffect(() => {
+    setLocalAuxMemoryMin(auxMemoryFilter?.min?.toString() ?? '');
+    setLocalAuxMemoryMax(auxMemoryFilter?.max?.toString() ?? '');
+  }, [auxMemoryFilter]);
 
   const isLoading = entriesLoading || metricsLoading;
 
@@ -58,7 +66,18 @@ export function DatasetDetailPage() {
     return <ErrorMessage message="Failed to load dataset" />;
   }
 
-  const filteredEntries = entries?.filter(e => selectedLlms.includes(e.llm.name));
+  const filteredEntries = entries
+    ?.filter(e => selectedLlms.includes(e.llm.name))
+    ?.filter(e => {
+      // Apply auxiliary memory filter
+      if (!auxMemoryFilter) return true;
+      const auxMemory = e.metricValues?.aux_memory;
+      if (auxMemory === undefined || auxMemory === null) return true;
+      
+      const meetsMin = auxMemoryFilter.min === undefined || auxMemory >= auxMemoryFilter.min;
+      const meetsMax = auxMemoryFilter.max === undefined || auxMemory <= auxMemoryFilter.max;
+      return meetsMin && meetsMax;
+    });
   
   const handleApplyFilters = () => {
     // Apply density filter
