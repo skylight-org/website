@@ -29,7 +29,6 @@ export class LeaderboardService {
     datasetId: string,
     filters?: {
       targetSparsity?: NumericRange;
-      targetAuxMemory?: NumericRange;
       llmId?: string;
     }
   ): Promise<DatasetRanking[]> {
@@ -44,7 +43,6 @@ export class LeaderboardService {
     benchmarkId?: string,
     filters?: {
       targetDensity?: NumericRange;
-      targetAuxMemory?: NumericRange;
       llmId?: string;
     }
   ): Promise<AggregatedRanking[]> {
@@ -53,7 +51,6 @@ export class LeaderboardService {
 
   async getPlotData(filters?: {
     targetSparsity?: NumericRange;
-    targetAuxMemory?: NumericRange;
     llmId?: string;
   }): Promise<DatasetRanking[]> {
     const datasets = await this.datasetRepository.findAll();
@@ -112,12 +109,5 @@ export class LeaderboardService {
    */
   async getAvailableSparsityValues(): Promise<number[]> {
     return this.configurationRepository.getUniqueSparsityValues();
-  }
-
-  /**
-   * Get available filter values for auxiliary memory
-   */
-  async getAvailableAuxMemoryValues(): Promise<number[]> {
-    return this.configurationRepository.getUniqueAuxMemoryValues();
   }
 }

@@ -27,7 +27,6 @@ export function OverviewPage() {
     error: rankingsError 
   } = useOverallLeaderboard({
     targetSparsity: densityFilter,
-    targetAuxMemory: auxMemoryFilter,
   });
   const { data: llms, isLoading: llmsLoading, error: llmsError } = useLLMs();
   const { data: stats, isLoading: statsLoading, error: statsError } = useOverviewStats();
@@ -53,12 +52,24 @@ export function OverviewPage() {
       filtered = filtered.filter(ranking => ranking.numDatasets === ranking.totalNumDatasets);
     }
 
+    // Filter by auxiliary memory if set
+    if (auxMemoryFilter) {
+      filtered = filtered.filter(ranking => {
+        const auxMemory = ranking.avgAuxMemory;
+        if (auxMemory === undefined || auxMemory === null) return true;
+        
+        const meetsMin = auxMemoryFilter.min === undefined || auxMemory >= auxMemoryFilter.min;
+        const meetsMax = auxMemoryFilter.max === undefined || auxMemory <= auxMemoryFilter.max;
+        return meetsMin && meetsMax;
+      });
+    }
+
     // Filter by selected LLMs client-side
     if (llmOptions.length > 0 && selectedLlms.length === 0) {
       return filtered; // Show all if no models are specifically selected yet
     }
     return filtered.filter(ranking => selectedLlms.includes(ranking.llm.name));
-  }, [rankings, selectedLlms, llmOptions, showAll]);
+  }, [rankings, selectedLlms, llmOptions, showAll, auxMemoryFilter]);
 
   const handleApplyFilters = () => {
     setDensityFilter({

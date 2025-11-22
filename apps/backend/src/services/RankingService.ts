@@ -34,7 +34,6 @@ export class RankingService {
     datasetId: string,
     filters?: {
       targetSparsity?: NumericRange;
-      targetAuxMemory?: NumericRange;
       llmId?: string;
     }
   ): Promise<DatasetRanking[]> {
@@ -176,7 +175,6 @@ export class RankingService {
         score: configScore.score,
         metricValues: configScore.metricValues,
         targetSparsity: configScore.configuration.targetSparsity,
-        targetAuxMemory: configScore.configuration.targetAuxMemory,
         configuration: configScore.configuration,
       };
       

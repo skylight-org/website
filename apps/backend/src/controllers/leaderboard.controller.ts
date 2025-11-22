@@ -11,14 +11,11 @@ export class LeaderboardController {
       const {
         targetSparsityMin,
         targetSparsityMax,
-        targetAuxMemoryMin,
-        targetAuxMemoryMax,
         llmId
       } = req.query;
 
       const filters: {
         targetSparsity?: NumericRange;
-        targetAuxMemory?: NumericRange;
         llmId?: string;
       } = {};
 
@@ -27,14 +24,6 @@ export class LeaderboardController {
         filters.targetSparsity = {
           min: targetSparsityMin ? parseFloat(targetSparsityMin as string) : undefined,
           max: targetSparsityMax ? parseFloat(targetSparsityMax as string) : undefined,
-        };
-      }
-
-      // Parse aux memory range
-      if (targetAuxMemoryMin || targetAuxMemoryMax) {
-        filters.targetAuxMemory = {
-          min: targetAuxMemoryMin ? parseInt(targetAuxMemoryMin as string, 10) : undefined,
-          max: targetAuxMemoryMax ? parseInt(targetAuxMemoryMax as string, 10) : undefined,
         };
       }
 
@@ -67,14 +56,11 @@ export class LeaderboardController {
         benchmarkId,
         targetSparsityMin,
         targetSparsityMax,
-        targetAuxMemoryMin,
-        targetAuxMemoryMax,
         llmId,
       } = req.query;
 
       const filters: {
         targetSparsity?: NumericRange;
-        targetAuxMemory?: NumericRange;
         llmId?: string;
       } = {};
 
@@ -83,14 +69,6 @@ export class LeaderboardController {
         filters.targetSparsity = {
           min: targetSparsityMin ? parseFloat(targetSparsityMin as string) : undefined,
           max: targetSparsityMax ? parseFloat(targetSparsityMax as string) : undefined,
-        };
-      }
-
-      // Parse aux memory range
-      if (targetAuxMemoryMin || targetAuxMemoryMax) {
-        filters.targetAuxMemory = {
-          min: targetAuxMemoryMin ? parseInt(targetAuxMemoryMin as string, 10) : undefined,
-          max: targetAuxMemoryMax ? parseInt(targetAuxMemoryMax as string, 10) : undefined,
         };
       }
 
@@ -131,15 +109,6 @@ export class LeaderboardController {
       res.json(values);
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch sparsity values' });
-    }
-  };
-
-  public getAvailableAuxMemoryValues = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const values = await this.leaderboardService.getAvailableAuxMemoryValues();
-      res.json(values);
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch aux memory values' });
     }
   };
 }

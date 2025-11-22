@@ -30,7 +30,7 @@ export function LeaderboardTable({ entries, metrics = [] }: LeaderboardTableProp
   }
 
   const metricNames = Object.keys(entries[0]?.metricValues || {}).filter(
-    name => name !== 'average_density' && name !== 'average_local_error'
+    name => name !== 'average_density' && name !== 'average_local_error' && name !== 'aux_memory'
   );
 
   return (
@@ -114,10 +114,10 @@ export function LeaderboardTable({ entries, metrics = [] }: LeaderboardTableProp
               label={
                 <div className="flex items-center gap-1">
                   Aux Memory
-                  <InfoTooltip content="Auxiliary memory used by the sparse attention method (in bits per token)." />
+                  <InfoTooltip content="Auxiliary memory used by the sparse attention method (bytes per token per KV head)." />
                 </div>
               }
-              sortKey="targetAuxMemory"
+              sortKey="metricValues.aux_memory"
               sortConfig={sortConfig}
               onSort={requestSort}
               align="right"
@@ -184,8 +184,8 @@ export function LeaderboardTable({ entries, metrics = [] }: LeaderboardTableProp
                   : '-'}
               </td>
               <td className="px-4 py-4 text-right text-sm text-gray-300">
-                {entry.targetAuxMemory !== undefined && entry.targetAuxMemory !== null
-                  ? entry.targetAuxMemory.toLocaleString()
+                {entry.metricValues.aux_memory !== undefined && entry.metricValues.aux_memory !== null
+                  ? entry.metricValues.aux_memory.toLocaleString()
                   : '-'}
               </td>
               {metricNames.map(name => (

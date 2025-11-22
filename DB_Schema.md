@@ -85,7 +85,6 @@ CREATE TABLE configurations (
     
     -- Explicit experimental parameters
     target_sparsity DECIMAL(5,2), -- e.g., 1.00 for 1%, 5.00 for 5%, 20.00 for 20%
-    target_aux_memory BIGINT, -- target auxiliary memory in bytes or tokens
     
     -- Additional configuration parameters (for extensibility)
     additional_params JSONB, -- flexible storage for other hyperparameters
@@ -100,8 +99,7 @@ CREATE UNIQUE INDEX idx_unique_configuration ON configurations(
     baseline_id, 
     dataset_id, 
     llm_id, 
-    COALESCE(target_sparsity, -1), 
-    COALESCE(target_aux_memory, -1)
+    COALESCE(target_sparsity, -1)
 );
 
 -- Indexes for common queries
@@ -109,7 +107,6 @@ CREATE INDEX idx_configurations_baseline ON configurations(baseline_id);
 CREATE INDEX idx_configurations_dataset ON configurations(dataset_id);
 CREATE INDEX idx_configurations_llm ON configurations(llm_id);
 CREATE INDEX idx_configurations_sparsity ON configurations(target_sparsity);
-CREATE INDEX idx_configurations_memory ON configurations(target_aux_memory);
 
 -- ============================================================================
 -- RESULTS TABLES (High-volume transactional data)

@@ -16,13 +16,10 @@ export function DatasetDetailPage() {
   const { datasetId } = useParams<{ datasetId: string }>();
   const [selectedLlms, setSelectedLlms] = useState<string[]>([]);
   const [densityFilter, setDensityFilter] = useState<NumericRange | undefined>(undefined);
-  const [auxMemoryFilter, setAuxMemoryFilter] = useState<NumericRange | undefined>(undefined);
   
   // Local state for text inputs
   const [localDensityMin, setLocalDensityMin] = useState<string>('');
   const [localDensityMax, setLocalDensityMax] = useState<string>('');
-  const [localAuxMemoryMin, setLocalAuxMemoryMin] = useState<string>('');
-  const [localAuxMemoryMax, setLocalAuxMemoryMax] = useState<string>('');
 
   const { data: datasets } = useDatasets();
   const { data: benchmarks } = useBenchmarks();
@@ -30,7 +27,6 @@ export function DatasetDetailPage() {
   
   const { data: entries, isLoading: entriesLoading, error } = useDatasetLeaderboard(datasetId, {
     targetSparsity: densityFilter,
-    targetAuxMemory: auxMemoryFilter,
   });
   
   console.log('DatasetDetailPage entries:', entries);
@@ -51,12 +47,6 @@ export function DatasetDetailPage() {
     setLocalDensityMin(densityFilter?.min?.toString() ?? '');
     setLocalDensityMax(densityFilter?.max?.toString() ?? '');
   }, [densityFilter]);
-  
-  // Sync local state with auxiliary memory filter when it changes
-  useEffect(() => {
-    setLocalAuxMemoryMin(auxMemoryFilter?.min?.toString() ?? '');
-    setLocalAuxMemoryMax(auxMemoryFilter?.max?.toString() ?? '');
-  }, [auxMemoryFilter]);
 
   const isLoading = entriesLoading || metricsLoading;
 
