@@ -808,35 +808,45 @@ class SupabaseUploader:
     def purge_previous_runs(self):
         """Delete all experimental runs and associated data created by this script."""
         print("\n[PURGE] Deleting all previous data uploaded by this script...")
-        try:
-            # Find all runs created by this script
-            response = self.supabase.table('experimental_runs').select('id').execute()
-            
-            if not response.data:
-                print("  No previous experimental runs found to delete.")
-                return
+        
+        # Get all table names from the schema
+        # Delete in order to respect foreign key constraints (child tables first)
+        tables_in_order = [
+            'results',           # Has FKs to configurations, dataset_metrics, experimental_runs
+            'configurations',    # Has FKs to baselines, datasets, llms
+            'dataset_metrics',   # Has FKs to datasets, metrics
+            'datasets',          # Has FK to benchmarks
+            'experimental_runs', # Standalone
+            'metrics',           # Standalone
+            'baselines',         # Standalone
+            'llms',              # Standalone
+            'benchmarks'         # Standalone
+        ]
+        
+        for table in tables_in_order:
+            print(f"  Deleting  rows from {table}...")
+            while True:
+                response = self.supabase.table(table).select('id').execute()
+                if not response.data:
+                    break
 
-            run_ids = [run['id'] for run in response.data]
-            
-            if not run_ids:
-                print("  No previous experimental runs found to delete.")
-                return
+                run_ids = [run['id'] for run in response.data]
+                
+                if not run_ids:
+                    print("  No previous experimental runs found to delete.")
+                    return
 
-            print(f"  Found {len(run_ids)} experimental runs to delete...")
+                print(f"  Found {len(run_ids)} experimental runs to delete...")
 
-            # The schema is set up with ON DELETE CASCADE, so deleting a run
-            # should cascade to results and configurations.
-            # We delete them in batches to be safe.
-            for i in range(0, len(run_ids), 50):
-                batch_ids = run_ids[i:i+50]
-                self.supabase.table('experimental_runs').delete().in_('id', batch_ids).execute()
+                # The schema is set up with ON DELETE CASCADE, so deleting a run
+                # should cascade to results and configurations.
+                # We delete them in batches to be safe.
+                for i in range(0, len(run_ids), 50):
+                    batch_ids = run_ids[i:i+50]
+                    self.supabase.table(table).delete().in_('id', batch_ids).execute()
 
-            print("  Successfully purged all previous upload data.")
+        print("  Successfully purged all previous upload data.")
 
-        except Exception as e:
-            print(f"  Error during purge: {e}")
-            print("  Please check database permissions and schema.")
-            raise
 
     def _create_entities_sequentially(self, records: List[Dict[str, Any]]):
         """
