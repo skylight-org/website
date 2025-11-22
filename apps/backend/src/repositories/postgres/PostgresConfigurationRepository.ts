@@ -34,14 +34,6 @@ export class PostgresConfigurationRepository implements IConfigurationRepository
         query = query.lte('target_sparsity', filters.targetSparsity.max);
       }
     }
-    if (filters?.targetAuxMemory) {
-      if (filters.targetAuxMemory.min !== undefined) {
-        query = query.gte('target_aux_memory', filters.targetAuxMemory.min);
-      }
-      if (filters.targetAuxMemory.max !== undefined) {
-        query = query.lte('target_aux_memory', filters.targetAuxMemory.max);
-      }
-    }
     
     const { data, error } = await query;
     if (error) throw new Error(`Failed to fetch configurations: ${error.message}`);
@@ -74,12 +66,6 @@ export class PostgresConfigurationRepository implements IConfigurationRepository
     if (error) throw new Error(`Failed to fetch unique sparsity values: ${error.message}`);
     return data || [];
   }
-
-  async getUniqueAuxMemoryValues(): Promise<number[]> {
-    const { data, error } = await this.supabase.rpc('get_unique_target_aux_memory_values');
-    if (error) throw new Error(`Failed to fetch unique aux memory values: ${error.message}`);
-    return data || [];
-  }
   
   private mapToConfiguration(row: any): Configuration {
     return {
@@ -88,7 +74,6 @@ export class PostgresConfigurationRepository implements IConfigurationRepository
       datasetId: row.dataset_id,
       llmId: row.llm_id,
       targetSparsity: row.target_sparsity,
-      targetAuxMemory: row.target_aux_memory,
       additionalParams: row.additional_params,
       createdAt: new Date(row.created_at),
       updatedAt: new Date(row.updated_at),

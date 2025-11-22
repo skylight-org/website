@@ -73,7 +73,6 @@ export interface Configuration {
   datasetId: string;
   llmId: string;
   targetSparsity?: number; // e.g., 1.0 for 1%, 5.0 for 5%, 20.0 for 20%
-  targetAuxMemory?: number; // target auxiliary memory in bytes or tokens
   additionalParams?: Record<string, any>;
   createdAt: Date;
   updatedAt: Date;
@@ -124,7 +123,6 @@ export interface DatasetRanking {
   score: number;
   metricValues: Record<string, number>;
   targetSparsity?: number;
-  targetAuxMemory?: number;
   configuration: Configuration;
 }
 
@@ -147,9 +145,9 @@ export interface AggregatedRanking {
   bestDatasetRank: number;
   worstDatasetRank: number;
   targetSparsity?: number;
-  targetAuxMemory?: number;
   avgLocalError?: number;
   avgTargetSparsity?: number;
+  avgAuxMemory?: number;
 }
 
 // ============================================================================
@@ -168,7 +166,6 @@ export interface RankingOptions {
   baselineFilter?: string;
   experimentalRunId?: string;
   targetSparsity?: NumericRange;
-  targetAuxMemory?: NumericRange;
 }
 
 export interface AggregationMethod {

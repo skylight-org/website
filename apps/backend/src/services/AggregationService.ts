@@ -16,7 +16,6 @@ export class AggregationService {
     benchmarkId?: string,
     filters?: {
       targetSparsity?: NumericRange;
-      targetAuxMemory?: NumericRange;
       llmId?: string;
     }
   ): Promise<AggregatedRanking[]> {
@@ -37,38 +36,40 @@ export class AggregationService {
       datasets.map(d => this.rankingService.calculateDatasetRanking(d.id, filters))
     );
 
-    // Group rankings by baseline+llm+sparsity+aux_memory combination
+    // Group rankings by baseline+llm+sparsity combination
     const rankingsByConfig = new Map<string, {
       baseline: Baseline;
       llm: LLM;
       targetSparsity?: number;
-      targetAuxMemory?: number;
       datasetRanks: Map<string, number>;
       datasetScores: Map<string, number>;
       datasetDetails: Map<string, { sparsity?: number; auxMemory?: number; localError?: number; configuration: Configuration }>;
       ranks: number[];
       localErrorValues: (number | undefined)[];
       sparsityValues: (number | undefined)[];
+      auxMemoryValues: (number | undefined)[];
     }>();
 
     datasetRankings.forEach((rankings, datasetIdx) => {
       const dataset = datasets[datasetIdx];
       
       rankings.forEach(ranking => {
-        const key = `${ranking.baseline.id}-${ranking.llm.id}-${ranking.targetSparsity ?? 'N/A'}-${ranking.targetAuxMemory ?? 'N/A'}`;
+        // Include aux_memory from metricValues in the grouping key to distinguish configurations
+        const auxMemory = ranking.metricValues?.aux_memory ?? 'N/A';
+        const key = `${ranking.baseline.id}-${ranking.llm.id}-${ranking.targetSparsity ?? 'N/A'}-${auxMemory}`;
         
         if (!rankingsByConfig.has(key)) {
           rankingsByConfig.set(key, {
             baseline: ranking.baseline,
             llm: ranking.llm,
             targetSparsity: ranking.targetSparsity,
-            targetAuxMemory: ranking.targetAuxMemory,
             datasetRanks: new Map(),
             datasetScores: new Map(),
             datasetDetails: new Map(),
             ranks: [],
             localErrorValues: [],
             sparsityValues: [],
+            auxMemoryValues: [],
           });
         }
 
@@ -77,7 +78,7 @@ export class AggregationService {
         entry.datasetScores.set(dataset.id, ranking.score);
         entry.datasetDetails.set(dataset.id, {
           sparsity: ranking.targetSparsity,
-          auxMemory: ranking.targetAuxMemory,
+          auxMemory: ranking.metricValues?.aux_memory,
           localError: ranking.metricValues?.average_local_error,
           configuration: ranking.configuration,
         });
@@ -96,6 +97,9 @@ export class AggregationService {
         if (ranking.targetSparsity !== undefined) {
           entry.sparsityValues.push(ranking.targetSparsity);
         }
+        if (ranking.metricValues?.aux_memory !== undefined) {
+          entry.auxMemoryValues.push(ranking.metricValues.aux_memory);
+        }
       });
     });
 
@@ -113,6 +117,10 @@ export class AggregationService {
       const avgTargetSparsity = data.sparsityValues.length > 0
         ? data.sparsityValues.filter((v): v is number => v !== undefined).reduce((sum, s) => sum + s, 0) / data.sparsityValues.length
         : undefined;
+      
+      const avgAuxMemory = data.auxMemoryValues.length > 0
+        ? data.auxMemoryValues.filter((v): v is number => v !== undefined).reduce((sum, a) => sum + a, 0) / data.auxMemoryValues.length
+        : undefined;
 
       aggregated.push({
         rank: 0, // Will be assigned after sorting
@@ -128,9 +136,9 @@ export class AggregationService {
         bestDatasetRank: Math.min(...data.ranks),
         worstDatasetRank: Math.max(...data.ranks),
         targetSparsity: data.targetSparsity,
-        targetAuxMemory: data.targetAuxMemory,
         avgLocalError,
         avgTargetSparsity,
+        avgAuxMemory,
       });
     });
 

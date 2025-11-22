@@ -11,15 +11,12 @@ import { MultiSelectFilter } from '../components/common/MultiSelectFilter';
 
 export function OverviewPage() {
   const [densityFilter, setDensityFilter] = useState<NumericRange | undefined>(undefined);
-  const [auxMemoryFilter, setAuxMemoryFilter] = useState<NumericRange | undefined>(undefined);
   const [selectedLlms, setSelectedLlms] = useState<string[]>([]);
   const [showAll, setShowAll] = useState(false); // Default to showing only complete runs
   
   // Local state for text inputs to sync with TextRangeFilter
   const [localDensityMin, setLocalDensityMin] = useState('');
   const [localDensityMax, setLocalDensityMax] = useState('');
-  const [localAuxMemoryMin, setLocalAuxMemoryMin] = useState('');
-  const [localAuxMemoryMax, setLocalAuxMemoryMax] = useState('');
 
   const { 
     data: rankings, 
@@ -27,7 +24,6 @@ export function OverviewPage() {
     error: rankingsError 
   } = useOverallLeaderboard({
     targetSparsity: densityFilter,
-    targetAuxMemory: auxMemoryFilter,
   });
   const { data: llms, isLoading: llmsLoading, error: llmsError } = useLLMs();
   const { data: stats, isLoading: statsLoading, error: statsError } = useOverviewStats();

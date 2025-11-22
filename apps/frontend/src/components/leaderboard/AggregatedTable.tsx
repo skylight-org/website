@@ -212,11 +212,11 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
             <SortableHeader
               label={
                 <div className="flex items-center gap-1">
-                  Aux Memory
-                  <InfoTooltip content="The target auxiliary memory for this configuration." />
+                  Avg Aux Memory
+                  <InfoTooltip content="Average auxiliary memory used across datasets (bytes per token per KV head)." />
                 </div>
               }
-              sortKey="targetAuxMemory"
+              sortKey="avgAuxMemory"
               sortConfig={sortConfig}
               onSort={requestSort}
               align="right"
@@ -289,7 +289,7 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
                   </td>
                   <td className="px-4 py-4 text-right">
                     <span className="text-gray-400">
-                      {ranking.targetAuxMemory?.toLocaleString(undefined, { maximumFractionDigits: 0 }) || '-'}
+                      {ranking.avgAuxMemory?.toLocaleString(undefined, { maximumFractionDigits: 0 }) || '-'}
                     </span>
                   </td>
                 </tr>

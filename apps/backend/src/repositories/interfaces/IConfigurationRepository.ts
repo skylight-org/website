@@ -5,7 +5,6 @@ export interface ConfigurationFilters {
   datasetId?: string;
   llmId?: string;
   targetSparsity?: NumericRange;
-  targetAuxMemory?: NumericRange;
 }
 
 export interface IConfigurationRepository {
@@ -15,6 +14,5 @@ export interface IConfigurationRepository {
   findByBaselineId(baselineId: string, filters?: ConfigurationFilters): Promise<Configuration[]>;
   findByLLMId(llmId: string, filters?: ConfigurationFilters): Promise<Configuration[]>;
   getUniqueSparsityValues(): Promise<number[]>;
-  getUniqueAuxMemoryValues(): Promise<number[]>;
 }
 

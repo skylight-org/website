@@ -81,7 +81,6 @@ export const api = {
       datasetId: string, 
       params?: { 
         targetSparsity?: NumericRange;
-        targetAuxMemory?: NumericRange;
         llmId?: string;
       }
     ): Promise<DatasetRanking[]> => {
@@ -97,16 +96,6 @@ export const api = {
         }
       }
       
-      // Handle aux memory range
-      if (params?.targetAuxMemory) {
-        if (params.targetAuxMemory.min !== undefined) {
-          queryParams.targetAuxMemoryMin = params.targetAuxMemory.min.toString();
-        }
-        if (params.targetAuxMemory.max !== undefined) {
-          queryParams.targetAuxMemoryMax = params.targetAuxMemory.max.toString();
-        }
-      }
-      
       if (params?.llmId) queryParams.llmId = params.llmId;
       
       const query = Object.keys(queryParams).length > 0 
@@ -119,7 +108,6 @@ export const api = {
       benchmarkId?: string; 
       llmId?: string;
       targetSparsity?: NumericRange;
-      targetAuxMemory?: NumericRange;
     }): Promise<AggregatedRanking[]> => {
       const queryParams: Record<string, string> = {};
       if (params?.experimentalRunId) queryParams.experimentalRunId = params.experimentalRunId;
@@ -136,16 +124,6 @@ export const api = {
         }
       }
       
-      // Handle aux memory range
-      if (params?.targetAuxMemory) {
-        if (params.targetAuxMemory.min !== undefined) {
-          queryParams.targetAuxMemoryMin = params.targetAuxMemory.min.toString();
-        }
-        if (params.targetAuxMemory.max !== undefined) {
-          queryParams.targetAuxMemoryMax = params.targetAuxMemory.max.toString();
-        }
-      }
-      
       const query = Object.keys(queryParams).length > 0 
         ? `?${new URLSearchParams(queryParams).toString()}` 
         : '';
@@ -153,7 +131,6 @@ export const api = {
     },
     getPlotData: (params?: {
       targetSparsity?: NumericRange;
-      targetAuxMemory?: NumericRange;
     }): Promise<DatasetRanking[]> => {
       const queryParams: Record<string, string> = {};
       
@@ -167,16 +144,6 @@ export const api = {
         }
       }
       
-      // Handle aux memory range
-      if (params?.targetAuxMemory) {
-        if (params.targetAuxMemory.min !== undefined) {
-          queryParams.targetAuxMemoryMin = params.targetAuxMemory.min.toString();
-        }
-        if (params.targetAuxMemory.max !== undefined) {
-          queryParams.targetAuxMemoryMax = params.targetAuxMemory.max.toString();
-        }
-      }
-      
       const query = Object.keys(queryParams).length > 0
         ? `?${new URLSearchParams(queryParams).toString()}`
         : '';
@@ -184,6 +151,5 @@ export const api = {
     },
     getOverview: (): Promise<OverviewStats> => fetchApi('/leaderboards/overview'),
     getAvailableSparsityValues: (): Promise<number[]> => fetchApi('/leaderboards/filters/sparsity'),
-    getAvailableAuxMemoryValues: (): Promise<number[]> => fetchApi('/leaderboards/filters/aux-memory'),
   },
 };

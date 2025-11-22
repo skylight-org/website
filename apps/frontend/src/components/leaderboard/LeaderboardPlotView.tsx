@@ -36,7 +36,8 @@ export function LeaderboardPlotView() {
     const groupedData = new Map<string, Point[]>();
 
     plotData.forEach(item => {
-      const key = `${item.baseline.name} (Aux: ${item.targetAuxMemory ?? 'N/A'})`;
+      const auxMemory = item.metricValues?.aux_memory;
+      const key = `${item.baseline.name} (Aux: ${auxMemory !== undefined ? auxMemory.toLocaleString() : 'N/A'})`;
       if (!groupedData.has(key)) {
         groupedData.set(key, []);
       }
