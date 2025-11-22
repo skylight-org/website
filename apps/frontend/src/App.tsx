@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SidebarProvider, useSidebar } from './contexts/SidebarContext';
 import { Sidebar } from './components/layout/Sidebar';
@@ -73,11 +73,11 @@ function AppContent() {
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter basename="/">
+      <HashRouter>
         <SidebarProvider>
           <AppContent />
         </SidebarProvider>
-      </BrowserRouter>
+      </HashRouter>
     </QueryClientProvider>
   );
 }
