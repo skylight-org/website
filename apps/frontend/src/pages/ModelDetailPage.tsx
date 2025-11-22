@@ -119,17 +119,33 @@ export function ModelDetailPage() {
           <div className="h-6 w-48 bg-dark-surface rounded"></div>
         </div>
       ) : llm ? (
-        <div>
-          <h1 className="text-3xl font-bold text-white mb-2">{llm.name}</h1>
-          <div className="flex items-center gap-4 text-gray-400">
-            <span>{llm.provider}</span>
-            {llm.parameterCount && (
-              <span>{formatParameterCount(llm.parameterCount)} parameters</span>
-            )}
-            {llm.contextLength && (
-              <span>{llm.contextLength.toLocaleString()} context</span>
-            )}
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-white mb-2">{llm.name}</h1>
+            <div className="flex items-center gap-4 text-gray-400">
+              <span>{llm.provider}</span>
+              {llm.parameterCount && (
+                <span>{formatParameterCount(llm.parameterCount)} parameters</span>
+              )}
+              {llm.contextLength && (
+                <span>{llm.contextLength.toLocaleString()} context</span>
+              )}
+            </div>
           </div>
+          
+          {/* Request Model Button */}
+          <a
+            href="https://github.com/skylight-org/website/discussions/categories/model-requests"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-shrink-0 inline-flex items-center gap-2 px-3 py-2 bg-dark-surface border border-accent-gold/30 rounded-lg text-sm text-gray-300 hover:border-accent-gold hover:bg-dark-surface/80 transition-all group"
+            title="Request a model"
+          >
+            <svg className="w-4 h-4 text-gray-400 group-hover:text-accent-gold transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            <span className="hidden lg:inline whitespace-nowrap">Request Model</span>
+          </a>
         </div>
       ) : null}
 

@@ -36,7 +36,7 @@ export function BaselineDetailPage() {
       {/* Header */}
       <div className="bg-dark-surface rounded-lg border border-dark-border p-8">
         <div className="flex items-start justify-between mb-6">
-          <div>
+          <div className="flex-1">
             <h1 className="text-3xl font-bold text-white mb-3">{baseline.name}</h1>
             <p className="text-gray-300 text-lg">{baseline.description}</p>
           </div>
@@ -44,6 +44,18 @@ export function BaselineDetailPage() {
             <span className="px-3 py-1 bg-dark-bg rounded text-accent-gold font-mono text-sm">
               v{baseline.version}
             </span>
+            <a
+              href="https://github.com/skylight-org/website/discussions/categories/baseline-requests"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-3 py-2 bg-dark-bg border border-accent-gold/30 rounded-lg text-sm text-gray-300 hover:border-accent-gold hover:bg-dark-bg/80 transition-all group"
+              title="Request a baseline"
+            >
+              <svg className="w-4 h-4 text-gray-400 group-hover:text-accent-gold transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              <span className="hidden lg:inline whitespace-nowrap">Request Baseline</span>
+            </a>
           </div>
         </div>
 

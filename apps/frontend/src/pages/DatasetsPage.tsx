@@ -73,14 +73,34 @@ export function DatasetsPage() {
       
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold text-white mb-2">Datasets</h1>
-        <p className="text-gray-400">
-          {llmIdFilter && llms ? (
-            <>Showing datasets for <span className="text-accent-gold font-medium">{llms.find(l => l.id === llmIdFilter)?.name || 'Unknown Model'}</span></>
-          ) : (
-            'Compare baseline performance across datasets'
-          )}
-        </p>
+        <div className="flex items-start justify-between gap-4 mb-2">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2">Datasets</h1>
+            <p className="text-gray-400">
+              {llmIdFilter && llms ? (
+                <>Showing datasets for <span className="text-accent-gold font-medium">{llms.find(l => l.id === llmIdFilter)?.name || 'Unknown Model'}</span></>
+              ) : (
+                'Compare baseline performance across datasets'
+              )}
+            </p>
+          </div>
+          
+          {/* Request Dataset/Benchmark Button */}
+          <a
+            href="https://github.com/skylight-org/website/discussions/categories/benchmark-dataset-requests"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-dark-surface border border-accent-gold/30 rounded-lg text-sm text-gray-300 hover:border-accent-gold hover:bg-dark-surface/80 transition-all group"
+          >
+            <svg className="w-4 h-4 text-gray-400 group-hover:text-accent-gold transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            <span className="whitespace-nowrap">Request Dataset</span>
+            <svg className="w-4 h-4 text-gray-400 group-hover:text-accent-gold group-hover:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </a>
+        </div>
       </div>
 
       {/* Filters Section */}

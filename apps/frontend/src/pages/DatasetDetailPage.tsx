@@ -122,15 +122,33 @@ export function DatasetDetailPage() {
 
       {/* Header */}
       <div>
-        <div className="flex items-center gap-3 mb-2">
-          <h1 className="text-3xl font-bold text-white">{dataset.name}</h1>
-          {benchmark && (
-            <span className="px-3 py-1 text-sm font-medium bg-accent-gold/10 text-accent-gold rounded border border-accent-gold/20">
-              {benchmark.name}
-            </span>
-          )}
+        <div className="flex items-start justify-between gap-4 mb-2">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-3xl font-bold text-white">{dataset.name}</h1>
+              {benchmark && (
+                <span className="px-3 py-1 text-sm font-medium bg-accent-gold/10 text-accent-gold rounded border border-accent-gold/20">
+                  {benchmark.name}
+                </span>
+              )}
+            </div>
+            <p className="text-gray-400 mb-4">{dataset.description}</p>
+          </div>
+          
+          {/* Request Dataset Button */}
+          <a
+            href="https://github.com/skylight-org/website/discussions/categories/benchmark-dataset-requests"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-shrink-0 inline-flex items-center gap-2 px-3 py-2 bg-dark-surface border border-accent-gold/30 rounded-lg text-sm text-gray-300 hover:border-accent-gold hover:bg-dark-surface/80 transition-all group"
+            title="Request a dataset"
+          >
+            <svg className="w-4 h-4 text-gray-400 group-hover:text-accent-gold transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            <span className="hidden lg:inline whitespace-nowrap">Request Dataset</span>
+          </a>
         </div>
-        <p className="text-gray-400 mb-4">{dataset.description}</p>
         
         {/* Dataset Info */}
         {dataset.size && (
