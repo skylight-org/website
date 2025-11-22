@@ -11,12 +11,15 @@ import { MultiSelectFilter } from '../components/common/MultiSelectFilter';
 
 export function OverviewPage() {
   const [densityFilter, setDensityFilter] = useState<NumericRange | undefined>(undefined);
+  const [auxMemoryFilter, setAuxMemoryFilter] = useState<NumericRange | undefined>(undefined);
   const [selectedLlms, setSelectedLlms] = useState<string[]>([]);
   const [showAll, setShowAll] = useState(false); // Default to showing only complete runs
   
   // Local state for text inputs to sync with TextRangeFilter
   const [localDensityMin, setLocalDensityMin] = useState('');
   const [localDensityMax, setLocalDensityMax] = useState('');
+  const [localAuxMemoryMin, setLocalAuxMemoryMin] = useState('');
+  const [localAuxMemoryMax, setLocalAuxMemoryMax] = useState('');
 
   const { 
     data: rankings, 
@@ -49,12 +52,24 @@ export function OverviewPage() {
       filtered = filtered.filter(ranking => ranking.numDatasets === ranking.totalNumDatasets);
     }
 
+    // Filter by auxiliary memory if set
+    if (auxMemoryFilter) {
+      filtered = filtered.filter(ranking => {
+        const auxMemory = ranking.avgAuxMemory;
+        if (auxMemory === undefined || auxMemory === null) return true;
+        
+        const meetsMin = auxMemoryFilter.min === undefined || auxMemory >= auxMemoryFilter.min;
+        const meetsMax = auxMemoryFilter.max === undefined || auxMemory <= auxMemoryFilter.max;
+        return meetsMin && meetsMax;
+      });
+    }
+
     // Filter by selected LLMs client-side
     if (llmOptions.length > 0 && selectedLlms.length === 0) {
       return filtered; // Show all if no models are specifically selected yet
     }
     return filtered.filter(ranking => selectedLlms.includes(ranking.llm.name));
-  }, [rankings, selectedLlms, llmOptions, showAll]);
+  }, [rankings, selectedLlms, llmOptions, showAll, auxMemoryFilter]);
 
   const handleApplyFilters = () => {
     setDensityFilter({
