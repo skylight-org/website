@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { DatasetRanking, Metric } from '@sky-light/shared-types';
 import { SortableHeader } from '../common/SortableHeader';
 import { useSortableData } from '../../hooks/useSortableData';
@@ -13,13 +14,35 @@ export function LeaderboardTable({ entries, metrics = [] }: LeaderboardTableProp
     key: 'score',
     direction: 'desc',
   });
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
-  console.log('LeaderboardTable entries:', entries);
-  console.log('LeaderboardTable metrics:', metrics);
-  if (entries.length > 0) {
-    console.log('First entry metricValues:', entries[0].metricValues);
-    console.log('Has average_local_error?', 'average_local_error' in entries[0].metricValues);
-  }
+  const toggleRowExpansion = (configId: string) => {
+    setExpandedRows(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(configId)) {
+        newSet.delete(configId);
+      } else {
+        newSet.add(configId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleCopy = (text: string, key: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedKey(key);
+      setTimeout(() => setCopiedKey(null), 2000);
+    });
+  };
+
+  // Replacer function to remove 'search_space' keys from JSON output
+  const jsonReplacer = (key: string, value: any) => {
+    if (key === 'search_space') {
+      return undefined;
+    }
+    return value;
+  };
 
   if (entries.length === 0) {
     return (
@@ -144,59 +167,145 @@ export function LeaderboardTable({ entries, metrics = [] }: LeaderboardTableProp
           </tr>
         </thead>
         <tbody>
-          {sortedData.map((entry, idx) => (
-            <tr 
-              key={entry.configurationId}
-              className={`border-b border-dark-border hover:bg-dark-surface-hover transition-colors ${
-                idx < 3 ? 'bg-yellow-500/5' : ''
-              }`}
-            >
-              <td className="px-4 py-4 text-sm">
-                <span className={`font-semibold ${
-                  entry.rank === 1 ? 'text-yellow-400' :
-                  entry.rank === 2 ? 'text-gray-300' :
-                  entry.rank === 3 ? 'text-orange-400' :
-                  'text-gray-400'
-                }`}>
-                  #{entry.rank}
-                </span>
-              </td>
-              <td className="px-4 py-4">
-                <div className="font-medium text-white">{entry.baseline.name}</div>
-              </td>
-              <td className="px-4 py-4">
-                <div className="font-medium text-white">{entry.llm.name}</div>
-                <div className="text-xs text-gray-400">{entry.llm.provider}</div>
-              </td>
-              <td className="px-4 py-4 text-right">
-                <span className="font-semibold text-accent-gold text-lg">{entry.score.toFixed(2)}</span>
-              </td>
-              <td className="px-4 py-4 text-right text-sm text-gray-300">
-                {entry.metricValues.average_density !== undefined &&
-                entry.metricValues.average_density !== null
-                  ? entry.metricValues.average_density.toFixed(2)
-                  : '-'}
-              </td>
-              <td className="px-4 py-4 text-right text-sm text-gray-300">
-                {entry.metricValues.average_local_error !== undefined &&
-                entry.metricValues.average_local_error !== null
-                  ? entry.metricValues.average_local_error.toPrecision(2)
-                  : '-'}
-              </td>
-              <td className="px-4 py-4 text-right text-sm text-gray-300">
-                {entry.targetAuxMemory !== undefined && entry.targetAuxMemory !== null
-                  ? entry.targetAuxMemory.toLocaleString()
-                  : '-'}
-              </td>
-              {metricNames.map(name => (
-                <td key={name} className="px-4 py-4 text-right text-sm text-gray-300">
-                  {entry.metricValues[name] !== undefined 
-                    ? entry.metricValues[name].toFixed(2) 
-                    : '-'}
-                </td>
-              ))}
-            </tr>
-          ))}
+          {sortedData.map((entry, idx) => {
+            const isExpanded = expandedRows.has(entry.configurationId);
+            
+            return (
+              <>
+                <tr 
+                  key={entry.configurationId}
+                  className={`border-b border-dark-border hover:bg-dark-surface-hover transition-colors cursor-pointer ${
+                    idx < 3 ? 'bg-yellow-500/5' : ''
+                  }`}
+                  onClick={() => toggleRowExpansion(entry.configurationId)}
+                >
+                  <td className="px-4 py-4 text-sm">
+                    <div className="flex items-center gap-2">
+                      <svg 
+                        className={`w-3 h-3 text-gray-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`} 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                      <span className={`font-semibold ${
+                        entry.rank === 1 ? 'text-yellow-400' :
+                        entry.rank === 2 ? 'text-gray-300' :
+                        entry.rank === 3 ? 'text-orange-400' :
+                        'text-gray-400'
+                      }`}>
+                        #{entry.rank}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-4">
+                    <div className="font-medium text-white">{entry.baseline.name}</div>
+                  </td>
+                  <td className="px-4 py-4">
+                    <div className="font-medium text-white">{entry.llm.name}</div>
+                    <div className="text-xs text-gray-400">{entry.llm.provider}</div>
+                  </td>
+                  <td className="px-4 py-4 text-right">
+                    <span className="font-semibold text-accent-gold text-lg">{entry.score.toFixed(2)}</span>
+                  </td>
+                  <td className="px-4 py-4 text-right text-sm text-gray-300">
+                    {entry.metricValues.average_density !== undefined &&
+                    entry.metricValues.average_density !== null
+                      ? entry.metricValues.average_density.toFixed(2)
+                      : '-'}
+                  </td>
+                  <td className="px-4 py-4 text-right text-sm text-gray-300">
+                    {entry.metricValues.average_local_error !== undefined &&
+                    entry.metricValues.average_local_error !== null
+                      ? entry.metricValues.average_local_error.toPrecision(2)
+                      : '-'}
+                  </td>
+                  <td className="px-4 py-4 text-right text-sm text-gray-300">
+                    {entry.targetAuxMemory !== undefined && entry.targetAuxMemory !== null
+                      ? entry.targetAuxMemory.toLocaleString()
+                      : '-'}
+                  </td>
+                  {metricNames.map(name => (
+                    <td key={name} className="px-4 py-4 text-right text-sm text-gray-300">
+                      {entry.metricValues[name] !== undefined 
+                        ? entry.metricValues[name].toFixed(2) 
+                        : '-'}
+                    </td>
+                  ))}
+                </tr>
+                
+                {isExpanded && (
+                  <tr key={`${entry.configurationId}-config`} className="border-b border-dark-border bg-black/20">
+                    <td colSpan={7 + metricNames.length} className="px-4 py-4">
+                      <div className="p-4 bg-black/30 rounded border border-dark-border/30">
+                        <div className="flex justify-between items-center mb-2">
+                          <h4 className="text-sm font-medium text-accent-gold">Configuration Details</h4>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const configToCopy = entry.configuration?.additionalParams?.sparse_attention_config ?? { name: 'DenseAttention', description: 'Standard full attention mechanism.' };
+                              handleCopy(
+                                JSON.stringify(configToCopy, jsonReplacer, 2),
+                                entry.configurationId
+                              );
+                            }}
+                            className="text-xs px-2 py-1 text-gray-400 hover:text-white hover:bg-dark-surface rounded transition-colors"
+                          >
+                            {copiedKey === entry.configurationId ? 'Copied!' : 'Copy Config'}
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-xs text-gray-500 mb-1">Sparse Attention Config</p>
+                            <pre className="text-xs text-gray-300 font-mono bg-dark-bg p-3 rounded overflow-x-auto max-h-60">
+{entry.configuration?.additionalParams?.sparse_attention_config
+  ? JSON.stringify(entry.configuration.additionalParams.sparse_attention_config, jsonReplacer, 2)
+  : JSON.stringify({ name: 'DenseAttention', description: 'Standard full attention mechanism.' }, null, 2)
+}
+                            </pre>
+                          </div>
+                          <div className="space-y-4">
+                            <div>
+                              <p className="text-xs text-gray-500 mb-1">Metadata</p>
+                              <div className="text-xs text-gray-300 space-y-1">
+                                <div className="flex justify-between border-b border-dark-border/30 pb-1">
+                                  <span>Created At:</span>
+                                  <span>{new Date(entry.configuration.createdAt).toLocaleDateString()}</span>
+                                </div>
+                                <div className="flex justify-between border-b border-dark-border/30 pb-1">
+                                  <span>Target Sparsity:</span>
+                                  <span>{entry.targetSparsity !== undefined ? `${entry.targetSparsity}%` : 'N/A'}</span>
+                                </div>
+                                <div className="flex justify-between border-b border-dark-border/30 pb-1">
+                                  <span>Target Aux Memory:</span>
+                                  <span>{entry.targetAuxMemory !== undefined ? entry.targetAuxMemory : 'N/A'}</span>
+                                </div>
+                              </div>
+                            </div>
+                            {entry.configuration?.additionalParams && Object.keys(entry.configuration.additionalParams).length > 0 && (
+                              <div>
+                                <p className="text-xs text-gray-500 mb-1">Additional Parameters</p>
+                                <pre className="text-xs text-gray-300 font-mono bg-dark-bg p-3 rounded overflow-x-auto max-h-40">
+{JSON.stringify(
+  Object.fromEntries(
+    Object.entries(entry.configuration.additionalParams).filter(([key]) => key !== 'sparse_attention_config')
+  ), 
+  jsonReplacer, 
+  2
+)}
+                                </pre>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </>
+            );
+          })}
         </tbody>
       </table>
     </div>
