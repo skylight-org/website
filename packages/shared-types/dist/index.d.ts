@@ -59,7 +59,6 @@ export interface Configuration {
     datasetId: string;
     llmId: string;
     targetSparsity?: number;
-    targetAuxMemory?: number;
     additionalParams?: Record<string, any>;
     createdAt: Date;
     updatedAt: Date;
@@ -102,7 +101,6 @@ export interface DatasetRanking {
     score: number;
     metricValues: Record<string, number>;
     targetSparsity?: number;
-    targetAuxMemory?: number;
     configuration: Configuration;
 }
 export interface AggregatedRanking {
@@ -124,9 +122,9 @@ export interface AggregatedRanking {
     bestDatasetRank: number;
     worstDatasetRank: number;
     targetSparsity?: number;
-    targetAuxMemory?: number;
     avgLocalError?: number;
     avgTargetSparsity?: number;
+    avgAuxMemory?: number;
 }
 export interface NumericRange {
     min?: number;
@@ -139,7 +137,6 @@ export interface RankingOptions {
     baselineFilter?: string;
     experimentalRunId?: string;
     targetSparsity?: NumericRange;
-    targetAuxMemory?: NumericRange;
 }
 export interface AggregationMethod {
     type: 'mean' | 'median' | 'weighted';
@@ -168,4 +165,19 @@ export interface OverviewStats {
     totalConfigurations: number;
     totalResults: number;
     lastUpdated: Date;
+}
+export interface BaselineRanking {
+    baseline: Baseline;
+    avgRankScore: number;
+    avgRankLocalError: number;
+    numTablesScore: number;
+    numTablesLocalError: number;
+}
+export interface CombinedViewResult {
+    rank: number;
+    baselineName: string;
+    avgRank: number;
+    avgValuesPerSparsity: Record<number, number>;
+    numTables: number;
+    metricName: string;
 }

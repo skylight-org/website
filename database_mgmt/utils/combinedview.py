@@ -24,9 +24,6 @@ Usage:
     # Filter by both
     python combinedview.py --llms "meta-llama/Llama-3.2-3B-Instruct" --sparsities 5.0 10.0
     
-    # Use more parallel workers for faster computation
-    python combinedview.py --workers 8
-    
     # Use different metric
     python combinedview.py --metric average_local_error
     python combinedview.py --metric overall_score  # default
@@ -40,10 +37,8 @@ import os
 import sys
 import argparse
 import json
-import threading
 from typing import Dict, List, Optional, Any, Tuple
 from collections import defaultdict
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
 try:
     from supabase import create_client, Client
@@ -86,7 +81,7 @@ class CombinedViewGenerator:
         except Exception as e:
             print(f"Error querying target sparsities: {e}")
             return []
-
+    
     def get_baseline_ranking_for_llm_sparsity(
         self,
         llm_id: str,
@@ -132,7 +127,6 @@ class CombinedViewGenerator:
             
             # For each baseline, compute average overall_score
             baseline_scores = []
-            
             for baseline_id, baseline_name in baselines.items():
                 # Special handling for dense baseline
                 is_dense = baseline_name.lower() == 'dense'
@@ -156,13 +150,18 @@ class CombinedViewGenerator:
                 if not configs_response.data:
                     continue
                 
-                # Get overall_scores for each configuration
-                overall_scores = []
-                
+                # Group configurations by dataset_id to pick best per dataset
+                configs_by_dataset = {}
                 for config in configs_response.data:
-                    config_id = config['id']
                     dataset_id = config['dataset_id']
-                    
+                    if dataset_id not in configs_by_dataset:
+                        configs_by_dataset[dataset_id] = []
+                    configs_by_dataset[dataset_id].append(config)
+                
+                # For each dataset, get the best score across all configs (e.g., different aux_memory)
+                dataset_scores = []
+                
+                for dataset_id, dataset_configs in configs_by_dataset.items():
                     # Get the dataset_metric_id
                     dm_response = self.supabase.table('dataset_metrics')\
                         .select('id')\
@@ -170,8 +169,15 @@ class CombinedViewGenerator:
                         .eq('metric_id', metric_id)\
                         .execute()
                     
-                    if dm_response.data:
-                        dataset_metric_id = dm_response.data[0]['id']
+                    if not dm_response.data:
+                        continue
+                    
+                    dataset_metric_id = dm_response.data[0]['id']
+                    
+                    # Get scores for all configs of this dataset
+                    config_scores = []
+                    for config in dataset_configs:
+                        config_id = config['id']
                         
                         # Get the result value
                         result_response = self.supabase.table('results')\
@@ -181,12 +187,18 @@ class CombinedViewGenerator:
                             .execute()
                         
                         if result_response.data:
-                            score = float(result_response.data[0]['value'])
-                            overall_scores.append(score)
+                            config_scores.extend([float(item['value']) for item in result_response.data])
+                    # Pick the best score for this dataset
+                    if config_scores:
+                        if higher_is_better:
+                            best_score = max(config_scores)
+                        else:
+                            best_score = min(config_scores)
+                        dataset_scores.append(best_score)
                 
-                # Compute average
-                if overall_scores:
-                    avg_score = sum(overall_scores) / len(overall_scores)
+                # Compute average across datasets
+                if dataset_scores:
+                    avg_score = sum(dataset_scores) / len(dataset_scores)
                     baseline_scores.append({
                         'name': baseline_name,
                         'score': avg_score
@@ -232,7 +244,6 @@ class CombinedViewGenerator:
         self,
         filter_llms: Optional[List[str]] = None,
         filter_sparsities: Optional[List[float]] = None,
-        max_workers: int = 1, # multiple sometimes crashes
         metric_name: str = 'overall_score'
     ) -> List[Dict[str, Any]]:
         """
@@ -241,7 +252,6 @@ class CombinedViewGenerator:
         Args:
             filter_llms: Optional list of LLM names to include. If None, uses all LLMs.
             filter_sparsities: Optional list of target sparsities to include. If None, uses all.
-            max_workers: Number of parallel workers for table computation (default: 4).
             metric_name: Metric to rank by (e.g., 'overall_score', 'average_local_error').
         
         For each baseline:
@@ -255,38 +265,29 @@ class CombinedViewGenerator:
         print("\n" + "=" * 80)
         print("Computing Combined Baseline Rankings")
         print("=" * 80)
-        
         # Get all LLMs and sparsities
         all_llms = self.get_all_llms()
         all_sparsities = self.get_all_target_sparsities()
-        
+
+        all_sparsities = [ x for x in all_sparsities if x < 100.0 ]
+                
         # Apply filters if specified
         if filter_llms:
             llms = [(llm_id, llm_name) for llm_id, llm_name in all_llms if llm_name in filter_llms]
-            if not llms:
-                print(f"Error: None of the specified LLMs found in database")
-                print(f"Requested: {filter_llms}")
-                print(f"Available: {[name for _, name in all_llms]}")
-                return []
         else:
             llms = all_llms
         
         if filter_sparsities:
             sparsities = [s for s in all_sparsities if s in filter_sparsities]
-            if not sparsities:
-                print(f"Error: None of the specified target sparsities found in database")
-                print(f"Requested: {filter_sparsities}")
-                print(f"Available: {all_sparsities}")
-                return []
         else:
             sparsities = all_sparsities
         
         if not llms:
-            print("Error: No LLMs found in database")
+            print("Error: No LLMs found in database / Chosen")
             return []
         
         if not sparsities:
-            print("Error: No target sparsity values found in database")
+            print("Error: No target sparsity values found in database / Chosen")
             return []
         
         print(f"\nFound {len(llms)} LLMs:")
@@ -299,7 +300,6 @@ class CombinedViewGenerator:
         
         total_tables = len(llms) * len(sparsities)
         print(f"\nTotal individual tables: {total_tables}")
-        print(f"Using {max_workers} parallel workers")
         print("\nComputing individual rankings...")
         
         # Collect ranks and metric values for each baseline across all tables
@@ -307,67 +307,44 @@ class CombinedViewGenerator:
         # Track metric values per sparsity level: baseline_name -> {sparsity -> [values]}
         baseline_values_by_sparsity = defaultdict(lambda: defaultdict(list))
         
-        # Thread-safe counters and locks
+        # Progress tracking
         table_count = 0
         processed = 0
         bar_width = 50
-        progress_lock = threading.Lock()
         
-        # Create list of all tasks
-        tasks = [(llm_id, llm_name, sparsity) for llm_id, llm_name in llms for sparsity in sparsities]
-        
-        def process_table(llm_id: str, llm_name: str, sparsity: float) -> Tuple[str, str, float, Optional[Dict[str, Dict[str, Any]]]]:
-            """Process a single table and return results."""
-            rankings = self.get_baseline_ranking_for_llm_sparsity(llm_id, llm_name, sparsity, metric_name)
-            return llm_id, llm_name, sparsity, rankings
-        
-        # Process tables in parallel
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            # Submit all tasks
-            future_to_task = {
-                executor.submit(process_table, llm_id, llm_name, sparsity): (llm_name, sparsity)
-                for llm_id, llm_name, sparsity in tasks
-            }
-            
-            # Process completed tasks
-            for future in as_completed(future_to_task):
-                llm_name, sparsity = future_to_task[future]
-                
+        # Process tables sequentially
+        for llm_id, llm_name in llms:
+            for sparsity in sparsities:
                 try:
-                    llm_id, llm_name, sparsity, rankings = future.result()
+                    rankings = self.get_baseline_ranking_for_llm_sparsity(llm_id, llm_name, sparsity, metric_name)
                     
-                    # Thread-safe progress update
-                    with progress_lock:
-                        processed += 1
-                        
-                        # Progress bar
-                        progress = processed / total_tables
-                        filled = int(bar_width * progress)
-                        bar = '█' * filled + '░' * (bar_width - filled)
-                        percent = progress * 100
-                        
-                        print(f"\r  [{bar}] {percent:5.1f}% ({processed}/{total_tables}) - Completed: {llm_name[:40]:<40} @ {sparsity:5.1f}%", end='', flush=True)
-                        
-                        # Collect results
-                        if rankings:
-                            table_count += 1
-                            for baseline_name, data in rankings.items():
-                                baseline_ranks[baseline_name].append(data['rank'])
-                                if data.get('metric_value') is not None:
-                                    # Store metric value organized by sparsity level
-                                    baseline_values_by_sparsity[baseline_name][sparsity].append(data['metric_value'])
+                    processed += 1
+                    
+                    # Progress bar
+                    progress = processed / total_tables
+                    filled = int(bar_width * progress)
+                    bar = '█' * filled + '░' * (bar_width - filled)
+                    percent = progress * 100
+                    
+                    print(f"\r  [{bar}] {percent:5.1f}% ({processed}/{total_tables}) - Completed: {llm_name[:40]:<40} @ {sparsity:5.1f}%", end='', flush=True)
+                    
+                    # Collect results
+                    if rankings:
+                        table_count += 1
+                        for baseline_name, data in rankings.items():
+                            baseline_ranks[baseline_name].append(data['rank'])
+                            if data.get('metric_value') is not None:
+                                # Store metric value organized by sparsity level
+                                baseline_values_by_sparsity[baseline_name][sparsity].append(data['metric_value'])
                 
                 except Exception as e:
-                    with progress_lock:
-                        processed += 1
-                        print(f"\n  Error processing {llm_name} @ {sparsity}%: {e}")
-        
+                    processed += 1
+                    print(f"\n  Error processing {llm_name} @ {sparsity}%: {e}")
         # Clear the progress bar line and print completion
         print(f"\r  [{'█' * bar_width}] 100.0% ({total_tables}/{total_tables}) - Completed!{' ' * 50}")
         
         print(f"\nSuccessfully processed {table_count} individual tables")
         print(f"Found {len(baseline_ranks)} baselines with at least one ranking")
-        
         # Compute average ranks and average metric values per sparsity
         results = []
         for baseline_name, ranks in baseline_ranks.items():
@@ -575,12 +552,6 @@ def main():
         help='Filter by specific target sparsity values (space-separated). If not set, uses all sparsities.'
     )
     parser.add_argument(
-        '--workers',
-        type=int,
-        default=4,
-        help='Number of parallel workers for table computation (default: 4)'
-    )
-    parser.add_argument(
         '--metric',
         type=str,
         default='overall_score',
@@ -613,7 +584,6 @@ def main():
         results = generator.compute_combined_ranking(
             filter_llms=args.llms,
             filter_sparsities=args.sparsities,
-            max_workers=args.workers,
             metric_name=args.metric
         )
         

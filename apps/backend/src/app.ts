@@ -23,6 +23,7 @@ import { PostgresExperimentalRunRepository } from './repositories/postgres/Postg
 import { RankingService } from './services/RankingService';
 import { AggregationService } from './services/AggregationService';
 import { LeaderboardService } from './services/LeaderboardService';
+import { CombinedViewService } from './services/CombinedViewService';
 
 // Controllers
 import { LeaderboardController } from './controllers/leaderboard.controller';
@@ -32,6 +33,7 @@ import { DatasetController } from './controllers/dataset.controller';
 import { LLMController } from './controllers/llm.controller';
 import { MetricController } from './controllers/metric.controller';
 import { ResultController } from './controllers/result.controller';
+import { CombinedViewController } from './controllers/combined-view.controller';
 
 // Routes
 import { createLeaderboardRoutes } from './routes/leaderboard.routes';
@@ -41,6 +43,7 @@ import { createDatasetRoutes } from './routes/dataset.routes';
 import { createLLMRoutes } from './routes/llm.routes';
 import { createMetricRoutes } from './routes/metric.routes';
 import { createResultRoutes } from './routes/result.routes';
+import { createCombinedViewRoutes } from './routes/combined-view.routes';
 
 export async function createApp() {
   const app = express();
@@ -94,6 +97,8 @@ export async function createApp() {
     aggregationService
   );
 
+  const combinedViewService = new CombinedViewService(supabase);
+
   // Initialize controllers
   const leaderboardController = new LeaderboardController(leaderboardService);
   const baselineController = new BaselineController(baselineRepo);
@@ -102,6 +107,12 @@ export async function createApp() {
   const llmController = new LLMController(llmRepo);
   const metricController = new MetricController(metricRepo, datasetMetricRepo);
   const resultController = new ResultController(resultRepo);
+  const combinedViewController = new CombinedViewController(combinedViewService);
+
+  // Initialize combined view tables on startup
+  console.log('\n🚀 Initializing combined view tables...');
+  await combinedViewController.initializeTables();
+  console.log('✅ Combined view tables ready\n');
 
   // Health check
   app.get('/health', (req, res) => {
@@ -116,6 +127,7 @@ export async function createApp() {
   app.use('/api/v1/llms', createLLMRoutes(llmController));
   app.use('/api/v1/metrics', createMetricRoutes(metricController));
   app.use('/api/v1/results', createResultRoutes(resultController));
+  app.use('/api/v1/combined-view', createCombinedViewRoutes(combinedViewController));
 
   // 404 handler
   app.use((req, res) => {

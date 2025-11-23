@@ -2,9 +2,11 @@ import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useLLMs } from '../hooks/useLLMs';
 import { useOverallLeaderboard } from '../hooks/useLeaderboard';
+import { useCombinedViewBoth } from '../hooks/useCombinedView';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import { ModelCard } from '../components/leaderboard/ModelCard';
+import { CombinedViewTable } from '../components/leaderboard/CombinedViewTable';
 import { Breadcrumb } from '../components/common/Breadcrumb';
 import type { LLM, Baseline } from '@sky-light/shared-types';
 
@@ -26,9 +28,11 @@ interface ModelStats {
 
 export function ModelsPage() {
   const [modelSearchQuery, setModelSearchQuery] = useState('');
+  const [activeMetricTab, setActiveMetricTab] = useState<'overall-score' | 'local-error'>('overall-score');
 
   const { isLoading: llmsLoading, error: llmsError } = useLLMs();
   const { data: rankings, isLoading: rankingsLoading } = useOverallLeaderboard();
+  const { data: combinedViewData, isLoading: combinedViewLoading, error: combinedViewError } = useCombinedViewBoth();
 
   const isLoading = llmsLoading || rankingsLoading;
 
@@ -163,6 +167,74 @@ export function ModelsPage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
           </svg>
         </a>
+      </div>
+
+      {/* Combined View Tables with Tabs */}
+      <div className="mb-8">
+        {/* Metric Tabs */}
+        <div className="border-b border-dark-border mb-6">
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => setActiveMetricTab('overall-score')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeMetricTab === 'overall-score'
+                  ? 'border-accent-gold text-accent-gold'
+                  : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300'
+              }`}
+            >
+              Overall Score Rankings
+            </button>
+            <button
+              onClick={() => setActiveMetricTab('local-error')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeMetricTab === 'local-error'
+                  ? 'border-accent-gold text-accent-gold'
+                  : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300'
+              }`}
+            >
+              Local Error Rankings
+            </button>
+          </nav>
+        </div>
+
+        {/* Table Content */}
+        {combinedViewLoading ? (
+          <div className="flex items-center justify-center min-h-[400px]">
+            <LoadingSpinner />
+          </div>
+        ) : combinedViewError ? (
+          <div className="flex items-center justify-center min-h-[400px]">
+            <ErrorMessage message="Failed to load combined view rankings" />
+          </div>
+        ) : combinedViewData ? (
+          activeMetricTab === 'overall-score' ? (
+            <CombinedViewTable
+              results={combinedViewData.overallScore.results}
+              sparsities={combinedViewData.sparsities}
+              metricName={combinedViewData.overallScore.metric}
+              title="Combined Baseline Rankings - Overall Score"
+            />
+          ) : (
+            <CombinedViewTable
+              results={combinedViewData.localError.results}
+              sparsities={combinedViewData.sparsities}
+              metricName={combinedViewData.localError.metric}
+              title="Combined Baseline Rankings - Local Error"
+            />
+          )
+        ) : (
+          <div className="text-center py-12 bg-dark-surface border border-dark-border rounded-lg">
+            <p className="text-gray-400">No combined view data available</p>
+          </div>
+        )}
+      </div>
+
+      {/* Divider */}
+      <div className="mb-6 border-t border-dark-border"></div>
+
+      {/* Models Section Header */}
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-white mb-4">Models</h2>
       </div>
 
       {/* Search Box */}
