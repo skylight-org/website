@@ -365,6 +365,22 @@ class CombinedViewGenerator:
                 'metric_name': metric_name  # Store metric name for display
             })
         
+        # Filter out baselines that don't have the same number of tables as dense
+        dense_num_tables = None
+        for result in results:
+            if result['baseline_name'].lower() == 'dense':
+                dense_num_tables = result['num_tables']
+                break
+        
+        if dense_num_tables is not None:
+            filtered_baselines = [r for r in results if r['num_tables'] != dense_num_tables]
+            results = [r for r in results if r['num_tables'] == dense_num_tables]
+            
+            if filtered_baselines:
+                print(f"\nFiltered out {len(filtered_baselines)} baseline(s) with incomplete data (expected {dense_num_tables} tables):")
+                for fb in filtered_baselines:
+                    print(f"  - {fb['baseline_name']} ({fb['num_tables']} tables)")
+        
         # Sort by average rank (ascending - lower is better)
         results.sort(key=lambda x: x['avg_rank'])
         

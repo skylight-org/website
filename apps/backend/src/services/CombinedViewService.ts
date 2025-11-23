@@ -312,7 +312,7 @@ export class CombinedViewService {
     console.log('\n\nComputing averages...');
 
     // Compute average ranks and average metric values per sparsity
-    const results: CombinedViewResult[] = [];
+    let results: CombinedViewResult[] = [];
     
     for (const [baselineName, ranks] of baselineRanks) {
       const avgRank = ranks.reduce((sum, r) => sum + r, 0) / ranks.length;
@@ -336,6 +336,21 @@ export class CombinedViewService {
         rank: 0, // Will be assigned after sorting
         metricName
       });
+    }
+
+    // Filter out baselines that don't have the same number of tables as dense
+    const denseResult = results.find(r => r.baselineName.toLowerCase() === 'dense');
+    if (denseResult) {
+      const denseNumTables = denseResult.numTables;
+      const filteredBaselines = results.filter(r => r.numTables !== denseNumTables);
+      results = results.filter(r => r.numTables === denseNumTables);
+      
+      if (filteredBaselines.length > 0) {
+        console.log(`\nFiltered out ${filteredBaselines.length} baseline(s) with incomplete data (expected ${denseNumTables} tables):`);
+        filteredBaselines.forEach(fb => {
+          console.log(`  - ${fb.baselineName} (${fb.numTables} tables)`);
+        });
+      }
     }
 
     // Sort by average rank (ascending - lower is better)
