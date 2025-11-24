@@ -11,7 +11,7 @@ export function HomePage() {
       <div className="mb-8">
         <div className="mb-4">
           <div className="flex items-start justify-between mb-4">
-            <h1 className="text-6xl font-bold font-quantico text-white">sparse-attention/decoding</h1>
+            <h1 className="text-5xl font-bold font-quantico text-white">sparse-attention/decoding</h1>
             
             {/* GitHub Link */}
             <a
@@ -30,7 +30,12 @@ export function HomePage() {
               </svg>
             </a>
           </div>
-          
+          <img 
+              src="/sparseattention.jpeg" 
+              alt="Sparse Attention Visualization" 
+              className="max-w-2xl w-full mx-auto rounded-lg shadow-lg"
+            />
+
           <p className="text-2xl text-gray-400 max-w-8xl mb-6">
             <a 
               href="https://arxiv.org/abs/2510.05688" 
@@ -42,6 +47,7 @@ export function HomePage() {
             </a>{' '}is a technique to reduce the computational workload and memory reads of the attention mechanism in transformer models. This page explores the <span className="text-orange-400">state-of-the-art of sparse attention for decoding phase at inference time</span> without any model finetuning.
             
           </p>
+
         </div>
       </div>
 
