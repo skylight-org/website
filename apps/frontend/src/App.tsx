@@ -4,6 +4,7 @@ import { SidebarProvider, useSidebar } from './contexts/SidebarContext';
 import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
 import { Footer } from './components/common/Footer';
+import { HomePage } from './pages/HomePage';
 import { OverviewPage } from './pages/OverviewPage';
 import { DatasetsPage } from './pages/DatasetsPage';
 import { DatasetDetailPage } from './pages/DatasetDetailPage';
@@ -50,7 +51,8 @@ function AppContent() {
       >
         <div className="max-w-7xl mx-auto">
           <Routes>
-            <Route path="/" element={<Navigate to="/models" replace />} />
+            <Route path="/" element={<Navigate to="/home" replace />} />
+            <Route path="/home" element={<HomePage />} />
             <Route path="/arena" element={<OverviewPage />} />
             <Route path="/datasets" element={<DatasetsPage />} />
             <Route path="/datasets/:datasetId" element={<DatasetDetailPage />} />

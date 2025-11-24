@@ -78,7 +78,22 @@ export function LeaderboardTable({ entries, metrics = [] }: LeaderboardTableProp
               label={
                 <div className="flex items-center gap-1">
                   Score
-                  <InfoTooltip content="Performance score on this dataset. Higher is better. Used as secondary sort." />
+                  <InfoTooltip 
+                    content={
+                      <>
+                        Benchmark Metric Score: See{' '}
+                        <a 
+                          href="https://github.com/xAlg-ai/sparse-attention-hub/tree/main/benchmark" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-accent-gold hover:underline"
+                        >
+                          here
+                        </a>{' '}
+                        for benchmark details
+                      </>
+                    } 
+                  />
                 </div>
               }
               sortKey="score"

@@ -75,12 +75,12 @@ export function DatasetsPage() {
       <div>
         <div className="flex items-start justify-between gap-4 mb-2">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Datasets</h1>
-            <p className="text-gray-400">
+          <h2 className="text-4xl font-bold font-quantico text-white">Datasets</h2>
+          <p className="text-gray-400">
               {llmIdFilter && llms ? (
                 <>Showing datasets for <span className="text-accent-gold font-medium">{llms.find(l => l.id === llmIdFilter)?.name || 'Unknown Model'}</span></>
               ) : (
-                'Compare baseline performance across datasets'
+                'Explore sparse attention methods on specific datasets with different models.'
               )}
             </p>
           </div>

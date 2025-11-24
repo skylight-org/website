@@ -177,7 +177,22 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
               label={
                 <div className="flex items-center gap-1">
                   Score
-                  <InfoTooltip content="Overall performance score averaged across all datasets. Higher is better." />
+                  <InfoTooltip 
+                    content={
+                      <>
+                        Benchmark Metric Score: See{' '}
+                        <a 
+                          href="https://github.com/xAlg-ai/sparse-attention-hub/tree/main/benchmark" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-accent-gold hover:underline"
+                        >
+                          here
+                        </a>{' '}
+                        for benchmark details. Higher is better.
+                      </>
+                    } 
+                  />
                 </div>
               }
               sortKey="overallScore"
@@ -189,7 +204,7 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
               label={
                 <div className="flex items-center gap-1">
                   Local Errors
-                  <InfoTooltip content="Average local error across all datasets. Lower is better." />
+                  <InfoTooltip content="Relative approximation error in attention layer output due to sparse attention approximation. Lower is better" />
                 </div>
               }
               sortKey="avgLocalError"
@@ -213,7 +228,17 @@ export function AggregatedTable({ rankings }: AggregatedTableProps) {
               label={
                 <div className="flex items-center gap-1">
                   Avg Aux Memory
-                  <InfoTooltip content="Average auxiliary memory used across datasets (bytes per token per KV head)." />
+                  <InfoTooltip 
+                    content={
+                      <>
+                        Average auxiliary memory used across datasets (bits per token per KV head). See{' '}
+                        <Link to="/documentation/auxiliary-memory" className="text-accent-gold hover:underline">
+                          here
+                        </Link>{' '}
+                        for more details on how it is computed
+                      </>
+                    } 
+                  />
                 </div>
               }
               sortKey="avgAuxMemory"

@@ -116,11 +116,11 @@ export function CombinedViewTable({
   return (
     <div className="bg-dark-surface border border-dark-border rounded-lg overflow-hidden">
       <div className="px-6 py-4 border-b border-dark-border">
-        <h3 className="text-lg font-semibold text-white">{title}</h3>
-        <p className="text-sm text-gray-400 mt-1">
+        <h3 className="text-2xl font-semibold text-white">{title}</h3>
+        <p className="text-base text-gray-400 mt-1">
           {metricName === 'overall_score' 
-            ? 'Baseline rankings by overall score - lower average rank is better'
-            : 'Baseline rankings by local error - lower average rank is better'}
+            ? 'Uses metrics defined for specific benchmark/dataset pairs'
+            : 'Uses approximation error in attentoin layer output - a stable evaluation metric for sparse attention methods'}
         </p>
       </div>
 
@@ -201,7 +201,7 @@ export function CombinedViewTable({
                     <span className="font-medium text-white">
                       {result.baselineName}
                       {isDense && (
-                        <span className="ml-2 text-xs text-gray-400">(Full Attention)</span>
+                        <span className="ml-2 text-base text-gray-400">(Full Attention)</span>
                       )}
                     </span>
                   </td>
@@ -226,16 +226,9 @@ export function CombinedViewTable({
       </div>
 
       <div className="px-6 py-4 border-t border-dark-border bg-dark-bg">
-        <p className="text-xs text-gray-400">
-          Total baselines: {results.length}
-          {' • '}
-          Lower average rank indicates better overall performance
-          {metricName === 'overall_score' && (
-            <> • Gap@X% shows average performance gap at sparsity X% relative to dense baseline</>
-          )}
-          {metricName === 'average_local_error' && (
-            <> • Err@X% shows average local error at sparsity X%</>
-          )}
+        <p className="text-base text-gray-400">
+          Some sparse attention methods may not have data for all models (e.g. HashAttention does not have artifact-free data for all datasets for all models)
+          These have been excluded from the rankings. Results for these can be foudn in individual model pages.
         </p>
       </div>
     </div>
