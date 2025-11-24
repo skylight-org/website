@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 
 interface InfoTooltipProps {
-  content: string;
+  content: React.ReactNode;
 }
 
 type TooltipDirection = 'down' | 'up';

@@ -9,7 +9,7 @@ interface TextRangeFilterProps {
   minDefault?: number;
   maxDefault?: number;
   unit?: string;
-  tooltip?: string;
+  tooltip?: React.ReactNode;
 }
 
 export function TextRangeFilter({

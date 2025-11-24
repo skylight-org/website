@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useOverallLeaderboard } from '../hooks/useLeaderboard';
 import { useLLM } from '../hooks/useLLMs';
 import { useDatasets } from '../hooks/useDatasets';
@@ -179,7 +179,7 @@ export function ModelDetailPage() {
                 onMaxChange={setLocalDensityMax}
                 minDefault={0}
                 maxDefault={100}
-                tooltip="Filter by density percentage. Higher density means more attention computation."
+                tooltip="Density means percentage of tokens used in sparse attention computation compared to full attention"
               />
             </div>
 
@@ -193,7 +193,15 @@ export function ModelDetailPage() {
                 onMaxChange={setLocalAuxMemoryMax}
                 minDefault={0}
                 maxDefault={2048}
-                tooltip="Filter by auxiliary memory size in bits."
+                tooltip={
+                  <>
+                    Auxiliary memory used by the sparse attention method (bits per token per KV head). See{' '}
+                    <Link to="/documentation/auxiliary-memory" className="text-accent-gold hover:underline">
+                      here
+                    </Link>{' '}
+                    for more details on how it is computed
+                  </>
+                }
               />
             </div>
             
