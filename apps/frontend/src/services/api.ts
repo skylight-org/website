@@ -9,6 +9,8 @@ import type {
   AggregatedRanking,
   OverviewStats,
   NumericRange,
+  CombinedViewResult,
+  BaselineRanking,
 } from '@sky-light/shared-types';
 
 // Use environment variable for API URL, fallback to production URL
@@ -41,6 +43,10 @@ export const api = {
   baselines: {
     getAll: (): Promise<Baseline[]> => fetchApi('/baselines'),
     getById: (id: string): Promise<Baseline> => fetchApi(`/baselines/${id}`),
+  },
+
+  baselineRankings: {
+    getAll: (): Promise<BaselineRanking[]> => fetchApi('/baseline-rankings'),
   },
   
   benchmarks: {
@@ -151,5 +157,31 @@ export const api = {
     },
     getOverview: (): Promise<OverviewStats> => fetchApi('/leaderboards/overview'),
     getAvailableSparsityValues: (): Promise<number[]> => fetchApi('/leaderboards/filters/sparsity'),
+  },
+
+  combinedView: {
+    getOverallScore: (): Promise<{
+      metric: string;
+      sparsities: number[];
+      results: CombinedViewResult[];
+    }> => fetchApi('/combined-view/overall-score'),
+    
+    getLocalError: (): Promise<{
+      metric: string;
+      sparsities: number[];
+      results: CombinedViewResult[];
+    }> => fetchApi('/combined-view/local-error'),
+    
+    getBoth: (): Promise<{
+      sparsities: number[];
+      overallScore: {
+        metric: string;
+        results: CombinedViewResult[];
+      };
+      localError: {
+        metric: string;
+        results: CombinedViewResult[];
+      };
+    }> => fetchApi('/combined-view/all'),
   },
 };

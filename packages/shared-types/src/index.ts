@@ -208,3 +208,24 @@ export interface OverviewStats {
   totalResults: number;
   lastUpdated: Date;
 }
+
+// ============================================================================
+// COMBINED VIEW TYPES (baseline ranking across all LLMs and sparsities)
+// ============================================================================
+
+export interface BaselineRanking {
+  baseline: Baseline;
+  avgRankScore: number;
+  avgRankLocalError: number;
+  numTablesScore: number;
+  numTablesLocalError: number;
+}
+
+export interface CombinedViewResult {
+  rank: number;
+  baselineName: string;
+  avgRank: number;
+  avgValuesPerSparsity: Record<number, number>; // sparsity -> avg metric value
+  numTables: number;
+  metricName: string;
+}
