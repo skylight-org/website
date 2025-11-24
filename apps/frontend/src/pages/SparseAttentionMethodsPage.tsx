@@ -6,7 +6,6 @@ import { ErrorMessage } from '../components/common/ErrorMessage';
 import { Breadcrumb } from '../components/common/Breadcrumb';
 import { SortableHeader } from '../components/common/SortableHeader';
 import { useSortableData } from '../hooks/useSortableData';
-import type { BaselineRanking } from '@sky-light/shared-types';
 
 type SortMode = 'score' | 'local_error';
 

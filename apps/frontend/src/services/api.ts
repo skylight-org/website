@@ -10,6 +10,7 @@ import type {
   OverviewStats,
   NumericRange,
   CombinedViewResult,
+  BaselineRanking,
 } from '@sky-light/shared-types';
 
 // Use environment variable for API URL, fallback to production URL
@@ -42,6 +43,10 @@ export const api = {
   baselines: {
     getAll: (): Promise<Baseline[]> => fetchApi('/baselines'),
     getById: (id: string): Promise<Baseline> => fetchApi(`/baselines/${id}`),
+  },
+
+  baselineRankings: {
+    getAll: (): Promise<BaselineRanking[]> => fetchApi('/baseline-rankings'),
   },
   
   benchmarks: {
