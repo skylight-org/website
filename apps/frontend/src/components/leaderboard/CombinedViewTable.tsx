@@ -120,7 +120,7 @@ export function CombinedViewTable({
         <p className="text-base text-gray-400 mt-1">
           {metricName === 'overall_score' 
             ? 'Uses metrics defined for specific benchmark/dataset pairs'
-            : 'Uses approximation error in attentoin layer output - a stable evaluation metric for sparse attention methods'}
+            : 'Uses approximation error in attention layer output - a stable evaluation metric for sparse attention methods'}
         </p>
       </div>
 
