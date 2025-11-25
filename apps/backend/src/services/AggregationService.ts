@@ -36,7 +36,12 @@ export class AggregationService {
       datasets.map(d => this.rankingService.calculateDatasetRanking(d.id, filters))
     );
 
-    // Group rankings by baseline+llm+sparsity combination
+    // Group rankings by baseline+llm+sparsity combination (without aux_memory)
+    // Note: RankingService already selected the best experimental run per configuration
+    // based on local_error and aux_memory, so there should typically be only one
+    // ranking per key per dataset unless there are multiple configurations with the
+    // same (baseline, llm, targetSparsity) but different datasets.
+    
     const rankingsByConfig = new Map<string, {
       baseline: Baseline;
       llm: LLM;
@@ -54,10 +59,10 @@ export class AggregationService {
       const dataset = datasets[datasetIdx];
       
       rankings.forEach(ranking => {
-        // Include aux_memory from metricValues in the grouping key to distinguish configurations
-        const auxMemory = ranking.metricValues?.aux_memory ?? 'N/A';
-        const key = `${ranking.baseline.id}-${ranking.llm.id}-${ranking.targetSparsity ?? 'N/A'}-${auxMemory}`;
+        // Create key WITHOUT aux_memory
+        const key = `${ranking.baseline.id}-${ranking.llm.id}-${ranking.targetSparsity ?? 'N/A'}`;
         
+        // Initialize entry for this key if first time seeing it
         if (!rankingsByConfig.has(key)) {
           rankingsByConfig.set(key, {
             baseline: ranking.baseline,
@@ -83,14 +88,17 @@ export class AggregationService {
           configuration: ranking.configuration,
         });
         entry.ranks.push(ranking.rank);
+        
         // Debug: Log first few rankings to see metricValues
         if (datasetIdx === 0 && rankings.indexOf(ranking) === 0) {
           console.log('DEBUG AggregationService: First dataset, first ranking');
-          console.log('  - Full ranking object:', JSON.stringify(ranking, null, 2));
+          console.log('  - Key:', key);
           console.log('  - metricValues:', ranking.metricValues);
           console.log('  - Has average_local_error?', 'average_local_error' in (ranking.metricValues || {}));
           console.log('  - average_local_error value:', ranking.metricValues?.average_local_error);
+          console.log('  - aux_memory value:', ranking.metricValues?.aux_memory);
         }
+        
         if (ranking.metricValues?.average_local_error !== undefined) {
           entry.localErrorValues.push(ranking.metricValues.average_local_error);
         }
