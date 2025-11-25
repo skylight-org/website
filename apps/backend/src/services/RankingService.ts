@@ -1,11 +1,11 @@
 import type { DatasetRanking, Metric, Baseline, LLM, Dataset, Configuration, Result, NumericRange, DatasetMetric } from '@sky-light/shared-types';
-import type { IBaselineRepository } from '../repositories/interfaces/IBaselineRepository';
 import type { ILLMRepository } from '../repositories/interfaces/ILLMRepository';
 import type { IDatasetRepository } from '../repositories/interfaces/IDatasetRepository';
 import type { IMetricRepository } from '../repositories/interfaces/IMetricRepository';
 import type { IDatasetMetricRepository } from '../repositories/interfaces/IDatasetMetricRepository';
 import type { IConfigurationRepository } from '../repositories/interfaces/IConfigurationRepository';
 import type { IResultRepository } from '../repositories/interfaces/IResultRepository';
+import type { BaselineService } from './BaselineService';
 
 interface ConfigurationScore {
   configuration: Configuration;
@@ -17,7 +17,7 @@ interface ConfigurationScore {
 
 export class RankingService {
   constructor(
-    private baselineRepository: IBaselineRepository,
+    private baselineService: BaselineService,
     private llmRepository: ILLMRepository,
     private datasetRepository: IDatasetRepository,
     private metricRepository: IMetricRepository,
@@ -41,7 +41,7 @@ export class RankingService {
     const [dataset, allMetrics, allBaselines, allLLMs, datasetMetrics] = await Promise.all([
       this.datasetRepository.findById(datasetId),
       this.metricRepository.findAll(),
-      this.baselineRepository.findAll(),
+      this.baselineService.getAll(),
       this.llmRepository.findAll(),
       this.datasetMetricRepository.findByDatasetId(datasetId),
     ]);

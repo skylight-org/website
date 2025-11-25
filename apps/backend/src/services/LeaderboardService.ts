@@ -2,19 +2,19 @@ import type { DatasetRanking, AggregatedRanking, OverviewStats, NumericRange } f
 import type { IConfigurationRepository } from '../repositories/interfaces/IConfigurationRepository';
 import type { IDatasetRepository } from '../repositories/interfaces/IDatasetRepository';
 import type { IBenchmarkRepository } from '../repositories/interfaces/IBenchmarkRepository';
-import type { IBaselineRepository } from '../repositories/interfaces/IBaselineRepository';
 import type { ILLMRepository } from '../repositories/interfaces/ILLMRepository';
 import type { IResultRepository } from '../repositories/interfaces/IResultRepository';
 import type { IExperimentalRunRepository } from '../repositories/interfaces/IExperimentalRunRepository';
 import { RankingService } from './RankingService';
 import { AggregationService } from './AggregationService';
+import type { BaselineService } from './BaselineService';
 
 export class LeaderboardService {
   constructor(
     private configurationRepository: IConfigurationRepository,
     private datasetRepository: IDatasetRepository,
     private benchmarkRepository: IBenchmarkRepository,
-    private baselineRepository: IBaselineRepository,
+    private baselineService: BaselineService,
     private llmRepository: ILLMRepository,
     private resultRepository: IResultRepository,
     private experimentalRunRepository: IExperimentalRunRepository,
@@ -79,7 +79,7 @@ export class LeaderboardService {
       resultCount,
       latestRun
     ] = await Promise.all([
-      this.baselineRepository.findAll(),
+      this.baselineService.getAll(),
       this.benchmarkRepository.findAll(),
       this.datasetRepository.findAll(),
       this.llmRepository.findAll(),

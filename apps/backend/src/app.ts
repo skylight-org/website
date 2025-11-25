@@ -20,6 +20,7 @@ import { PostgresResultRepository } from './repositories/postgres/PostgresResult
 import { PostgresExperimentalRunRepository } from './repositories/postgres/PostgresExperimentalRunRepository';
 
 // Services
+import { BaselineService } from './services/BaselineService';
 import { RankingService } from './services/RankingService';
 import { AggregationService } from './services/AggregationService';
 import { LeaderboardService } from './services/LeaderboardService';
@@ -70,8 +71,11 @@ export async function createApp() {
   console.log('✅ Database connected successfully');
 
   // Initialize services
+  // BaselineService: Central service for baseline fetching with filtering
+  const baselineService = new BaselineService(baselineRepo);
+  
   const rankingService = new RankingService(
-    baselineRepo,
+    baselineService,
     llmRepo,
     datasetRepo,
     metricRepo,
@@ -89,7 +93,7 @@ export async function createApp() {
     configRepo,
     datasetRepo,
     benchmarkRepo,
-    baselineRepo,
+    baselineService,
     llmRepo,
     resultRepo,
     experimentalRunRepo,
@@ -97,11 +101,11 @@ export async function createApp() {
     aggregationService
   );
 
-  const combinedViewService = new CombinedViewService(supabase);
+  const combinedViewService = new CombinedViewService(supabase, baselineService);
 
   // Initialize controllers
   const leaderboardController = new LeaderboardController(leaderboardService);
-  const baselineController = new BaselineController(baselineRepo);
+  const baselineController = new BaselineController(baselineService);
   const benchmarkController = new BenchmarkController(benchmarkRepo, datasetRepo);
   const datasetController = new DatasetController(datasetRepo);
   const llmController = new LLMController(llmRepo);
