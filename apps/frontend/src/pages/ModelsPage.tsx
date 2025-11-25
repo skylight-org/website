@@ -67,10 +67,8 @@ export function ModelsPage() {
         auxMemory: firstDatasetDetail?.auxMemory
       };
       
-      // Only add configurations that have been tested on all datasets
-      if (config.datasetCount === totalDatasetCount) {
-        stats.configurations.push(config);
-      }
+      //add configuration to stats regardless of dataset count
+      stats.configurations.push(config);
     });
 
     // Calculate scores and sort
@@ -78,7 +76,7 @@ export function ModelsPage() {
       // Sort configurations by overall score
       stats.configurations.sort((a, b) => b.overallScore - a.overallScore);
       
-      // Calculate average score across configurations (which are already filtered for all datasets)
+      // Calculate average score across configurations
       const totalScore = stats.configurations.reduce((sum, config) => sum + config.overallScore, 0);
       stats.averageScore = stats.configurations.length > 0 ? totalScore / stats.configurations.length : 0;
       
@@ -87,7 +85,7 @@ export function ModelsPage() {
     });
 
     return Array.from(statsMap.values())
-      // Only show models that have at least one configuration tested on all datasets
+      // Only show models that have at least one configuration
       .filter(stats => stats.configurations.length > 0)
       .sort((a, b) => b.averageScore - a.averageScore);
   }, [rankings]);
