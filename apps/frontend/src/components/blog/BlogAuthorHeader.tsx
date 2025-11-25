@@ -1,5 +1,3 @@
-import React from 'react';
-
 export interface Author {
   name: string;
   url?: string;
