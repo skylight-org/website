@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { CombinedViewResult } from '@sky-light/shared-types';
+import type { BaselineService } from './BaselineService';
 
 /**
  * CombinedViewService
@@ -13,7 +14,10 @@ import type { CombinedViewResult } from '@sky-light/shared-types';
  * - Values organized by sparsity level
  */
 export class CombinedViewService {
-  constructor(private supabase: SupabaseClient) {}
+  constructor(
+    private supabase: SupabaseClient,
+    private baselineService: BaselineService
+  ) {}
 
   /**
    * Get all LLMs from database
@@ -83,12 +87,10 @@ export class CombinedViewService {
       const metricId = metricData.id;
       const higherIsBetter = metricData.higher_is_better;
 
-      // Get all baselines
-      const { data: baselinesData, error: baselinesError } = await this.supabase
-        .from('baselines')
-        .select('id, name');
+      // Get all baselines through BaselineService
+      const baselinesData = await this.baselineService.getAll();
       
-      if (baselinesError || !baselinesData) return {};
+      if (!baselinesData || baselinesData.length === 0) return {};
       
       const baselines = new Map<string, string>(
         baselinesData.map(b => [b.id, b.name])

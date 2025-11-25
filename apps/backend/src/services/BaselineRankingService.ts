@@ -1,11 +1,11 @@
 import type { BaselineRanking, Baseline, LLM, Configuration } from '@sky-light/shared-types';
-import type { IBaselineRepository } from '../repositories/interfaces/IBaselineRepository';
 import type { ILLMRepository } from '../repositories/interfaces/ILLMRepository';
 import type { IDatasetRepository } from '../repositories/interfaces/IDatasetRepository';
 import type { IConfigurationRepository } from '../repositories/interfaces/IConfigurationRepository';
 import type { IResultRepository } from '../repositories/interfaces/IResultRepository';
 import type { IMetricRepository } from '../repositories/interfaces/IMetricRepository';
 import type { IDatasetMetricRepository } from '../repositories/interfaces/IDatasetMetricRepository';
+import type { BaselineService } from './BaselineService';
 
 interface BaselineValue {
   baselineId: string;
@@ -21,7 +21,7 @@ interface IndividualTableRanking {
 
 export class BaselineRankingService {
   constructor(
-    private baselineRepository: IBaselineRepository,
+    private baselineService: BaselineService,
     private llmRepository: ILLMRepository,
     private datasetRepository: IDatasetRepository,
     private configurationRepository: IConfigurationRepository,
@@ -35,7 +35,7 @@ export class BaselineRankingService {
    */
   async calculateBaselineAverageRanks(): Promise<BaselineRanking[]> {
     // Fetch all baselines
-    const baselines = await this.baselineRepository.findAll();
+    const baselines = await this.baselineService.getAll();
     const baselinesMap = new Map<string, Baseline>(baselines.map(b => [b.id, b]));
 
     console.log('baselines', baselines);
