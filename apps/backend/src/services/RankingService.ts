@@ -65,64 +65,206 @@ export class RankingService {
     const baselinesMap = new Map(allBaselines.map(b => [b.id, b]));
     const llmsMap = new Map(allLLMs.map(l => [l.id, l]));
 
-    // Step 3: Find the best result for each configuration
-    const resultsByConfig = new Map<string, Result[]>();
+    // Step 3: Find the best experimental run for each configuration
+    // Selection criteria: 
+    // 1. Lowest average_local_error
+    // 2. If tied, lowest aux_memory
+    // 3. If tied, best primary metric score
+    
+    // First, group results by configuration and experimental run
+    const resultsByConfigAndRun = new Map<string, Map<string, Result[]>>();
     allResults.forEach(result => {
-      if (!resultsByConfig.has(result.configurationId)) {
-        resultsByConfig.set(result.configurationId, []);
+      const configId = result.configurationId;
+      const runId = result.experimentalRunId || 'unknown';
+      
+      if (!resultsByConfigAndRun.has(configId)) {
+        resultsByConfigAndRun.set(configId, new Map());
       }
-      resultsByConfig.get(result.configurationId)!.push(result);
+      
+      const runsMap = resultsByConfigAndRun.get(configId)!;
+      if (!runsMap.has(runId)) {
+        runsMap.set(runId, []);
+      }
+      
+      runsMap.get(runId)!.push(result);
     });
 
-    const bestResults: Result[] = [];
-    const metricForDatasetMetric = new Map<string, Metric>();
-    datasetMetrics.forEach(dm => {
-      const metric = metricsMap.get(dm.metricId);
-      if (metric) {
-        metricForDatasetMetric.set(dm.id, metric);
+    // Helper function to get metric value by name from a set of results
+    const getMetricValue = (results: Result[], metricName: string): number | undefined => {
+      for (const result of results) {
+        const datasetMetric = datasetMetrics.find(dm => dm.id === result.datasetMetricId);
+        if (!datasetMetric) continue;
+        
+        const metric = metricsMap.get(datasetMetric.metricId);
+        if (metric && metric.name === metricName) {
+          return result.value;
+        }
       }
-    });
+      return undefined;
+    };
 
-    resultsByConfig.forEach((results, configId) => {
-      let bestResult: Result | undefined;
-
-      results.forEach(result => {
-        const metric = metricForDatasetMetric.get(result.datasetMetricId);
-        if (!metric) return;
-
-        if (!bestResult) {
-          bestResult = result;
+    // Select the best run for each configuration
+    const bestResultsByConfig = new Map<string, Result[]>();
+    
+    resultsByConfigAndRun.forEach((runsMap, configId) => {
+      let bestRunId: string | undefined;
+      let bestRunResults: Result[] = [];
+      let bestLocalError: number | undefined;
+      let bestAuxMemory: number | undefined;
+      let bestPrimaryScore: number | undefined;
+      
+      // Debug logging for configurations with multiple runs
+      const shouldDebug = runsMap.size > 1 && bestResultsByConfig.size < 3;
+      if (shouldDebug) {
+        console.log(`\nDEBUG RankingService: Config ${configId} has ${runsMap.size} runs, comparing...`);
+      }
+      
+      runsMap.forEach((runResults, runId) => {
+        const localError = getMetricValue(runResults, 'average_local_error');
+        const auxMemory = getMetricValue(runResults, 'aux_memory');
+        
+        // Get primary metric score
+        const primaryDatasetMetric = datasetMetrics.find(dm => dm.isPrimary);
+        const primaryScore = primaryDatasetMetric 
+          ? getMetricValue(runResults, metricsMap.get(primaryDatasetMetric.metricId)?.name || '')
+          : undefined;
+        
+        if (shouldDebug) {
+          console.log(`  Run ${runId}: localError=${localError}, auxMemory=${auxMemory}, primaryScore=${primaryScore}`);
+        }
+        
+        // First run, set as best
+        if (!bestRunId) {
+          bestRunId = runId;
+          bestRunResults = runResults;
+          bestLocalError = localError;
+          bestAuxMemory = auxMemory;
+          bestPrimaryScore = primaryScore;
+          if (shouldDebug) {
+            console.log(`    → Set as initial best`);
+          }
           return;
         }
-
-        const isCurrentBestHigher = metric.higherIsBetter ? bestResult.value > result.value : bestResult.value < result.value;
-        if (isCurrentBestHigher) {
-          // No change
-        } else if (bestResult.value === result.value) {
-          // Tie-break with timestamp
-          if (result.createdAt > bestResult.createdAt) {
-            bestResult = result;
+        
+        // Compare: 1. Local error (lower is better)
+        if (localError !== undefined && bestLocalError !== undefined) {
+          if (localError < bestLocalError) {
+            if (shouldDebug) {
+              console.log(`    → NEW BEST: lower localError (${localError} < ${bestLocalError})`);
+            }
+            bestRunId = runId;
+            bestRunResults = runResults;
+            bestLocalError = localError;
+            bestAuxMemory = auxMemory;
+            bestPrimaryScore = primaryScore;
+            return;
+          } else if (localError > bestLocalError) {
+            if (shouldDebug) {
+              console.log(`    → Keep current best: higher localError (${localError} > ${bestLocalError})`);
+            }
+            return; // Keep current best
           }
-        } else {
-          bestResult = result;
+          // If equal, fall through to aux_memory comparison
+          if (shouldDebug) {
+            console.log(`    → LocalError tied (${localError} == ${bestLocalError}), checking aux_memory...`);
+          }
+        } else if (localError !== undefined && bestLocalError === undefined) {
+          // Prefer run with defined local error
+          if (shouldDebug) {
+            console.log(`    → NEW BEST: has localError (${localError}) vs undefined`);
+          }
+          bestRunId = runId;
+          bestRunResults = runResults;
+          bestLocalError = localError;
+          bestAuxMemory = auxMemory;
+          bestPrimaryScore = primaryScore;
+          return;
+        } else if (localError === undefined && bestLocalError !== undefined) {
+          if (shouldDebug) {
+            console.log(`    → Keep current best: has localError vs undefined`);
+          }
+          return; // Keep current best
+        }
+        
+        // Local errors are equal or both undefined, compare aux_memory (lower is better)
+        if (auxMemory !== undefined && bestAuxMemory !== undefined) {
+          if (auxMemory < bestAuxMemory) {
+            if (shouldDebug) {
+              console.log(`    → NEW BEST: lower auxMemory (${auxMemory} < ${bestAuxMemory})`);
+            }
+            bestRunId = runId;
+            bestRunResults = runResults;
+            bestLocalError = localError;
+            bestAuxMemory = auxMemory;
+            bestPrimaryScore = primaryScore;
+            return;
+          } else if (auxMemory > bestAuxMemory) {
+            if (shouldDebug) {
+              console.log(`    → Keep current best: higher auxMemory (${auxMemory} > ${bestAuxMemory})`);
+            }
+            return; // Keep current best
+          }
+          // If equal, fall through to primary score comparison
+          if (shouldDebug) {
+            console.log(`    → AuxMemory tied (${auxMemory} == ${bestAuxMemory}), checking primary score...`);
+          }
+        } else if (auxMemory !== undefined && bestAuxMemory === undefined) {
+          // Prefer run with defined aux_memory
+          if (shouldDebug) {
+            console.log(`    → NEW BEST: has auxMemory (${auxMemory}) vs undefined`);
+          }
+          bestRunId = runId;
+          bestRunResults = runResults;
+          bestLocalError = localError;
+          bestAuxMemory = auxMemory;
+          bestPrimaryScore = primaryScore;
+          return;
+        } else if (auxMemory === undefined && bestAuxMemory !== undefined) {
+          if (shouldDebug) {
+            console.log(`    → Keep current best: has auxMemory vs undefined`);
+          }
+          return; // Keep current best
+        }
+        
+        // Both local_error and aux_memory are equal or undefined, compare primary score
+        if (primaryScore !== undefined && bestPrimaryScore !== undefined) {
+          const primaryMetric = primaryDatasetMetric ? metricsMap.get(primaryDatasetMetric.metricId) : undefined;
+          if (primaryMetric) {
+            const isCurrentBetter = primaryMetric.higherIsBetter 
+              ? primaryScore > bestPrimaryScore 
+              : primaryScore < bestPrimaryScore;
+            
+            if (isCurrentBetter) {
+              if (shouldDebug) {
+                console.log(`    → NEW BEST: better primaryScore (${primaryScore} vs ${bestPrimaryScore})`);
+              }
+              bestRunId = runId;
+              bestRunResults = runResults;
+              bestLocalError = localError;
+              bestAuxMemory = auxMemory;
+              bestPrimaryScore = primaryScore;
+            } else if (shouldDebug) {
+              console.log(`    → Keep current best: worse primaryScore (${primaryScore} vs ${bestPrimaryScore})`);
+            }
+          }
+        }
+        // If all metrics are equal or undefined, keep the first one (current best)
+        if (shouldDebug && localError === bestLocalError && auxMemory === bestAuxMemory && primaryScore === bestPrimaryScore) {
+          console.log(`    → Keep current best: all metrics equal`);
         }
       });
-
-      if (bestResult) {
-        bestResults.push(bestResult);
+      
+      if (bestRunResults.length > 0) {
+        bestResultsByConfig.set(configId, bestRunResults);
+        
+        // Debug logging for configurations with multiple runs
+        if (runsMap.size > 1 && bestResultsByConfig.size <= 3) {
+          console.log(`  ✓ SELECTED: Run ${bestRunId}`);
+          console.log(`    - Local error: ${bestLocalError}`);
+          console.log(`    - Aux memory: ${bestAuxMemory}`);
+          console.log(`    - Primary score: ${bestPrimaryScore}\n`);
+        }
       }
-    });
-    
-    // Group best results by configuration for scoring
-    const bestResultsByConfig = new Map<string, Result[]>();
-    bestResults.forEach(result => {
-      // This is a bit awkward, but calculateWeightedScore expects a list.
-      // In our case, it will be a list of one (the best result for the primary metric)
-      // plus any other non-primary metrics for that run.
-      const allResultsForConfigAndRun = allResults.filter(
-        r => r.configurationId === result.configurationId && r.experimentalRunId === result.experimentalRunId
-      );
-      bestResultsByConfig.set(result.configurationId, allResultsForConfigAndRun);
     });
 
     // Calculate scores for each configuration using the run of the best result
