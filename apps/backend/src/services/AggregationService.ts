@@ -54,9 +54,8 @@ export class AggregationService {
       const dataset = datasets[datasetIdx];
       
       rankings.forEach(ranking => {
-        // Include aux_memory from metricValues in the grouping key to distinguish configurations
-        const auxMemory = ranking.metricValues?.aux_memory ?? 'N/A';
-        const key = `${ranking.baseline.id}-${ranking.llm.id}-${ranking.targetSparsity ?? 'N/A'}-${auxMemory}`;
+        // Group by baseline, LLM, and sparsity only (removing aux_memory from key)
+        const key = `${ranking.baseline.id}-${ranking.llm.id}-${ranking.targetSparsity ?? 'N/A'}`;
         
         if (!rankingsByConfig.has(key)) {
           rankingsByConfig.set(key, {

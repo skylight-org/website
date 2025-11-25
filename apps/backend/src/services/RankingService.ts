@@ -153,14 +153,57 @@ export class RankingService {
     }
 
     // Sort by score (descending)
-    configScores.sort((a, b) => b.score - a.score);
+    // configScores.sort((a, b) => b.score - a.score); // OLD
+
+    // === START CHANGE: Filter for Best Configuration per Baseline/Sparsity ===
+    const bestConfigsByKey = new Map<string, ConfigurationScore>();
+
+    for (const cs of configScores) {
+      // Create a unique key for Baseline + LLM + Sparsity
+      // Treat null/undefined sparsity (dense) as a unique 'dense' key
+      const sparsityKey = cs.configuration.targetSparsity !== null && cs.configuration.targetSparsity !== undefined 
+          ? cs.configuration.targetSparsity.toString() 
+          : 'dense';
+          
+      const key = `${cs.baseline.id}-${cs.llm.id}-${sparsityKey}`;
+
+      if (!bestConfigsByKey.has(key)) {
+        bestConfigsByKey.set(key, cs);
+      } else {
+        const currentBest = bestConfigsByKey.get(key)!;
+        
+        // 1. Primary Sort: Score (Higher is better)
+        if (cs.score > currentBest.score) {
+          bestConfigsByKey.set(key, cs);
+        } 
+        // 2. Tie-breaker: If scores are practically equal (epsilon for float comparison)
+        else if (Math.abs(cs.score - currentBest.score) < 0.000001) {
+          // Secondary Sort: Aux Memory (Lower is better)
+          // safely access aux_memory from metricValues (default to high value if missing)
+          const currentAux = currentBest.metricValues['aux_memory'] ?? Number.MAX_VALUE;
+          const newAux = cs.metricValues['aux_memory'] ?? Number.MAX_VALUE;
+          
+          if (newAux < currentAux) {
+            bestConfigsByKey.set(key, cs);
+          }
+        }
+      }
+    }
+
+    // Use this consolidated list for the final ranking instead of raw configScores
+    const consolidatedConfigScores = Array.from(bestConfigsByKey.values());
+
+    // Sort by score (descending)
+    consolidatedConfigScores.sort((a, b) => b.score - a.score);
+    // === END CHANGE ===
 
     // Assign ranks (handle ties with shared ranking)
     const rankings: DatasetRanking[] = [];
     let currentRank = 1;
     let previousScore: number | null = null;
 
-    configScores.forEach((configScore, index) => {
+    // CHANGE: Iterate over consolidatedConfigScores instead of configScores
+    consolidatedConfigScores.forEach((configScore, index) => {
       // If score is different from previous, update rank
       if (previousScore !== null && Math.abs(configScore.score - previousScore) > 0.001) {
         currentRank = index + 1;
