@@ -16,6 +16,8 @@ import { DocumentationAuxMemoryPage } from './pages/DocumentationAuxMemoryPage';
 import { DocumentationSparseAttentionPage } from './pages/DocumentationSparseAttentionPage';
 import { BaselineDetailPage } from './pages/BaselineDetailPage';
 import { ContributePage } from './pages/ContributePage';
+import { BlogPage } from './pages/BlogPage';
+import { BlogPostPage } from './pages/BlogPostPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -63,6 +65,8 @@ function AppContent() {
             <Route path="/documentation/baselines/:baselineId" element={<BaselineDetailPage />} />
             <Route path="/documentation/auxiliary-memory" element={<DocumentationAuxMemoryPage />} />
             <Route path="/documentation/sparse-attention" element={<DocumentationSparseAttentionPage />} />
+            <Route path="/blog" element={<BlogPage />} />
+            <Route path="/blog/:slug" element={<BlogPostPage />} />
             <Route path="/contribute" element={<ContributePage />} />
           </Routes>
           <Footer />

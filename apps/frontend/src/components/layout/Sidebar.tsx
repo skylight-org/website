@@ -114,6 +114,18 @@ export function Sidebar() {
           </Link>
         ))}
 
+        {/* Blog Link */}
+        <Link
+          to="/blog"
+          className={`flex items-center px-4 py-3 rounded-lg mb-2 text-sm font-medium transition-colors ${
+            isActive('/blog') || location.pathname.startsWith('/blog')
+              ? 'bg-accent-gold text-dark-bg'
+              : 'text-gray-300 hover:bg-dark-surface-hover hover:text-white'
+          }`}
+        >
+          Blog
+        </Link>
+
         {/* Contribute Link */}
         <Link
           to="/contribute"
