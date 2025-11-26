@@ -18,14 +18,14 @@ import {
   ZAxis,
 } from 'recharts';
 
-// Gold gradient palette from light to dark (theme-consistent)
+// Warm color palette aligned with theme
 const COLORS = [
-  '#fef3c7', // Lightest cream gold
-  '#fde68a', // Light gold
-  '#fcd754', // Theme accent gold
-  '#f5c933', // Medium gold
-  '#d4a520', // Dark gold
-  '#92610e', // Deepest amber
+  '#fcd754', // Gold (theme accent)
+  '#f97316', // Orange
+  '#ef4444', // Red/Coral
+  '#84cc16', // Lime green
+  '#22c55e', // Green
+  '#b45309', // Amber/Brown
 ];
 
 export function LeaderboardPlotView() {

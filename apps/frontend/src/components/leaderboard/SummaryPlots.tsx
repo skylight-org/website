@@ -17,14 +17,14 @@ type PlotProps = {
   results: CombinedViewResult[];
 };
 
-// Gold gradient palette from light to dark (theme-consistent)
+// Warm color palette aligned with theme
 const GROUP_COLORS = [
-  '#fef3c7', // Lightest cream gold
-  '#fde68a', // Light gold
-  '#fcd754', // Theme accent gold
-  '#f5c933', // Medium gold
-  '#d4a520', // Dark gold
-  '#92610e', // Deepest amber
+  '#fcd754', // Gold (theme accent)
+  '#f97316', // Orange
+  '#ef4444', // Red/Coral
+  '#84cc16', // Lime green
+  '#22c55e', // Green
+  '#b45309', // Amber/Brown
 ];
 
 type GroupRow = {
@@ -178,7 +178,9 @@ export function GapSummaryPlot({ sparsities, results }: PlotProps) {
                 color: '#F9FAFB',
                 fontSize: 13,
                 padding: '6px 10px',
+                lineHeight: '1.2',
               }}
+              itemStyle={{ padding: '1px 0', margin: 0 }}
               cursor={{ fill: 'rgba(255, 255, 255, 0.15)' }}
               offset={120}
               formatter={(value, name) => [`${(value as number).toFixed(2)}%`, String(name)]}
@@ -264,7 +266,9 @@ export function ErrorSummaryPlot({ sparsities, results }: PlotProps) {
                 color: '#F9FAFB',
                 fontSize: 13,
                 padding: '6px 10px',
+                lineHeight: '1.2',
               }}
+              itemStyle={{ padding: '1px 0', margin: 0 }}
               cursor={{ fill: 'rgba(255, 255, 255, 0.15)' }}
               offset={120}
               formatter={(value, name) => [`${(value as number).toFixed(2)}%`, String(name)]}

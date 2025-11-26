@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useCombinedViewBoth } from '../hooks/useCombinedView';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
@@ -8,6 +8,12 @@ import { GapSummaryPlot, ErrorSummaryPlot } from '../components/leaderboard/Summ
 export function SummaryPage() {
   const [activeMetricTab, setActiveMetricTab] = useState<'overall-score' | 'local-error'>('overall-score');
   const { data: combinedViewData, isLoading: combinedViewLoading, error: combinedViewError } = useCombinedViewBoth();
+
+  // Show only 50x (2%), 10x (10%), and 5x (20%) sparsity levels
+  const filteredSparsities = useMemo(() => {
+    if (!combinedViewData?.sparsities) return [];
+    return combinedViewData.sparsities.filter(s => [2, 10, 20].includes(s));
+  }, [combinedViewData?.sparsities]);
 
   return (
     <div>
@@ -55,12 +61,12 @@ export function SummaryPage() {
             {activeMetricTab === 'overall-score' ? (
               <div className="bg-dark-surface border border-dark-border rounded-lg p-6 mb-8">
                 <GapSummaryPlot
-                  sparsities={combinedViewData.sparsities}
+                  sparsities={filteredSparsities}
                   results={combinedViewData.overallScore.results}
                 />
                 <CombinedViewTable
                   results={combinedViewData.overallScore.results}
-                  sparsities={combinedViewData.sparsities}
+                  sparsities={filteredSparsities}
                   metricName={combinedViewData.overallScore.metric}
                   title="Sparse Attention Algorithm Rankings (Benchmark Metrics)"
                   compact
@@ -74,12 +80,12 @@ export function SummaryPage() {
             ) : (
               <div className="bg-dark-surface border border-dark-border rounded-lg p-6 mb-8">
                 <ErrorSummaryPlot
-                  sparsities={combinedViewData.sparsities}
+                  sparsities={filteredSparsities}
                   results={combinedViewData.localError.results}
                 />
                 <CombinedViewTable
                   results={combinedViewData.localError.results}
-                  sparsities={combinedViewData.sparsities}
+                  sparsities={filteredSparsities}
                   metricName={combinedViewData.localError.metric}
                   title="Sparse Attention Algorithm Rankings (Attention Approximation Quality)"
                   compact
