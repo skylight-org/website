@@ -18,7 +18,7 @@ export const blogPosts: BlogPost[] = [
     authors: [
       { name: 'Aditya Desai' }, 
       { name: 'Kumar Krishna Agrawal' }, 
-      { name: 'Luis Schroeder' },
+      { name: 'Luis Gaspar Schroeder' },
       { name: 'Prithvi Dixit' },
       { name: 'Matei Zaharia' },
       { name: 'Joseph E. Gonzalez' },
