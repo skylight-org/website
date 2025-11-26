@@ -18,10 +18,14 @@ import {
   ZAxis,
 } from 'recharts';
 
-// Generate a color palette for the chart lines
+// Gold gradient palette from light to dark (theme-consistent)
 const COLORS = [
-  '#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE', '#00C49F',
-  '#FFBB28', '#FF8042', '#A4DE6C', '#D0ED57', '#a4de6c',
+  '#fef3c7', // Lightest cream gold
+  '#fde68a', // Light gold
+  '#fcd754', // Theme accent gold
+  '#f5c933', // Medium gold
+  '#d4a520', // Dark gold
+  '#92610e', // Deepest amber
 ];
 
 export function LeaderboardPlotView() {
