@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useSidebar } from '../../contexts/SidebarContext';
 
 // Bottom section components to ensure full-width divider and separation of concerns
@@ -38,6 +38,7 @@ function SidebarCollapseControl({ onCollapse }: { onCollapse: () => void }) {
 
 export function Sidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
   
   const { isCollapsed, setIsCollapsed } = useSidebar();
 
@@ -45,10 +46,24 @@ export function Sidebar() {
     return location.pathname === path;
   };
 
-  const navItems = [
-    { path: '/home', label: 'sparse-attention/decoding' },
-  ];
-
+  const scrollToSection = (id: string) => {
+    // If not on home page, navigate there first
+    if (location.pathname !== '/home') {
+      navigate('/home');
+      // Wait for navigation to complete before scrolling
+      setTimeout(() => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    } else {
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
 
   if (isCollapsed) {
     return (
@@ -98,21 +113,43 @@ export function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-6 px-4">
-        {navItems.map((item) => (
+        {/* Main Section */}
+        <div className="mb-2">
           <Link
-            key={item.path}
-            to={item.path}
-            className={`flex items-center px-4 py-3 rounded-lg mb-2 text-sm font-medium transition-colors ${
-              item.path === '/home' ? 'font-quantico' : ''
-            } ${
-              isActive(item.path)
+            to="/home"
+            className={`flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-colors font-quantico ${
+              isActive('/home')
                 ? 'bg-accent-gold text-dark-bg'
                 : 'text-gray-300 hover:bg-dark-surface-hover hover:text-white'
             }`}
           >
-            {item.label}
+            sparse-attention/decoding
           </Link>
-        ))}
+          
+          {/* Subtabs for sections */}
+          {isActive('/home') && (
+            <div className="ml-4 mt-1 space-y-1 border-l-2 border-dark-border pl-2">
+              <button
+                onClick={() => scrollToSection('summary-section')}
+                className="block w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:bg-dark-surface-hover hover:text-white transition-colors"
+              >
+                Summary
+              </button>
+              <button
+                onClick={() => scrollToSection('models-section')}
+                className="block w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:bg-dark-surface-hover hover:text-white transition-colors"
+              >
+                Models
+              </button>
+              <button
+                onClick={() => scrollToSection('datasets-section')}
+                className="block w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:bg-dark-surface-hover hover:text-white transition-colors"
+              >
+                Datasets
+              </button>
+            </div>
+          )}
+        </div>
 
         {/* Blog Link */}
         <Link
