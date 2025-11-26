@@ -53,7 +53,7 @@ export function LeaderboardTable({ entries, metrics = [] }: LeaderboardTableProp
             <SortableHeader
               label={
                 <div className="flex items-center gap-1">
-                  Baseline
+                  Sparse attention
                   <InfoTooltip content="The sparse attention implementation being evaluated." />
                 </div>
               }

@@ -7,13 +7,16 @@ interface CombinedViewTableProps {
   sparsities: number[];
   metricName: string;
   title: string;
+  /** When true, hide the table's title/subtext and outer card styling (for embedding with plots). */
+  compact?: boolean;
 }
 
 export function CombinedViewTable({ 
   results, 
   sparsities, 
   metricName,
-  title 
+  title,
+  compact = false,
 }: CombinedViewTableProps) {
   const [sortConfig, setSortConfig] = useState<{
     key: string;
@@ -61,9 +64,17 @@ export function CombinedViewTable({
 
   const getColumnLabel = (metricName: string, sparsity: number): string => {
     if (metricName === 'overall_score') {
-      return `Gap@${sparsity.toFixed(1)}%`;
+      // Convert sparsity (e.g. 2%) into approximate KV/token reduction factor (e.g. 50×)
+      const factor = sparsity > 0 ? Math.round(100 / sparsity) : 0;
+      return factor > 0
+        ? `${factor}×`
+        : `${sparsity.toFixed(1)}%`;
     } else if (metricName === 'average_local_error') {
-      return `Err@${sparsity.toFixed(1)}%`;
+      // Convert sparsity (e.g. 2%) into approximate KV/token reduction factor (e.g. 50×)
+      const factor = sparsity > 0 ? Math.round(100 / sparsity) : 0;
+      return factor > 0
+        ? `${factor}×`
+        : `${sparsity.toFixed(1)}%`;
     }
     return `Val@${sparsity.toFixed(1)}%`;
   };
@@ -72,16 +83,18 @@ export function CombinedViewTable({
     if (value === undefined || value === null) return 'N/A';
     
     if (metricName === 'overall_score') {
-      return value >= 0 ? `+${value.toFixed(2)}%` : `${value.toFixed(2)}%`;
+      // Table shows relative quality to match plots: 100 + gap (% vs dense)
+      const quality = 100 + value;
+      return `${quality.toFixed(2)}%`;
     }
     return `${value.toFixed(2)}%`;
   };
 
   const getTooltipContent = (metricName: string): string => {
     if (metricName === 'overall_score') {
-      return 'Performance gap at sparsity X% relative to dense baseline';
+      return 'Relative Performance (Ŝ/S%) at Kx less KVCache reads';
     } else if (metricName === 'average_local_error') {
-      return 'Average local error at sparsity X%';
+      return 'Average local error at Kx less KVCache reads';
     }
     return 'Metric value at sparsity X%';
   };
@@ -113,23 +126,30 @@ export function CombinedViewTable({
     );
   }
 
-  return (
-    <div className="bg-dark-surface border border-dark-border rounded-lg overflow-hidden">
-      <div className="px-6 py-4 border-b border-dark-border">
-        <h3 className="text-2xl font-semibold text-white">{title}</h3>
-        <p className="text-base text-gray-400 mt-1">
-          {metricName === 'overall_score' 
-            ? 'Uses metrics defined for specific benchmark/dataset pairs'
-            : 'Uses approximation error in attention layer output - a stable evaluation metric for sparse attention methods'}
-        </p>
-      </div>
+  const containerClasses = compact
+    ? 'overflow-hidden'
+    : 'bg-dark-surface border border-dark-border rounded-lg overflow-hidden';
 
-      <div className="overflow-x-auto">
+  return (
+    <div className={containerClasses}>
+      {!compact && (
+        <div className="px-6 py-4 border-b border-dark-border">
+          <h3 className="text-2xl font-semibold text-white">{title}</h3>
+          <p className="text-base text-gray-400 mt-1">
+            {metricName === 'overall_score' 
+              ? 'Uses metrics defined for specific benchmark/dataset pairs'
+              : 'Uses approximation error in attention layer output - a stable evaluation metric for sparse attention methods'}
+          </p>
+        </div>
+      )}
+
+      <div className={compact ? 'overflow-x-auto' : 'overflow-x-auto'}>
         <table className="w-full">
           <thead className="bg-dark-bg border-b border-dark-border">
             <tr>
-              <th 
-                className="px-4 py-3 text-center text-sm font-semibold text-gray-300 cursor-pointer hover:text-white transition-colors"
+              <th
+                rowSpan={2}
+                className="px-4 py-3 text-center text-sm font-semibold text-gray-300 cursor-pointer hover:text-white transition-colors align-middle"
                 onClick={() => handleSort('rank')}
               >
                 <div className="flex items-center justify-center gap-1">
@@ -137,17 +157,19 @@ export function CombinedViewTable({
                   <SortIcon active={sortConfig.key === 'rank'} direction={sortConfig.direction} />
                 </div>
               </th>
-              <th 
-                className="px-4 py-3 text-left text-sm font-semibold text-gray-300 cursor-pointer hover:text-white transition-colors"
+              <th
+                rowSpan={2}
+                className="px-4 py-3 text-left text-sm font-semibold text-gray-300 cursor-pointer hover:text-white transition-colors align-middle"
                 onClick={() => handleSort('baseline')}
               >
                 <div className="flex items-center gap-1">
-                  Baseline
+                  Sparse attention
                   <SortIcon active={sortConfig.key === 'baseline'} direction={sortConfig.direction} />
                 </div>
               </th>
-              <th 
-                className="px-4 py-3 text-right text-sm font-semibold text-gray-300 cursor-pointer hover:text-white transition-colors"
+              <th
+                rowSpan={2}
+                className="px-4 py-3 text-right text-sm font-semibold text-gray-300 cursor-pointer hover:text-white transition-colors align-middle"
                 onClick={() => handleSort('avgRank')}
               >
                 <div className="flex items-center justify-end gap-1">
@@ -156,8 +178,27 @@ export function CombinedViewTable({
                   <InfoTooltip content="Average rank across all LLM × sparsity combinations. Lower is better." />
                 </div>
               </th>
+              <th
+                colSpan={sparsities.length}
+                className="px-4 py-3 text-center text-sm font-semibold text-gray-300"
+              >
+                Reduction in KV Cache reads
+              </th>
+              <th
+                rowSpan={2}
+                className="px-4 py-3 text-right text-sm font-semibold text-gray-300 cursor-pointer hover:text-white transition-colors align-middle"
+                onClick={() => handleSort('numTables')}
+              >
+                <div className="flex items-center justify-end gap-1">
+                  # Tables
+                  <SortIcon active={sortConfig.key === 'numTables'} direction={sortConfig.direction} />
+                  <InfoTooltip content="Number of individual tables (LLM × sparsity combinations) where this baseline appears." />
+                </div>
+              </th>
+            </tr>
+            <tr>
               {sparsities.map(sparsity => (
-                <th 
+                <th
                   key={sparsity}
                   className="px-4 py-3 text-right text-sm font-semibold text-gray-300 cursor-pointer hover:text-white transition-colors whitespace-nowrap"
                   onClick={() => handleSort(`sparsity_${sparsity}`)}
@@ -169,16 +210,6 @@ export function CombinedViewTable({
                   </div>
                 </th>
               ))}
-              <th 
-                className="px-4 py-3 text-right text-sm font-semibold text-gray-300 cursor-pointer hover:text-white transition-colors"
-                onClick={() => handleSort('numTables')}
-              >
-                <div className="flex items-center justify-end gap-1">
-                  # Tables
-                  <SortIcon active={sortConfig.key === 'numTables'} direction={sortConfig.direction} />
-                  <InfoTooltip content="Number of individual tables (LLM × sparsity combinations) where this baseline appears." />
-                </div>
-              </th>
             </tr>
           </thead>
           <tbody>
@@ -211,11 +242,11 @@ export function CombinedViewTable({
                     </span>
                   </td>
                   {sparsities.map(sparsity => (
-                    <td key={sparsity} className="px-4 py-4 text-right text-gray-400 whitespace-nowrap">
+                    <td key={sparsity} className="px-4 py-4 text-right text-white whitespace-nowrap">
                       {formatValue(result.avgValuesPerSparsity[sparsity], metricName)}
                     </td>
                   ))}
-                  <td className="px-4 py-4 text-right text-gray-400">
+                  <td className="px-4 py-4 text-right text-white">
                     {result.numTables}
                   </td>
                 </tr>
@@ -225,12 +256,14 @@ export function CombinedViewTable({
         </table>
       </div>
 
-      <div className="px-6 py-4 border-t border-dark-border bg-dark-bg">
-        <p className="text-base text-gray-400">
-          Some sparse attention methods may not have data for all models (e.g. HashAttention does not have artifact-free data for all datasets for all models)
-          These have been excluded from the rankings. Results for these can be foudn in individual model pages.
-        </p>
-      </div>
+      {!compact && (
+        <div className="px-6 py-4 border-t border-dark-border bg-dark-bg">
+          <p className="text-base text-gray-400">
+            Some sparse attention methods may not have data for all models (e.g. HashAttention does not have artifact-free data for all datasets for all models)
+            These have been excluded from the rankings. Results for these can be foudn in individual model pages.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
