@@ -219,9 +219,7 @@ export function CombinedViewTable({
               return (
                 <tr 
                   key={`${result.baselineName}-${idx}`}
-                  className={`border-b border-dark-border hover:bg-dark-surface-hover transition-colors ${
-                    idx < 3 ? 'bg-yellow-500/5' : ''
-                  }`}
+                  className="border-b border-dark-border hover:bg-dark-surface-hover transition-colors"
                 >
                   <td className="px-4 py-4 text-center">
                     <span className="font-bold text-white text-lg">
