@@ -33,7 +33,7 @@ export function HomePage() {
           <img 
               src="/sparseattention.jpeg" 
               alt="Sparse Attention Visualization" 
-              className="max-w-2xl w-full mx-auto rounded-lg shadow-lg"
+              className="max-w-3xl w-full mx-auto rounded-lg shadow-lg"
             />
 
           <p className="text-2xl text-gray-400 max-w-8xl mb-6">
