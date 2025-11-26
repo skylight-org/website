@@ -52,19 +52,25 @@ export function HomePage() {
       </div>
 
       {/* Summary Section - Combined View Rankings */}
-      <SummaryPage />
+      <div id="summary-section" className="scroll-mt-24">
+        <SummaryPage />
+      </div>
 
       {/* Divider */}
       <div className="mb-6 border-t border-dark-border"></div>
 
       {/* Models Section */}
-      <ModelsPage />
+      <div id="models-section" className="scroll-mt-24">
+        <ModelsPage />
+      </div>
 
       {/* Divider */}
       <div className="mb-6 border-t border-dark-border"></div>
 
       {/* Datasets Section */}
-      <DatasetsPage />
+      <div id="datasets-section" className="scroll-mt-24">
+        <DatasetsPage />
+      </div>
     </div>
   );
 }
