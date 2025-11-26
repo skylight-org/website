@@ -135,7 +135,7 @@ export function DatasetDetailPage() {
             <p className="text-gray-400 mb-4">{dataset.description}</p>
           </div>
           
-          {/* Request Dataset Button */}
+          {/* Add Dataset Button */}
           <a
             href="https://github.com/skylight-org/website/discussions/categories/benchmark-dataset-requests"
             target="_blank"
@@ -146,7 +146,7 @@ export function DatasetDetailPage() {
             <svg className="w-4 h-4 text-gray-400 group-hover:text-accent-gold transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            <span className="hidden lg:inline whitespace-nowrap">Request Dataset</span>
+            <span className="hidden lg:inline whitespace-nowrap">Add Dataset</span>
           </a>
         </div>
         

@@ -133,7 +133,7 @@ export function ModelDetailPage() {
             </div>
           </div>
           
-          {/* Request Model Button */}
+          {/* Add Model Button */}
           <a
             href="https://github.com/skylight-org/website/discussions/categories/model-requests"
             target="_blank"
@@ -144,7 +144,7 @@ export function ModelDetailPage() {
             <svg className="w-4 h-4 text-gray-400 group-hover:text-accent-gold transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            <span className="hidden lg:inline whitespace-nowrap">Request Model</span>
+            <span className="hidden lg:inline whitespace-nowrap">Add Model</span>
           </a>
         </div>
       ) : null}
