@@ -18,10 +18,14 @@ import {
   ZAxis,
 } from 'recharts';
 
-// Generate a color palette for the chart lines
+// Warm color palette aligned with theme
 const COLORS = [
-  '#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE', '#00C49F',
-  '#FFBB28', '#FF8042', '#A4DE6C', '#D0ED57', '#a4de6c',
+  '#fcd754', // Gold (theme accent)
+  '#f97316', // Orange
+  '#ef4444', // Red/Coral
+  '#84cc16', // Lime green
+  '#22c55e', // Green
+  '#b45309', // Amber/Brown
 ];
 
 export function LeaderboardPlotView() {

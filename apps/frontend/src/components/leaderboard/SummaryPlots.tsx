@@ -17,7 +17,15 @@ type PlotProps = {
   results: CombinedViewResult[];
 };
 
-const GROUP_COLORS = ['#fbbf24', '#22c55e', '#3b82f6', '#ec4899', '#a855f7', '#10b981'];
+// Warm color palette aligned with theme
+const GROUP_COLORS = [
+  '#fcd754', // Gold (theme accent)
+  '#f97316', // Orange
+  '#ef4444', // Red/Coral
+  '#84cc16', // Lime green
+  '#22c55e', // Green
+  '#b45309', // Amber/Brown
+];
 
 type GroupRow = {
   sparsity: number;
@@ -122,8 +130,9 @@ export function GapSummaryPlot({ sparsities, results }: PlotProps) {
     });
   });
   const minVal = allValues.length ? Math.min(...allValues) : 0;
-  const ymin = Math.max(0, minVal - 5);
-  const ymax = 105;
+  // Round down to nearest 10 for clean tick values
+  const ymin = Math.max(0, Math.floor((minVal - 5) / 10) * 10);
+  const ymax = 105; // Extra space above 100 for the Dense label
 
   return (
     <div className="mb-4">
@@ -136,7 +145,7 @@ export function GapSummaryPlot({ sparsities, results }: PlotProps) {
 
       <div className="h-[360px]">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={gapData} margin={{ top: 10, right: 20, left: 0, bottom: 40 }}>
+          <BarChart data={gapData} margin={{ top: 10, right: 20, left: 20, bottom: 40 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
             <XAxis
               dataKey="label"
@@ -152,11 +161,14 @@ export function GapSummaryPlot({ sparsities, results }: PlotProps) {
             <YAxis
               stroke="#9CA3AF"
               domain={[ymin, ymax]}
+              allowDataOverflow={false}
+              tickCount={6}
               label={{
                 value: 'Relative model quality (% of dense)',
                 angle: -90,
                 position: 'insideLeft',
                 fill: '#9CA3AF',
+                style: { textAnchor: 'middle' },
               }}
             />
             <Tooltip
@@ -164,7 +176,13 @@ export function GapSummaryPlot({ sparsities, results }: PlotProps) {
                 backgroundColor: '#1F2937',
                 borderColor: '#374151',
                 color: '#F9FAFB',
+                fontSize: 13,
+                padding: '6px 10px',
+                lineHeight: '1.2',
               }}
+              itemStyle={{ padding: '1px 0', margin: 0 }}
+              cursor={{ fill: 'rgba(255, 255, 255, 0.15)' }}
+              offset={120}
               formatter={(value, name) => [`${(value as number).toFixed(2)}%`, String(name)]}
             />
             <Legend verticalAlign="top" align="right" wrapperStyle={{ paddingBottom: 8 }} />
@@ -178,6 +196,7 @@ export function GapSummaryPlot({ sparsities, results }: PlotProps) {
                 position: 'insideTopRight',
                 fill: '#E5E7EB',
                 fontSize: 12,
+                dy: -18,
               }}
             />
             {baselineNames.map((baselineName, idx) => (
@@ -216,7 +235,7 @@ export function ErrorSummaryPlot({ sparsities, results }: PlotProps) {
 
       <div className="h-[360px]">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={errorData} margin={{ top: 10, right: 20, left: 0, bottom: 40 }}>
+          <BarChart data={errorData} margin={{ top: 10, right: 20, left: 20, bottom: 40 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
             <XAxis
               dataKey="label"
@@ -237,6 +256,7 @@ export function ErrorSummaryPlot({ sparsities, results }: PlotProps) {
                 angle: -90,
                 position: 'insideLeft',
                 fill: '#9CA3AF',
+                style: { textAnchor: 'middle' },
               }}
             />
             <Tooltip
@@ -244,7 +264,13 @@ export function ErrorSummaryPlot({ sparsities, results }: PlotProps) {
                 backgroundColor: '#1F2937',
                 borderColor: '#374151',
                 color: '#F9FAFB',
+                fontSize: 13,
+                padding: '6px 10px',
+                lineHeight: '1.2',
               }}
+              itemStyle={{ padding: '1px 0', margin: 0 }}
+              cursor={{ fill: 'rgba(255, 255, 255, 0.15)' }}
+              offset={120}
               formatter={(value, name) => [`${(value as number).toFixed(2)}%`, String(name)]}
             />
             <Legend verticalAlign="top" align="right" wrapperStyle={{ paddingBottom: 8 }} />
