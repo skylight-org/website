@@ -24,8 +24,7 @@ export const IntroductionToSkyLightEntry = () => {
       Sparse Attention offers the theoretical solution. By selectively attending only to the most relevant tokens (rather than the entire sequence), we can theoretically achieve:
     </p>
     <ul className="list-disc pl-6 space-y-3 text-gray-300 marker:text-gray-500">
-      <li>Constant-time decoding steps (breaking the linear dependency).</li>
-      <li>Massive memory reductions (reducing the KV cache footprint).</li>
+      <li>Constant-time decoding steps (breaking the linear dependency) by massive reductions in memory reads</li>
       <li>Faster prefill times for massive prompts.</li>
     </ul>
     <p className="text-gray-300 leading-relaxed">
@@ -43,13 +42,13 @@ export const IntroductionToSkyLightEntry = () => {
       One of the primary barriers to the practical adoption of sparse attention is what we refer to as the sparsity problem in research—a pattern that obscures our understanding of true state-of-the-art progress. To illustrate this issue, we examine one year of research on inference-time sparse attention (i.e., methods that do not involve training) aimed specifically at accelerating the decoding phase of open-source LLMs. We then analyze the explicit baseline comparisons reported in these papers to understand how each method positions itself relative to prior work. The comparative matrix is presented in Figure 1.
     </p>
 
-    <figure className="my-10">
+    <figure className="my-10 text-center">
       <img 
-        src="https://hackmd.io/_uploads/H1jK3IG-be.png" 
+        src="blogs/blog1/table.png" 
         alt="The sparsity problem in sparse attention research" 
-        className="w-full rounded-lg border border-gray-800 shadow-lg"
+        className="w-5/6 mx-auto rounded-lg border border-gray-800 shadow-lg"
       />
-      <figcaption className="text-center text-gray-500 mt-4 font-mono text-sm">Figure 1: The sparsity problem in sparse attention research</figcaption>
+      <figcaption className="text-center text-grey mt-4 font-mono text-sm">Figure 1: The sparsity problem in sparse attention research</figcaption>
     </figure>
 
     <p className="text-gray-300 leading-relaxed">
@@ -114,7 +113,7 @@ export const IntroductionToSkyLightEntry = () => {
 
     <figure className="my-10">
       <img 
-        src="https://hackmd.io/_uploads/ry_FjPGW-l.png" 
+        src="blogs/blog1/tierimage.png" 
         alt="Two tiered research for sparse attention" 
         className="w-full rounded-lg border border-gray-800 shadow-lg"
       />
@@ -162,9 +161,36 @@ export const IntroductionToSkyLightEntry = () => {
       </li>
       <li>
         👉 <strong className="text-white">Code:</strong>{' '}
-        <a href="https://github.com/xAlg-ai/sparse-attention-hub" target="_blank" rel="noopener noreferrer" className="text-accent-blue hover:text-accent-gold transition-colors">github.com/xAlg-ai/sparse-attention-hub</a>
+        <a href="https://github.com/skylight-org/sparse-attention-hub" target="_blank" rel="noopener noreferrer" className="text-accent-blue hover:text-accent-gold transition-colors">github.com/skylight-org/sparse-attention-hub</a>
       </li>
     </ul>
+
+    <h2 id="acknowledgements" className="text-3xl font-bold text-white mt-16 mb-6 scroll-mt-24 tracking-tight">Acknowledgements</h2>
+    <p className="text-gray-300 leading-relaxed">
+      This work was made possible through the support, guidance, and infrastructure provided by the UC Berkeley Sky Lab. 
+    </p>
+
+    <div className="mt-8 bg-dark-surface border border-dark-border rounded-lg p-4">
+      <p className="text-sm font-mono text-gray-400 mb-2">Citation</p>
+      <pre className="text-xs sm:text-sm font-mono text-gray-300 whitespace-pre overflow-x-auto">
+{`@article{sky_light_2025,
+  title        = {Introducing Sky-Light: Advancing the frontier of sparse attention research},
+  author       = {
+      Desai, Aditya and
+      Agrawal, Kumar Krishna and
+      Schroeder, Luis and
+      Dixit, Prithvi and
+      Zaharia, Matei and
+      Gonzalez, Joseph E. and
+      Stoica, Ion
+  },
+  affiliation  = {UC Berkeley},
+  year         = {2025},
+  month        = nov,
+  url          = {https://sky-light.eecs.berkeley.edu/}
+}`}
+      </pre>
+    </div>
   </div>
   );
 };
