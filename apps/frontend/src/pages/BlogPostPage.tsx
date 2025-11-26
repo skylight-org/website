@@ -34,7 +34,7 @@ export function BlogPostPage() {
       <article>
         {/* Header Section */}
         <div className="max-w-4xl">
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight tracking-tight">
+          <h1 className="text-4xl md:text-6xl font-bold text-accent-gold mb-6 leading-tight tracking-tight">
             {post.title}
           </h1>
           {post.subtitle && (

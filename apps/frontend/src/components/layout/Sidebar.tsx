@@ -107,7 +107,6 @@ export function Sidebar() {
             alt="Sky Light" 
             className="w-full h-auto object-contain mb-2"
           />
-          <p className="text-sm text-gray-400 text-center">Sparse Attention Hub</p>
         </Link>
       </div>
 

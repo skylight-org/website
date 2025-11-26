@@ -18,7 +18,7 @@ export function SummaryPage() {
   return (
     <div>
       {/* Combined View Tables with Tabs */}
-      <h2 className="text-4xl font-bold font-quantico text-white">Summary of Sparse Attention Ranking</h2>
+      <h2 className="text-4xl font-bold font-quantico text-white">Sparse Attention: Tier 1A Rankings</h2>
 
       <div className="mb-8">
         {combinedViewLoading ? (

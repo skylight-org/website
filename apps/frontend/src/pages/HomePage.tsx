@@ -11,7 +11,7 @@ export function HomePage() {
       <div className="mb-8">
         <div className="mb-4">
           <div className="flex items-start justify-between mb-4">
-            <h1 className="text-5xl font-bold font-quantico text-white">sparse-attention/decoding</h1>
+            <h1 className="text-5xl font-bold font-quantico text-accent-gold">sparse-attention/decoding</h1>
             
             {/* GitHub Link */}
             <a

@@ -19,7 +19,10 @@ export const blogPosts: BlogPost[] = [
       { name: 'Aditya Desai' }, 
       { name: 'Kumar Krishna Agrawal' }, 
       { name: 'Luis Schroeder' },
-      { name: 'Prithvi Dixit' }
+      { name: 'Prithvi Dixit' },
+      { name: 'Matei Zaharia' },
+      { name: 'Joseph E. Gonzalez' },
+      { name: 'Ion Stoica' }
     ],
     affiliations: ['UC Berkeley'],
     date: 'Nov 25, 2025',
