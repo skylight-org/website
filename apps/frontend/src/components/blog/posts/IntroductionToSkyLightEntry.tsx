@@ -1,17 +1,6 @@
-import { useMemo } from 'react';
-import { useCombinedViewBoth } from '../../../hooks/useCombinedView';
-import { GapSummaryPlot, ErrorSummaryPlot } from '../../leaderboard/SummaryPlots';
-import { LoadingSpinner } from '../../common/LoadingSpinner';
+// import { LoadingSpinner } from '../../common/LoadingSpinner';
 
 export const IntroductionToSkyLightEntry = () => {
-  const { data: combinedViewData, isLoading } = useCombinedViewBoth();
-
-  // Show only 50x (2%), 10x (10%), and 5x (20%) sparsity levels
-  const filteredSparsities = useMemo(() => {
-    if (!combinedViewData?.sparsities) return [];
-    return combinedViewData.sparsities.filter(s => [2, 10, 20].includes(s));
-  }, [combinedViewData?.sparsities]);
-
   return (
   <div className="space-y-8 text-lg">
     <p className="text-gray-300 leading-relaxed">
@@ -125,26 +114,22 @@ export const IntroductionToSkyLightEntry = () => {
       Below are the current rankings from our evaluation framework, comparing sparse attention methods across different sparsity levels on benchmark metrics and attention approximation quality.
     </p>
 
-    {isLoading ? (
-      <div className="flex items-center justify-center py-12">
-        <LoadingSpinner />
+    <div className="space-y-12">
+      <div className="rounded-lg overflow-hidden">
+        <img 
+          src="blogs/blog1/charts/qualityChart.png" 
+          alt="Relative model quality chart"
+          className="w-full h-auto"
+        />
       </div>
-    ) : combinedViewData ? (
-      <div className="space-y-12">
-        <div className="bg-dark-surface border border-dark-border rounded-lg p-6">
-          <GapSummaryPlot
-            sparsities={filteredSparsities}
-            results={combinedViewData.overallScore.results}
-          />
-        </div>
-        <div className="bg-dark-surface border border-dark-border rounded-lg p-6">
-          <ErrorSummaryPlot
-            sparsities={filteredSparsities}
-            results={combinedViewData.localError.results}
-          />
-        </div>
+      <div className="rounded-lg overflow-hidden">
+        <img 
+          src="blogs/blog1/charts/attnChart.png" 
+          alt="Relative error in attention layer output chart"
+          className="w-full h-auto"
+        />
       </div>
-    ) : null}
+    </div>
 
     <p className="text-gray-300 leading-relaxed mt-8">
       Our first version already offers useful insights into the current state of inference-time sparse attention research for the decoding phase. In particular, it highlights the substantial gap between dense (full) models and the oracle top-p and top-k methods—especially at higher sparsity—underscoring the need for a paradigm shift in sparse attention. Any method that merely approximates these oracle paradigms is unlikely to match the quality of the full model. Moreover, the gap between the oracle methods and their approximate counterparts emphasizes the need for more effective approximation techniques.
