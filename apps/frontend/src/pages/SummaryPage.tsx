@@ -27,7 +27,7 @@ export function SummaryPage() {
           </div>
         ) : combinedViewError ? (
           <div className="flex items-center justify-center min-h-[400px]">
-            <ErrorMessage message="Failed to load combined view rankings" />
+            <ErrorMessage message="Server is restarting, please comeback in some time. If we are not back up in 20 minutes. Please raise an issue at https://github.com/skylight-org/website/issues " />
           </div>
         ) : combinedViewData ? (
           <>
