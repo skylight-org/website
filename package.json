@@ -17,6 +17,8 @@
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "html-to-image": "^1.11.13"
   }
 }
-
