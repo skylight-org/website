@@ -1,17 +1,6 @@
-import { useMemo } from 'react';
-import { useCombinedViewBoth } from '../../../hooks/useCombinedView';
-import { GapSummaryPlot, ErrorSummaryPlot } from '../../leaderboard/SummaryPlots';
-import { LoadingSpinner } from '../../common/LoadingSpinner';
+// import { LoadingSpinner } from '../../common/LoadingSpinner';
 
 export const IntroductionToSkyLightEntry = () => {
-  const { data: combinedViewData, isLoading } = useCombinedViewBoth();
-
-  // Show only 50x (2%), 10x (10%), and 5x (20%) sparsity levels
-  const filteredSparsities = useMemo(() => {
-    if (!combinedViewData?.sparsities) return [];
-    return combinedViewData.sparsities.filter(s => [2, 10, 20].includes(s));
-  }, [combinedViewData?.sparsities]);
-
   return (
   <div className="space-y-8 text-lg">
     <p className="text-gray-300 leading-relaxed">
@@ -120,31 +109,65 @@ export const IntroductionToSkyLightEntry = () => {
       <figcaption className="text-center text-gray-500 mt-4 font-mono text-sm">Figure 2: Two tiered research for sparse attention.</figcaption>
     </figure>
 
-    <h2 id="current-rankings" className="text-3xl font-bold text-white mt-16 mb-6 scroll-mt-24 tracking-tight">Current Rankings</h2>
+    <h2
+      id="current-rankings"
+      className="text-3xl font-bold text-white mt-16 mb-6 scroll-mt-24 tracking-tight"
+    >
+      Current Rankings
+    </h2>
     <p className="text-gray-300 leading-relaxed mb-8">
       Below are the current rankings from our evaluation framework, comparing sparse attention methods across different sparsity levels on benchmark metrics and attention approximation quality.
     </p>
 
-    {isLoading ? (
-      <div className="flex items-center justify-center py-12">
-        <LoadingSpinner />
-      </div>
-    ) : combinedViewData ? (
-      <div className="space-y-12">
-        <div className="bg-dark-surface border border-dark-border rounded-lg p-6">
-          <GapSummaryPlot
-            sparsities={filteredSparsities}
-            results={combinedViewData.overallScore.results}
-          />
+    <div className="space-y-12">
+      <div className="rounded-lg overflow-hidden">
+        <h3 className="text-2xl font-semibold text-white mb-2">
+          Relative model quality (higher is better), (Ŝ / S × 100)
+        </h3>
+        <p className="text-base text-gray-400 mb-4">
+          Bars show relative model quality. S is score of dense model and Ŝ is score of sparse
+          model on the benchmark.
+        </p>
+        <img
+          src="blogs/blog1/skylight_overall_quality.png"
+          alt="Relative model quality chart"
+          className="w-full h-auto"
+        />
+        <div className="mt-3">
+          <a
+            href="blogs/blog1/skylight_overall_quality.png"
+            download="skylight_overall_quality.png"
+            className="inline-flex items-center justify-center rounded-md border border-dark-border bg-dark-bg px-3 py-2 text-sm font-medium text-gray-200 hover:bg-dark-surface-hover hover:text-white transition-colors"
+          >
+            Download PNG
+          </a>
         </div>
-        <div className="bg-dark-surface border border-dark-border rounded-lg p-6">
-          <ErrorSummaryPlot
-            sparsities={filteredSparsities}
-            results={combinedViewData.localError.results}
-          />
+      </div>
+      <div className="rounded-lg overflow-hidden">
+        <h3 className="text-2xl font-semibold text-white mb-2">
+          Relative error in attention layer output (lower is better), ( ‖Ô - O‖ / ‖O‖ × 100)
+        </h3>
+        <p className="text-base text-gray-400 mb-4">
+          Bars show the average relative error in the attention layer output compared to dense full
+          attention for each sparsity level. Ô is the output vector of the attention module with
+          sparse attention and O is the output vector of the dense attention module.
+        </p>
+        <img
+          src="blogs/blog1/skylight_attention_error.png"
+          alt="Relative error in attention layer output chart"
+          className="w-full h-auto"
+        />
+        <div className="mt-3">
+          <a
+            href="blogs/blog1/skylight_attention_error.png"
+            download="skylight_attention_error.png"
+            className="inline-flex items-center justify-center rounded-md border border-dark-border bg-dark-bg px-3 py-2 text-sm font-medium text-gray-200 hover:bg-dark-surface-hover hover:text-white transition-colors"
+          >
+            Download PNG
+          </a>
         </div>
       </div>
-    ) : null}
+    </div>
 
     <p className="text-gray-300 leading-relaxed mt-8">
       Our first version already offers useful insights into the current state of inference-time sparse attention research for the decoding phase. In particular, it highlights the substantial gap between dense (full) models and the oracle top-p and top-k methods—especially at higher sparsity—underscoring the need for a paradigm shift in sparse attention. Any method that merely approximates these oracle paradigms is unlikely to match the quality of the full model. Moreover, the gap between the oracle methods and their approximate counterparts emphasizes the need for more effective approximation techniques.
