@@ -1,4 +1,5 @@
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
+import * as htmlToImage from 'html-to-image';
 import type { CombinedViewResult } from '@sky-light/shared-types';
 import {
   ResponsiveContainer,
@@ -10,6 +11,7 @@ import {
   Tooltip,
   Legend,
   ReferenceLine,
+  LabelList,
 } from 'recharts';
 
 type PlotProps = {
@@ -37,6 +39,34 @@ type GroupedData = {
   data: GroupRow[];
   baselineNames: string[];
 };
+
+function downloadChartAsPng(container: HTMLDivElement | null, fileName: string) {
+  if (!container) return;
+
+  try {
+    const pixelRatio = window.devicePixelRatio || 2;
+
+    htmlToImage
+      .toPng(container, {
+        pixelRatio,
+        cacheBust: true,
+        filter: node =>
+          !(node instanceof HTMLElement && node.dataset && node.dataset.exportIgnore === 'true'),
+        backgroundColor: '#020617',
+      })
+      .then(pngDataUrl => {
+      const link = document.createElement('a');
+        link.href = pngDataUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      });
+  } catch (err) {
+    // Swallow errors – export is a convenience feature
+    console.error('Failed to export chart as PNG', err);
+  }
+}
 
 // Build data grouped by sparsity, with one bar per baseline in each group.
 // This matches the layout of benchmark_gaps_single_plot.png / benchmark_err_single_plot.png.
@@ -113,6 +143,8 @@ function sparsityLabel(sparsity: number): string {
 
 /** Plot for overall benchmark (gap / quality) metric */
 export function GapSummaryPlot({ sparsities, results }: PlotProps) {
+  const chartRef = useRef<HTMLDivElement | null>(null);
+
   const { data: gapData, baselineNames } = useMemo(
     () => buildGapQualityData(results, sparsities),
     [results, sparsities]
@@ -136,14 +168,28 @@ export function GapSummaryPlot({ sparsities, results }: PlotProps) {
 
   return (
     <div className="mb-4">
-      <h3 className="text-2xl font-semibold text-white mb-2">
-        Relative model quality (higher is better), (Ŝ / S × 100)
-      </h3>
-      <p className="text-base text-gray-400 mb-4">
-        Bars show relative model quality. S is score of dense model and Ŝ is score of sparse model on the benchmark.
-      </p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+        <div>
+          <h3 className="text-2xl font-semibold text-white">
+            Relative model quality (higher is better), (Ŝ / S × 100)
+          </h3>
+          <p className="text-base text-gray-400">
+            Bars show relative model quality. S is score of dense model and Ŝ is score of sparse model on the benchmark.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() =>
+            downloadChartAsPng(chartRef.current, 'skylight_overall_quality.png')
+          }
+          data-export-ignore="true"
+          className="inline-flex items-center justify-center rounded-md border border-dark-border bg-dark-bg px-3 py-2 text-sm font-medium text-gray-200 hover:bg-dark-surface-hover hover:text-white transition-colors"
+        >
+          Download PNG
+        </button>
+      </div>
 
-      <div className="h-[360px]">
+      <div ref={chartRef} className="h-[360px]">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={gapData} margin={{ top: 10, right: 20, left: 20, bottom: 40 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -205,7 +251,16 @@ export function GapSummaryPlot({ sparsities, results }: PlotProps) {
                 dataKey={baselineName}
                 name={baselineName}
                 fill={GROUP_COLORS[idx % GROUP_COLORS.length]}
-              />
+              >
+                <LabelList
+                  dataKey={baselineName}
+                  position="inside"
+                  angle={-90}
+                  formatter={(value: number) => `${value.toFixed(1)}%`}
+                  fill="#020617"
+                  style={{ fontSize: 11, fontWeight: 600, textAnchor: 'middle' }}
+                />
+              </Bar>
             ))}
           </BarChart>
         </ResponsiveContainer>
@@ -216,6 +271,8 @@ export function GapSummaryPlot({ sparsities, results }: PlotProps) {
 
 /** Plot for average_local_error metric */
 export function ErrorSummaryPlot({ sparsities, results }: PlotProps) {
+  const chartRef = useRef<HTMLDivElement | null>(null);
+
   const { data: errorData, baselineNames } = useMemo(
     () => buildErrorData(results, sparsities),
     [results, sparsities]
@@ -225,15 +282,29 @@ export function ErrorSummaryPlot({ sparsities, results }: PlotProps) {
 
   return (
     <div className="mb-4">
-      <h3 className="text-2xl font-semibold text-white mb-2">
-        Relative error in attention layer output (lower is better), ( ‖Ô - O‖ / ‖O‖ x 100)
-      </h3>
-      <p className="text-base text-gray-400 mb-4">
-        Bars show the average relative error in the attention layer output compared to
-        dense full attention for each sparsity level. Ô is the output vector of the attention module with sparse attention and O is the output vector of the dense attention module.
-      </p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+        <div>
+          <h3 className="text-2xl font-semibold text-white">
+            Relative error in attention layer output (lower is better), ( ‖Ô - O‖ / ‖O‖ x 100)
+          </h3>
+          <p className="text-base text-gray-400">
+            Bars show the average relative error in the attention layer output compared to
+            dense full attention for each sparsity level. Ô is the output vector of the attention module with sparse attention and O is the output vector of the dense attention module.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() =>
+            downloadChartAsPng(chartRef.current, 'skylight_attention_error.png')
+          }
+          data-export-ignore="true"
+          className="inline-flex items-center justify-center rounded-md border border-dark-border bg-dark-bg px-3 py-2 text-sm font-medium text-gray-200 hover:bg-dark-surface-hover hover:text-white transition-colors"
+        >
+          Download PNG
+        </button>
+      </div>
 
-      <div className="h-[360px]">
+      <div ref={chartRef} className="h-[360px]">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={errorData} margin={{ top: 10, right: 20, left: 20, bottom: 40 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -286,7 +357,16 @@ export function ErrorSummaryPlot({ sparsities, results }: PlotProps) {
                 dataKey={baselineName}
                 name={baselineName}
                 fill={GROUP_COLORS[idx % GROUP_COLORS.length]}
-              />
+              >
+                <LabelList
+                  dataKey={baselineName}
+                  position="inside"
+                  angle={-90}
+                  formatter={(value: number) => `${value.toFixed(1)}%`}
+                  fill="#020617"
+                  style={{ fontSize: 11, fontWeight: 600, textAnchor: 'middle' }}
+                />
+              </Bar>
             ))}
           </BarChart>
         </ResponsiveContainer>
