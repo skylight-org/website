@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
 import { blogPosts } from '../data/blogPosts';
 import { BlogAuthorHeader } from '../components/blog/BlogAuthorHeader';
@@ -5,6 +6,12 @@ import { IntroductionToSkyLightEntry } from '../components/blog/posts/Introducti
 
 export function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
+
+  // Ensure we start at the top of the page when navigating to a blog post
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, []);
+
   const post = blogPosts.find(p => p.slug === slug);
 
   if (!post) {
