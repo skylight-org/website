@@ -36,12 +36,12 @@ export function BlogPage() {
           </div>
 
           <div className="space-y-6 md:space-y-0">
-            {blogPosts.map((post, index) => (
+            {[...blogPosts].reverse().map((post, index) => (
               <div key={post.id} className="group md:grid md:grid-cols-12 md:gap-4 md:py-4 md:border-b md:border-gray-800/50 items-baseline hover:bg-white/5 transition-colors -mx-4 px-4 rounded-lg md:rounded-none">
                 
                 {/* Index Number */}
                 <div className="hidden md:block col-span-1 font-mono text-gray-500">
-                  {String(index + 1).padStart(2, '0')}
+                  {String(blogPosts.length - index).padStart(2, '0')}
                 </div>
 
                 {/* Title & Authors */}

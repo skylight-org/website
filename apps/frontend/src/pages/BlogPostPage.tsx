@@ -2,6 +2,7 @@ import { useParams, Navigate, Link } from 'react-router-dom';
 import { blogPosts } from '../data/blogPosts';
 import { BlogAuthorHeader } from '../components/blog/BlogAuthorHeader';
 import { IntroductionToSkyLightEntry } from '../components/blog/posts/IntroductionToSkyLightEntry';
+import { VAttentionEntry } from '../components/blog/posts/VAttentionEntry';
 
 export function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -16,6 +17,8 @@ export function BlogPostPage() {
     switch (slug) {
       case 'introducing-skylight':
         return <IntroductionToSkyLightEntry />;
+      case 'vattention-baselines':
+        return <VAttentionEntry />;
       default:
         return <div>Content not found</div>;
     }
@@ -46,6 +49,7 @@ export function BlogPostPage() {
           {/* New 3-column Author Header */}
           <BlogAuthorHeader 
             authors={post.authors}
+            editors={post.editors}
             affiliations={post.affiliations}
             publishedDate={post.date}
           />
