@@ -66,13 +66,33 @@ export class CombinedViewService {
   }
 
   /**
+   * Get all datasets map (id -> name)
+   */
+  private async getAllDatasets(): Promise<Map<string, string>> {
+    try {
+      const { data, error } = await this.supabase
+        .from('datasets')
+        .select('id, name');
+      
+      if (error) throw error;
+      
+      return new Map(data?.map(d => [d.id, d.name]) || []);
+    } catch (error) {
+      console.error('Error querying datasets:', error);
+      return new Map();
+    }
+  }
+
+  /**
    * Get baseline rankings for a specific LLM and target_sparsity
    */
   private async getBaselineRankingForLLMSparsity(
     llmId: string,
     llmName: string,
     targetSparsity: number,
-    metricName: string
+    metricName: string,
+    datasetsMap: Map<string, string>,
+    excludedDatasets: string[] = []
   ): Promise<Record<string, { rank: number; score: number; metricValue: number | null }>> {
     try {
       // Get the metric ID and properties
@@ -120,6 +140,13 @@ export class CombinedViewService {
         const configsByDataset = new Map<string, typeof configs>();
         for (const config of configs) {
           const datasetId = config.dataset_id;
+          const datasetName = datasetsMap.get(datasetId);
+          
+          // Filter out excluded datasets
+          if (datasetName && excludedDatasets.includes(datasetName)) {
+            continue;
+          }
+
           if (!configsByDataset.has(datasetId)) {
             configsByDataset.set(datasetId, []);
           }
@@ -215,15 +242,17 @@ export class CombinedViewService {
    * Compute combined ranking across LLMs and target sparsities
    */
   async computeCombinedRanking(
-    metricName: string = 'overall_score'
+    metricName: string = 'overall_score',
+    excludedDatasets: string[] = []
   ): Promise<CombinedViewResult[]> {
     console.log('\n' + '='.repeat(80));
-    console.log(`Computing Combined Baseline Rankings - Metric: ${metricName}`);
+    console.log(`Computing Combined Baseline Rankings - Metric: ${metricName}${excludedDatasets.length > 0 ? ` (Excluded: ${excludedDatasets.join(', ')})` : ''}`);
     console.log('='.repeat(80));
 
     // Get all LLMs and sparsities
     let llms = await this.getAllLLMs();
     let sparsities = await this.getAllTargetSparsities();
+    const datasetsMap = await this.getAllDatasets();
 
     if (llms.length === 0) {
       console.log('Error: No LLMs found in database');
@@ -253,7 +282,9 @@ export class CombinedViewService {
           llm.id,
           llm.name,
           sparsity,
-          metricName
+          metricName,
+          datasetsMap,
+          excludedDatasets
         );
 
         processed++;

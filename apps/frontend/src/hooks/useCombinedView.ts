@@ -44,3 +44,21 @@ export function useCombinedViewBoth() {
   });
 }
 
+export function useCombinedViewVAttentionBlog() {
+  return useQuery<{
+    sparsities: number[];
+    overallScore: {
+      metric: string;
+      results: CombinedViewResult[];
+    };
+    localError: {
+      metric: string;
+      results: CombinedViewResult[];
+    };
+  }>({
+    queryKey: ['combinedView', 'vattentionBlog'],
+    queryFn: () => api.combinedView.getVAttentionBlog(),
+    staleTime: Infinity, // Cache forever since it's generated on server startup
+  });
+}
+

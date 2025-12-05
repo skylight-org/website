@@ -183,5 +183,17 @@ export const api = {
         results: CombinedViewResult[];
       };
     }> => fetchApi('/combined-view/all'),
+
+    getVAttentionBlog: (): Promise<{
+      sparsities: number[];
+      overallScore: {
+        metric: string;
+        results: CombinedViewResult[];
+      };
+      localError: {
+        metric: string;
+        results: CombinedViewResult[];
+      };
+    }> => fetchApi('/combined-view/vattention-blog'),
   },
 };
