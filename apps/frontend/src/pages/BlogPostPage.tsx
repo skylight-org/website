@@ -3,6 +3,7 @@ import { useParams, Navigate, Link } from 'react-router-dom';
 import { blogPosts } from '../data/blogPosts';
 import { BlogAuthorHeader } from '../components/blog/BlogAuthorHeader';
 import { IntroductionToSkyLightEntry } from '../components/blog/posts/IntroductionToSkyLightEntry';
+import { PQCacheEntry } from '../components/blog/posts/PQCacheEntry';
 
 export function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -23,6 +24,8 @@ export function BlogPostPage() {
     switch (slug) {
       case 'introducing-skylight':
         return <IntroductionToSkyLightEntry />;
+      case 'pqcache':
+        return <PQCacheEntry />;
       default:
         return <div>Content not found</div>;
     }
@@ -53,7 +56,10 @@ export function BlogPostPage() {
           {/* New 3-column Author Header */}
           <BlogAuthorHeader 
             authors={post.authors}
+            editors={post.editors}
             affiliations={post.affiliations}
+            authorAffiliations={post.authorAffiliations}
+            editorAffiliations={post.editorAffiliations}
             publishedDate={post.date}
           />
         </div>
