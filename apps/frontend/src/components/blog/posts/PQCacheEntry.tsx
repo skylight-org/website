@@ -10,7 +10,7 @@ export const PQCacheEntry = () => {
       </p>
       
       <p className="text-gray-300 leading-relaxed">
-        With the help of the authors of PQCache, we present an in-depth look at <strong>PQCache</strong>, a product quantization method that establishes a new standard for practical, non-oracle algorithms on the latest <a href="https://sky-light.eecs.berkeley.edu/#/home" target="_blank" rel="noopener noreferrer" className="text-accent-gold hover:text-white transition-colors">Tier-1A leaderboard</a>. Below, the authors explain the core mechanisms of their system, followed by instructions for deploying PQCache within SkyLight.
+        With the help of the authors of PQCache, we present an in-depth look at <strong>PQCache</strong>, a product quantization method that establishes a new standard for practical, non-oracle algorithms on the latest Tier-1A leaderboard. Below, the authors explain the core mechanisms of their system, followed by instructions for deploying PQCache within SkyLight.
       </p>
 
       <h2 id="overview" className="text-3xl font-bold text-white mt-16 mb-6 scroll-mt-24 tracking-tight">Overview</h2>
