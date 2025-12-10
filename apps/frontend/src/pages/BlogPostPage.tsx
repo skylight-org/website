@@ -58,6 +58,8 @@ export function BlogPostPage() {
             authors={post.authors}
             editors={post.editors}
             affiliations={post.affiliations}
+            authorAffiliations={post.authorAffiliations}
+            editorAffiliations={post.editorAffiliations}
             publishedDate={post.date}
           />
         </div>

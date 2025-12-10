@@ -5,7 +5,9 @@ export interface BlogPost {
   subtitle?: string;
   authors: { name: string; url?: string }[];
   editors?: { name: string; url?: string }[];
-  affiliations: string[];
+  affiliations?: string[];
+  authorAffiliations?: string[];
+  editorAffiliations?: string[];
   date: string;
   readTime: string;
   summary: string;
@@ -30,7 +32,8 @@ export const blogPosts: BlogPost[] = [
       { name: 'Aditya Desai' },
       { name: 'Kumar Krishna Agrawal' }
     ],
-    affiliations: ['Peking University', 'UC Berkeley'],
+    authorAffiliations: ['Peking University', 'Purdue University'],
+    editorAffiliations: ['UC Berkeley'],
     date: 'Dec 10, 2025',
     readTime: '10 min',
     summary: 'An in-depth look at PQCache, a product quantization method that establishes a new standard for practical, non-oracle algorithms on the SkyLight Tier-1A leaderboard. Learn how PQCache uses approximate top-k retrieval to efficiently identify important tokens for attention computation.',
