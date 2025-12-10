@@ -5,11 +5,12 @@ export interface Author {
 
 export interface BlogHeaderInfo {
   authors: Author[];
+  editors?: Author[];
   affiliations: string[];
   publishedDate: string;
 }
 
-export function BlogAuthorHeader({ authors, affiliations, publishedDate }: BlogHeaderInfo) {
+export function BlogAuthorHeader({ authors, editors, affiliations, publishedDate }: BlogHeaderInfo) {
   return (
     <div className="border-t border-b border-gray-800 py-8 my-12">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-sm">
@@ -29,6 +30,26 @@ export function BlogAuthorHeader({ authors, affiliations, publishedDate }: BlogH
               </div>
             ))}
           </div>
+          
+          {/* Editors (if present) */}
+          {editors && editors.length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-gray-500 text-xs uppercase tracking-wider mb-3 font-medium">Editors</h3>
+              <div className="grid grid-cols-2 gap-x-8 gap-y-2">
+                {editors.map((editor, idx) => (
+                  <div key={idx} className="text-gray-300">
+                    {editor.url ? (
+                      <a href={editor.url} className="hover:text-accent-gold transition-colors" target="_blank" rel="noopener noreferrer">
+                        {editor.name}
+                      </a>
+                    ) : (
+                      editor.name
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Affiliation */}

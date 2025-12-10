@@ -4,6 +4,7 @@ export interface BlogPost {
   title: string;
   subtitle?: string;
   authors: { name: string; url?: string }[];
+  editors?: { name: string; url?: string }[];
   affiliations: string[];
   date: string;
   readTime: string;
@@ -11,6 +12,29 @@ export interface BlogPost {
 }
 
 export const blogPosts: BlogPost[] = [
+  {
+    id: '2',
+    slug: 'pqcache',
+    title: 'PQCache: Product Quantization-based KVCache for Long Context LLM Inference',
+    authors: [
+      { name: 'Hailin Zhang' },
+      { name: 'Xiaodong Ji' },
+      { name: 'Yilin Chen' },
+      { name: 'Fangcheng Fu' },
+      { name: 'Xupeng Miao' },
+      { name: 'Xiaonan Nie' },
+      { name: 'Weipeng Chen' },
+      { name: 'Bin Cui' }
+    ],
+    editors: [
+      { name: 'Aditya Desai' },
+      { name: 'Kumar Krishna Agrawal' }
+    ],
+    affiliations: ['Peking University', 'UC Berkeley'],
+    date: 'Dec 10, 2025',
+    readTime: '10 min',
+    summary: 'An in-depth look at PQCache, a product quantization method that establishes a new standard for practical, non-oracle algorithms on the SkyLight Tier-1A leaderboard. Learn how PQCache uses approximate top-k retrieval to efficiently identify important tokens for attention computation.',
+  },
   {
     id: '1',
     slug: 'introducing-skylight',
