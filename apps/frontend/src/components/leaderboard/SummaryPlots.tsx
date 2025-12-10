@@ -280,6 +280,20 @@ export function ErrorSummaryPlot({ sparsities, results }: PlotProps) {
 
   if (!errorData.length || baselineNames.length === 0) return null;
 
+  // Calculate dynamic y-axis range based on actual data
+  const allValues: number[] = [];
+  errorData.forEach(row => {
+    baselineNames.forEach(name => {
+      const v = row[name] as number | undefined;
+      if (typeof v === 'number') {
+        allValues.push(v);
+      }
+    });
+  });
+  const maxVal = allValues.length ? Math.max(...allValues) : 100;
+  // Add 10% padding above the max value for better visualization
+  const ymax = Math.ceil(maxVal * 1.1);
+
   return (
     <div className="mb-4">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
@@ -321,7 +335,7 @@ export function ErrorSummaryPlot({ sparsities, results }: PlotProps) {
             />
             <YAxis
               stroke="#9CA3AF"
-              domain={[0, 100]}
+              domain={[0, ymax]}
               label={{
                 value: 'Relative error (%)',
                 angle: -90,
