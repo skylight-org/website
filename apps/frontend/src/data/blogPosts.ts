@@ -15,6 +15,30 @@ export interface BlogPost {
 
 export const blogPosts: BlogPost[] = [
   {
+    id: '3',
+    slug: 'vattention',
+    title: 'vAttention: Verified Sparse Attention',
+    authors: [
+      { name: 'Aditya Desai' },
+      { name: 'Kumar Krishna Agrawal' },
+      { name: 'Shuo Yang' },
+      { name: 'Alejandro Cuadron' },
+      { name: 'Luis Gaspar Schroeder' },
+      { name: 'Matei Zaharia' },
+      { name: 'Joseph E. Gonzalez' },
+      { name: 'Ion Stoica' }
+    ],
+    editors: [
+      { name: 'Kumar Krishna Agrawal' },
+      { name: 'Aditya Desai' }
+    ],
+    authorAffiliations: ['UC Berkeley', 'ETH Zurich'],
+    editorAffiliations: ['UC Berkeley'],
+    date: 'Dec 18, 2025',
+    readTime: '12 min',
+    summary: 'Introducing vAttention, a verified sparse attention method that combines deterministic top-k selection with stochastic sampling to achieve state-of-the-art performance. Learn how this paradigm shift provides explicit error guarantees while dominating the sparsity-quality frontier.',
+  },
+  {
     id: '2',
     slug: 'pqcache',
     title: 'PQCache: Product Quantization-based KVCache for Long Context LLM Inference',
