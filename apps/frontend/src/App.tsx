@@ -18,6 +18,8 @@ import { BaselineDetailPage } from './pages/BaselineDetailPage';
 import { ContributePage } from './pages/ContributePage';
 import { BlogPage } from './pages/BlogPage';
 import { BlogPostPage } from './pages/BlogPostPage';
+import { SemanticCachingHomePage } from './pages/SemanticCachingHomePage';
+import { SemanticCacheDatasetDetailPage } from './pages/SemanticCacheDatasetDetailPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -68,6 +70,8 @@ function AppContent() {
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/blog/:slug" element={<BlogPostPage />} />
             <Route path="/contribute" element={<ContributePage />} />
+            <Route path="/semantic-caching" element={<SemanticCachingHomePage />} />
+            <Route path="/semantic-caching/datasets/:datasetId" element={<SemanticCacheDatasetDetailPage />} />
           </Routes>
           <Footer />
         </div>

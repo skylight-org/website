@@ -47,10 +47,19 @@ export function Sidebar() {
   };
 
   const scrollToSection = (id: string) => {
-    // If not on home page, navigate there first
-    if (location.pathname !== '/home') {
+    // Handle home page sections
+    if (location.pathname !== '/home' && !location.pathname.startsWith('/semantic-caching')) {
       navigate('/home');
-      // Wait for navigation to complete before scrolling
+      setTimeout(() => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    }
+    // Handle semantic-caching page sections
+    else if (location.pathname !== '/semantic-caching' && location.pathname.startsWith('/semantic-caching')) {
+      navigate('/semantic-caching');
       setTimeout(() => {
         const element = document.getElementById(id);
         if (element) {
@@ -139,6 +148,38 @@ export function Sidebar() {
                 className="block w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:bg-dark-surface-hover hover:text-white transition-colors"
               >
                 Models
+              </button>
+              <button
+                onClick={() => scrollToSection('datasets-section')}
+                className="block w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:bg-dark-surface-hover hover:text-white transition-colors"
+              >
+                Datasets
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Semantic Caching Tab */}
+        <div className="mb-2">
+          <Link
+            to="/semantic-caching"
+            className={`flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-colors font-quantico ${
+              isActive('/semantic-caching') || location.pathname.startsWith('/semantic-caching')
+                ? 'bg-accent-gold text-dark-bg'
+                : 'text-gray-300 hover:bg-dark-surface-hover hover:text-white'
+            }`}
+          >
+            semantic-caching
+          </Link>
+          
+          {/* Subtabs for semantic-caching sections */}
+          {(isActive('/semantic-caching') || location.pathname.startsWith('/semantic-caching/datasets')) && (
+            <div className="ml-4 mt-1 space-y-1 border-l-2 border-dark-border pl-2">
+              <button
+                onClick={() => scrollToSection('leaderboard-section')}
+                className="block w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:bg-dark-surface-hover hover:text-white transition-colors"
+              >
+                Overall Leaderboard
               </button>
               <button
                 onClick={() => scrollToSection('datasets-section')}
