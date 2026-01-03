@@ -46,32 +46,6 @@ function SemanticCacheLeaderboardSection() {
           <p className="text-gray-400">No rankings available</p>
         </div>
       )}
-
-      {/* Stats Cards */}
-      {stats && (
-        <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
-          <div className="bg-dark-surface border border-dark-border rounded-lg p-4 sm:p-6">
-            <div className="text-2xl sm:text-3xl font-bold text-white mb-1">{stats.totalBaselines}</div>
-            <div className="text-xs sm:text-sm text-gray-400">Baselines</div>
-          </div>
-          <div className="bg-dark-surface border border-dark-border rounded-lg p-4 sm:p-6">
-            <div className="text-2xl sm:text-3xl font-bold text-white mb-1">{stats.totalDatasets}</div>
-            <div className="text-xs sm:text-sm text-gray-400">Datasets</div>
-          </div>
-          <div className="bg-dark-surface border border-dark-border rounded-lg p-4 sm:p-6">
-            <div className="text-2xl sm:text-3xl font-bold text-white mb-1">{stats.totalConfigurations}</div>
-            <div className="text-xs sm:text-sm text-gray-400">Configurations</div>
-          </div>
-          <div className="bg-dark-surface border border-dark-border rounded-lg p-4 sm:p-6">
-            <div className="text-2xl sm:text-3xl font-bold text-white mb-1">{stats.avgHitRate.toFixed(1)}%</div>
-            <div className="text-xs sm:text-sm text-gray-400">Avg Hit Rate</div>
-          </div>
-          <div className="bg-dark-surface border border-dark-border rounded-lg p-4 sm:p-6">
-            <div className="text-2xl sm:text-3xl font-bold text-white mb-1">{stats.avgErrorRate.toFixed(1)}%</div>
-            <div className="text-xs sm:text-sm text-gray-400">Avg Error Rate</div>
-          </div>
-        </section>
-      )}
     </div>
   );
 }
