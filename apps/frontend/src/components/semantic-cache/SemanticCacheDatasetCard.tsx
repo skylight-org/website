@@ -11,7 +11,7 @@ export function SemanticCacheDatasetCard({ dataset }: SemanticCacheDatasetCardPr
   return (
     <Link
       to={`/semantic-caching/datasets/${dataset.id}`}
-      className="block bg-dark-surface border border-dark-border rounded-lg p-6 hover:border-accent-gold transition-colors"
+      className="block bg-dark-surface border border-dark-border rounded-lg p-4 sm:p-6 hover:border-accent-gold transition-colors"
     >
       <div className="mb-4">
         <h3 className="text-lg font-bold text-white mb-2">{dataset.name}</h3>

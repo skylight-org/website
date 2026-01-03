@@ -18,17 +18,17 @@ export function SemanticCacheDatasetTable({ rankings, datasetName }: SemanticCac
   const formatLatency = (value: number) => `${value}×`;
 
   return (
-    <div className="bg-dark-surface border border-dark-border rounded-lg">
-      <div className="p-6 border-b border-dark-border">
-        <h2 className="text-xl font-bold text-white">
+    <div className="bg-dark-surface border border-dark-border rounded-lg overflow-hidden">
+      <div className="p-4 sm:p-6 border-b border-dark-border">
+        <h2 className="text-lg sm:text-xl font-bold text-white">
           {datasetName ? `${datasetName} Rankings` : 'Dataset Rankings'}
         </h2>
-        <p className="text-sm text-gray-400 mt-1">
+        <p className="text-xs sm:text-sm text-gray-400 mt-1">
           Rankings at error bound δ = 1.0% (balanced configuration)
         </p>
       </div>
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-dark-border">
+        <table className="w-full min-w-[700px]">
           <thead className="bg-dark-bg">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">

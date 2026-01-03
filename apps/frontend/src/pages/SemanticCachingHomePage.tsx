@@ -30,15 +30,15 @@ function SemanticCacheLeaderboardSection() {
 
   return (
     <div className="space-y-8">
-      <h2 className="text-4xl font-bold text-white">Overall Rankings</h2>
-      <p className="text-lg text-gray-400 max-w-4xl">
+      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white">Overall Rankings</h2>
+      <p className="text-sm sm:text-base lg:text-lg text-gray-400 max-w-4xl">
         Ranking aggregated across 4 datasets and 4 error budgets (δ = 0.5%, 1%, 2%, 5%). 
         Lower average rank indicates better performance across diverse scenarios.
       </p>
 
       {/* Overall Leaderboard Table */}
       {rankings && rankings.length > 0 ? (
-        <div className="bg-dark-surface border border-dark-border rounded-lg p-6">
+        <div className="bg-dark-surface border border-dark-border rounded-lg p-3 sm:p-6 overflow-hidden">
           <SemanticCacheOverallTable rankings={rankings} />
         </div>
       ) : (
@@ -47,6 +47,31 @@ function SemanticCacheLeaderboardSection() {
         </div>
       )}
 
+      {/* Stats Cards */}
+      {stats && (
+        <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+          <div className="bg-dark-surface border border-dark-border rounded-lg p-4 sm:p-6">
+            <div className="text-2xl sm:text-3xl font-bold text-white mb-1">{stats.totalBaselines}</div>
+            <div className="text-xs sm:text-sm text-gray-400">Baselines</div>
+          </div>
+          <div className="bg-dark-surface border border-dark-border rounded-lg p-4 sm:p-6">
+            <div className="text-2xl sm:text-3xl font-bold text-white mb-1">{stats.totalDatasets}</div>
+            <div className="text-xs sm:text-sm text-gray-400">Datasets</div>
+          </div>
+          <div className="bg-dark-surface border border-dark-border rounded-lg p-4 sm:p-6">
+            <div className="text-2xl sm:text-3xl font-bold text-white mb-1">{stats.totalConfigurations}</div>
+            <div className="text-xs sm:text-sm text-gray-400">Configurations</div>
+          </div>
+          <div className="bg-dark-surface border border-dark-border rounded-lg p-4 sm:p-6">
+            <div className="text-2xl sm:text-3xl font-bold text-white mb-1">{stats.avgHitRate.toFixed(1)}%</div>
+            <div className="text-xs sm:text-sm text-gray-400">Avg Hit Rate</div>
+          </div>
+          <div className="bg-dark-surface border border-dark-border rounded-lg p-4 sm:p-6">
+            <div className="text-2xl sm:text-3xl font-bold text-white mb-1">{stats.avgErrorRate.toFixed(1)}%</div>
+            <div className="text-xs sm:text-sm text-gray-400">Avg Error Rate</div>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
@@ -59,22 +84,24 @@ export function SemanticCachingHomePage() {
       {/* Hero Section */}
       <div className="mb-8">
         <div className="mb-4">
-          <div className="flex items-start justify-between mb-4">
-            <h1 className="text-5xl font-bold font-quantico text-accent-gold">semantic-caching</h1>
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-quantico text-accent-gold">
+              semantic-caching
+            </h1>
             
-            {/* GitHub Link - placeholder */}
+            {/* GitHub Link - responsive */}
             <a
               href="https://github.com/berkeley-function-call-leaderboard/gorilla/tree/main/vcache"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-shrink-0 inline-flex items-center gap-3 px-6 py-4 bg-dark-surface border-2 border-dark-border rounded-xl text-base font-medium text-gray-300 hover:border-accent-gold hover:bg-dark-surface/80 transition-all group mt-2"
+              className="flex-shrink-0 inline-flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 sm:py-4 bg-dark-surface border-2 border-dark-border rounded-xl text-sm sm:text-base font-medium text-gray-300 hover:border-accent-gold hover:bg-dark-surface/80 transition-all group"
               title="vCache on GitHub"
             >
-              <svg className="w-7 h-7 text-gray-400 group-hover:text-accent-gold transition-colors" fill="currentColor" viewBox="0 0 16 16">
+              <svg className="w-5 h-5 sm:w-7 sm:h-7 text-gray-400 group-hover:text-accent-gold transition-colors" fill="currentColor" viewBox="0 0 16 16">
                 <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
               </svg>
               <span className="whitespace-nowrap">GitHub</span>
-              <svg className="w-5 h-5 text-gray-400 group-hover:text-accent-gold group-hover:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-accent-gold group-hover:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
               </svg>
             </a>
@@ -83,14 +110,12 @@ export function SemanticCachingHomePage() {
           <img 
             src="/semantic_cache.png" 
             alt="Semantic Caching Visualization" 
-            className="max-w-4xl w-full mx-auto rounded-lg shadow-lg mb-6"
+            className="w-full max-w-4xl mx-auto rounded-lg shadow-lg mb-6"
           />
 
-          <p className="text-2xl text-gray-400 max-w-8xl">
+          <p className="text-base sm:text-lg lg:text-2xl text-gray-400 max-w-8xl">
             Semantic caching returns cached responses for semantically similar prompts
-            to reduce LLM inference latency and cost. This page evaluates{' '}
-            <span className="text-orange-400">state-of-the-art semantic caching methods</span>{' '}
-            with user-defined error rate guarantees.
+            to reduce LLM inference latency and cost. This page evaluates state-of-the-art semantic caching methods.
           </p>
         </div>
       </div>

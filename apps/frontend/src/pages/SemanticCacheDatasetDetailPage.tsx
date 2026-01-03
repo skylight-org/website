@@ -46,36 +46,36 @@ export function SemanticCacheDatasetDetailPage() {
       <Breadcrumb />
 
       {/* Dataset Header */}
-      <div className="bg-dark-surface border border-dark-border rounded-lg p-8">
+      <div className="bg-dark-surface border border-dark-border rounded-lg p-4 sm:p-6 lg:p-8">
         <div className="mb-4">
           <Link
             to="/semantic-caching"
-            className="text-accent-gold hover:underline text-sm mb-2 inline-block"
+            className="text-accent-gold hover:underline text-xs sm:text-sm mb-2 inline-block"
           >
             ← Back to Overview
           </Link>
         </div>
-        <h1 className="text-4xl font-bold text-white mb-4">{dataset.name}</h1>
-        <p className="text-lg text-gray-400 mb-6">{dataset.description}</p>
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4">{dataset.name}</h1>
+        <p className="text-sm sm:text-base lg:text-lg text-gray-400 mb-6">{dataset.description}</p>
         
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
           <div>
-            <div className="text-sm text-gray-400 mb-1">Size</div>
-            <div className="text-xl text-white font-medium">{formatNumber(dataset.size)} prompts</div>
+            <div className="text-xs sm:text-sm text-gray-400 mb-1">Size</div>
+            <div className="text-base sm:text-lg lg:text-xl text-white font-medium">{formatNumber(dataset.size)} prompts</div>
           </div>
           <div>
-            <div className="text-sm text-gray-400 mb-1">Domain</div>
-            <div className="text-xl text-white font-medium capitalize">{dataset.domain}</div>
+            <div className="text-xs sm:text-sm text-gray-400 mb-1">Domain</div>
+            <div className="text-base sm:text-lg lg:text-xl text-white font-medium capitalize">{dataset.domain}</div>
           </div>
           {dataset.numClasses && (
             <div>
-              <div className="text-sm text-gray-400 mb-1">Semantic Classes</div>
-              <div className="text-xl text-white font-medium">{formatNumber(dataset.numClasses)}</div>
+              <div className="text-xs sm:text-sm text-gray-400 mb-1">Semantic Classes</div>
+              <div className="text-base sm:text-lg lg:text-xl text-white font-medium">{formatNumber(dataset.numClasses)}</div>
             </div>
           )}
           <div>
-            <div className="text-sm text-gray-400 mb-1">Baselines Evaluated</div>
-            <div className="text-xl text-white font-medium">{rankings?.length || 0}</div>
+            <div className="text-xs sm:text-sm text-gray-400 mb-1">Baselines Evaluated</div>
+            <div className="text-base sm:text-lg lg:text-xl text-white font-medium">{rankings?.length || 0}</div>
           </div>
         </div>
       </div>

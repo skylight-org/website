@@ -48,8 +48,8 @@ export function SemanticCacheOverallTable({ rankings }: SemanticCacheOverallTabl
   };
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full">
+    <div className="overflow-x-auto -mx-3 sm:mx-0">
+      <table className="w-full min-w-[800px]">
         <thead className="bg-dark-bg border-b border-dark-border">
           <tr>
             <th

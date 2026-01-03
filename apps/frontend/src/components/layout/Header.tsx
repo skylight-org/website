@@ -56,9 +56,9 @@ export function Header() {
   };
 
   const navItems = [
-    { path: '/models', label: 'Overview' },
-    { path: '/datasets', label: 'Datasets' },
-    { path: '/arena', label: 'Arena' },
+    { path: '/home', label: 'sparse-attention/decoding', fontClass: 'font-quantico' },
+    { path: '/semantic-caching', label: 'semantic-caching', fontClass: 'font-quantico' },
+    { path: '/blog', label: 'Blog' },
   ];
 
   return (
@@ -127,7 +127,9 @@ export function Header() {
               key={item.path}
               to={item.path}
               className={`flex items-center px-4 py-3 rounded-lg mb-2 text-sm font-medium transition-colors ${
-                isActive(item.path)
+                item.fontClass || ''
+              } ${
+                isActive(item.path) || location.pathname.startsWith(item.path)
                   ? 'bg-accent-gold text-dark-bg'
                   : 'text-gray-300 hover:bg-dark-surface-hover hover:text-white'
               }`}
