@@ -56,9 +56,9 @@ export function Header() {
   };
 
   const navItems = [
-    { path: '/models', label: 'Overview' },
-    { path: '/datasets', label: 'Datasets' },
-    { path: '/arena', label: 'Arena' },
+    { path: '/home', label: 'sparse-attention/decoding', fontClass: 'font-quantico' },
+    { path: '/blog', label: 'Blog' },
+    { path: '/about', label: 'About' },
   ];
 
   return (
