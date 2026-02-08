@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import { useCombinedViewBoth } from '../../../hooks/useCombinedView';
-import { LoadingSpinner } from '../../common/LoadingSpinner';
-import { ScrollableFormulaContainer } from '../../common/ScrollableFormulaContainer';
+import { useCombinedViewBoth } from '../../hooks/useCombinedView';
+import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { ScrollableFormulaContainer } from '../../components/common/ScrollableFormulaContainer';
 import { SparsityFrontierPlot } from './SparsityFrontierPlot';
 import { AttentionErrorPlot } from './AttentionErrorPlot';
 import { VAttentionSchematic } from './VAttentionSchematic';

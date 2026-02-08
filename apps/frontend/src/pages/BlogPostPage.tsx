@@ -3,9 +3,9 @@ import { useParams, Navigate, Link } from 'react-router-dom';
 import { PageLayout } from '../components/layout/PageLayout';
 import { blogPosts } from '../data/blogPosts';
 import { BlogAuthorHeader } from '../components/blog/BlogAuthorHeader';
-import { IntroductionToSkyLightEntry } from '../components/blog/posts/IntroductionToSkyLightEntry';
-import { PQCacheEntry } from '../components/blog/posts/PQCacheEntry';
-import { VAttentionEntry } from '../components/blog/posts/VAttentionEntry';
+import { IntroductionToSkyLightEntry } from './blog/IntroductionToSkyLightEntry';
+import { PQCacheEntry } from './blog/PQCacheEntry';
+import { VAttentionEntry } from './blog/VAttentionEntry';
 
 export function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
