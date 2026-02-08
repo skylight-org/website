@@ -99,23 +99,39 @@ jobs:
       
       - name: Verify dependencies installed
         run: |
-          # Check that all workspace dependencies were installed
+          # Check that root node_modules exists
           if [ ! -d "node_modules" ]; then
             echo "✗ Root node_modules not found"
             exit 1
           fi
-          if [ ! -d "apps/backend/node_modules" ]; then
-            echo "✗ Backend node_modules not found"
-            exit 1
-          fi
+          echo "✓ Root node_modules found"
+          
+          # Check that frontend node_modules exists (Vite creates its own)
           if [ ! -d "apps/frontend/node_modules" ]; then
             echo "✗ Frontend node_modules not found"
             exit 1
           fi
-          if [ ! -d "packages/shared-types/node_modules" ]; then
-            echo "✗ Shared-types node_modules not found"
+          echo "✓ Frontend node_modules found"
+          
+          # Verify key dependencies are installed
+          if [ ! -d "node_modules/express" ]; then
+            echo "✗ Backend dependency 'express' not found"
             exit 1
           fi
+          echo "✓ Backend dependencies installed"
+          
+          if [ ! -d "node_modules/react" ]; then
+            echo "✗ Frontend dependency 'react' not found"
+            exit 1
+          fi
+          echo "✓ Frontend dependencies installed"
+          
+          if [ ! -d "node_modules/concurrently" ]; then
+            echo "✗ Root dependency 'concurrently' not found"
+            exit 1
+          fi
+          echo "✓ Root dependencies installed"
+          
           echo "✓ All workspace dependencies installed correctly"
 
   # Additional test job for build validation

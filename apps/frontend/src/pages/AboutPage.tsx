@@ -102,21 +102,21 @@ export function AboutPage() {
           <h2 className="text-xl font-semibold text-white">Why SkyLight is for you</h2>
           <ul className="space-y-3">
             <li>
-              <span className="font-semibold text-white">🔬 Researchers</span>
+              <span className="font-semibold text-white">Researchers</span>
               <p>
                 Track the state of the art, rapidly prototype new ideas, and fairly evaluate them
                 against existing methods.
               </p>
             </li>
             <li>
-              <span className="font-semibold text-white">⚙️ Systems Engineers</span>
+              <span className="font-semibold text-white">Systems Engineers</span>
               <p>
                 Compare efficiency techniques end-to-end and decide what is worth integrating into
                 real inference and training engines.
               </p>
             </li>
             <li>
-              <span className="font-semibold text-white">🏭 Industry Practitioners</span>
+              <span className="font-semibold text-white">Industry Practitioners</span>
               <p>
                 Get a holistic, apples-to-apples view of results to assess real-world impact before
                 committing to adoption.
