@@ -122,7 +122,7 @@ export function DatasetDetailPage() {
 
       {/* Header */}
       <div>
-        <div className="flex items-start justify-between gap-4 mb-2">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-2">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
               <h1 className="text-3xl font-bold text-white">{dataset.name}</h1>
@@ -140,7 +140,7 @@ export function DatasetDetailPage() {
             href="https://github.com/skylight-org/website/discussions/categories/benchmark-dataset-requests"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-shrink-0 inline-flex items-center gap-2 px-3 py-2 bg-dark-surface border border-accent-gold/30 rounded-lg text-sm text-gray-300 hover:border-accent-gold hover:bg-dark-surface/80 transition-all group"
+            className="flex-shrink-0 inline-flex items-center gap-2 px-3 py-2 bg-dark-surface border border-accent-gold/30 rounded-lg text-sm text-gray-300 hover:border-accent-gold hover:bg-dark-surface/80 transition-all group self-start"
             title="Request a dataset"
           >
             <svg className="w-4 h-4 text-gray-400 group-hover:text-accent-gold transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">

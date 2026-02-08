@@ -10,15 +10,17 @@ export function HomePage() {
       
       <div className="mb-8">
         <div className="mb-4">
-          <div className="flex items-start justify-between mb-4">
-            <h1 className="text-5xl font-bold font-quantico text-accent-gold">sparse-attention/decoding</h1>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-4">
+            <h1 className="text-3xl sm:text-5xl font-bold font-quantico text-accent-gold leading-tight break-all">
+              sparse-attention/decoding
+            </h1>
             
             {/* GitHub Link */}
             <a
               href="https://github.com/xAlg-ai/sparse-attention-hub"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-shrink-0 inline-flex items-center gap-3 px-6 py-4 bg-dark-surface border-2 border-dark-border rounded-xl text-base font-medium text-gray-300 hover:border-accent-gold hover:bg-dark-surface/80 transition-all group mt-2"
+              className="flex-shrink-0 inline-flex items-center gap-3 px-6 py-4 bg-dark-surface border-2 border-dark-border rounded-xl text-base font-medium text-gray-300 hover:border-accent-gold hover:bg-dark-surface/80 transition-all group sm:mt-2 self-start"
               title="Sparse Attention Hub on GitHub"
             >
               <svg className="w-7 h-7 text-gray-400 group-hover:text-accent-gold transition-colors" fill="currentColor" viewBox="0 0 16 16">
@@ -36,7 +38,7 @@ export function HomePage() {
               className="max-w-4xl w-full mx-auto rounded-lg shadow-lg"
             />
 
-          <p className="text-2xl text-gray-400 max-w-8xl mb-6">
+          <p className="text-lg sm:text-2xl text-gray-400 max-w-8xl mb-6">
             <a 
               href="https://arxiv.org/abs/2510.05688" 
               target="_blank"

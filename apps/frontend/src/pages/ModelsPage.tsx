@@ -105,7 +105,7 @@ export function ModelsPage() {
   return (
     <div>
       {/* Models Section Header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
        <h2 className="text-4xl font-bold font-quantico text-white">Models</h2>
         
         {/* Add Model Button */}
@@ -113,7 +113,7 @@ export function ModelsPage() {
           href="https://github.com/skylight-org/website/discussions/categories/model-requests"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-dark-surface border border-accent-gold/30 rounded-lg text-sm text-gray-300 hover:border-accent-gold hover:bg-dark-surface/80 transition-all group"
+          className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-dark-surface border border-accent-gold/30 rounded-lg text-sm text-gray-300 hover:border-accent-gold hover:bg-dark-surface/80 transition-all group self-start"
         >
           <svg className="w-4 h-4 text-gray-400 group-hover:text-accent-gold transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

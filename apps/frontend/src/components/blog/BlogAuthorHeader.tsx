@@ -26,7 +26,7 @@ export function BlogAuthorHeader({ authors, editors, affiliations, authorAffilia
             {/* Authors Column */}
             <div className="md:col-span-2">
               <h3 className="text-gray-500 text-xs uppercase tracking-wider mb-3 font-medium">Authors</h3>
-              <div className="grid grid-cols-2 gap-x-8 gap-y-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
                 {authors.map((author, idx) => (
                   <div key={idx} className="text-gray-300">
                     {author.url ? (
@@ -66,7 +66,7 @@ export function BlogAuthorHeader({ authors, editors, affiliations, authorAffilia
               {/* Editors Column */}
               <div className="md:col-span-2">
                 <h3 className="text-gray-500 text-xs uppercase tracking-wider mb-3 font-medium">Editors</h3>
-                <div className="grid grid-cols-2 gap-x-8 gap-y-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
                   {editors.map((editor, idx) => (
                     <div key={idx} className="text-gray-300">
                       {editor.url ? (
@@ -101,7 +101,7 @@ export function BlogAuthorHeader({ authors, editors, affiliations, authorAffilia
           {/* Authors (takes 2 columns) */}
           <div className="md:col-span-2">
             <h3 className="text-gray-500 text-xs uppercase tracking-wider mb-3 font-medium">Authors</h3>
-            <div className="grid grid-cols-2 gap-x-8 gap-y-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
               {authors.map((author, idx) => (
                 <div key={idx} className="text-gray-300">
                   {author.url ? (

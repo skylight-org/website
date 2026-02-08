@@ -1,21 +1,7 @@
-import { useMemo } from 'react';
-import { useCombinedViewBoth } from '../../../hooks/useCombinedView';
-import { LoadingSpinner } from '../../common/LoadingSpinner';
-import { SparsityFrontierPlot } from './SparsityFrontierPlot';
-import { AttentionErrorPlot } from './AttentionErrorPlot';
-import { VAttentionSchematic } from './VAttentionSchematic';
 import 'katex/dist/katex.min.css';
 import { BlockMath, InlineMath } from 'react-katex';
 
 export const VAttentionEntry = () => {
-  const { data: combinedViewData, isLoading } = useCombinedViewBoth();
-
-  // Show only 50x (2%), 10x (10%), and 5x (20%) sparsity levels
-  const filteredSparsities = useMemo(() => {
-    if (!combinedViewData?.sparsities) return [];
-    return combinedViewData.sparsities.filter(s => [2, 10, 20].includes(s));
-  }, [combinedViewData?.sparsities]);
-
   const configCode = `sparse_attention_config = ResearchAttentionConfig(
     masker_configs=[
         SinkMaskerConfig(
@@ -48,9 +34,9 @@ cd sparse-attention-hub && pip install -e . && pip install -e .[dev]
 python3 demo/chat.py --model Qwen/Qwen3-30B-A3B-Instruct-2507`;
 
   return (
-    <div className="space-y-12 text-lg text-gray-300 leading-relaxed font-light max-w-[1400px] mx-auto px-4 md:px-8">
+    <div className="space-y-8 md:space-y-12 text-base sm:text-lg text-gray-300 leading-relaxed md:max-w-[1400px] md:mx-auto md:px-8">
       {/* Header / Intro */}
-      <div className="space-y-8 border-b border-dark-border/50 pb-12 max-w-4xl mx-auto">
+      <div className="space-y-8 border-b border-dark-border/50 pb-12 md:max-w-4xl md:mx-auto">
         <div className="flex flex-col gap-4">
           <p className="text-accent-gold font-mono text-sm tracking-widest uppercase">Research • Systems • Oct 2025</p>
           <p className="text-gray-500 text-sm">
@@ -63,19 +49,19 @@ python3 demo/chat.py --model Qwen/Qwen3-30B-A3B-Instruct-2507`;
           </p>
         </div>
 
-        <p className="text-xl text-gray-200 leading-relaxed">
+        <p className="text-base sm:text-xl text-gray-200 leading-relaxed md:text-xl">
           Sparse attention methods are now essential for decoding long-context language models, but existing approaches break down in regimes that matter in practice. In particular, heavy-hitter methods such as top-k and top-p implicitly assume that attention mass is concentrated on a small set of tokens. This assumption holds for some heads and queries—but not for many others.
         </p>
-        <p className="text-xl text-gray-200 leading-relaxed">
+        <p className="text-base sm:text-xl text-gray-200 leading-relaxed md:text-xl">
           In this post, we introduce <strong>vAttention (Verified Sparse Attention)</strong>, a sparse attention method designed to remain accurate across the full range of attention entropy. vAttention combines deterministic token selection with stochastic estimation and provides explicit, user-controlled error guarantees for the resulting approximation.
         </p>
       </div>
 
       {/* Section 1: The Context */}
-      <section className="space-y-6 max-w-4xl mx-auto">
-        <h2 className="text-3xl font-bold text-white mb-6">1. vAttention: A hybrid deterministic + probabilistic sparse attention</h2>
+      <section className="space-y-6 md:max-w-4xl md:mx-auto">
+        <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">1. vAttention: A hybrid deterministic + probabilistic sparse attention</h2>
 
-        <h3 className="text-2xl font-semibold text-white mt-8 mb-4">Stochastic index selection: a paradigm shift</h3>
+        <h3 className="text-xl sm:text-2xl font-semibold text-white mt-8 mb-4">Stochastic index selection: a paradigm shift</h3>
         <p>
           Heavy-hitter approaches—such as top-k and top-p—which select tokens that dominate attention scores, are a natural choice for sparse attention. When attention is highly concentrated on a small number of tokens, top-k provides a close approximation to full attention. However, recent work shows that attention entropy varies significantly across heads and query vectors, with many instances exhibiting high-entropy distributions. This variability exposes a fundamental limitation of existing heavy-hitter methods.
         </p>
@@ -87,26 +73,30 @@ python3 demo/chat.py --model Qwen/Qwen3-30B-A3B-Instruct-2507`;
         </p>
 
         {/* Estimator presentation */}
-        <div className="my-8 bg-dark-surface border border-dark-border rounded-lg p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-            <div>
-              <div className="text-gray-500 text-xs font-mono uppercase tracking-wider mb-3">Target</div>
-              <div className="text-white"><BlockMath math={String.raw`y = \sum_{i=1}^n x_i`} /></div>
-            </div>
-            <div>
-              <div className="text-gray-500 text-xs font-mono uppercase tracking-wider mb-3">Top-K</div>
-              <div className="text-white"><BlockMath math={String.raw`\hat{y}_{\text{top}} = \sum_{i=1}^k x_{j_i}`} /></div>
-            </div>
-            <div>
-              <div className="text-gray-500 text-xs font-mono uppercase tracking-wider mb-3">Sampling</div>
-              <div className="text-white"><BlockMath math={String.raw`\hat{y}_{\text{samp}} = \frac{n}{k}\sum_{i=1}^k x_{j_i}`} /></div>
-            </div>
-          </div>
+        <div className="my-8">
+          <div className="bg-dark-surface border border-dark-border rounded-lg p-4 sm:p-6 overflow-x-auto">
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                <div>
+                  <div className="text-gray-500 text-xs font-mono uppercase tracking-wider mb-3">Target</div>
+                  <div className="text-white"><BlockMath math={String.raw`y = \sum_{i=1}^n x_i`} /></div>
+                </div>
+                <div>
+                  <div className="text-gray-500 text-xs font-mono uppercase tracking-wider mb-3">Top-K</div>
+                  <div className="text-white"><BlockMath math={String.raw`\hat{y}_{\text{top}} = \sum_{i=1}^k x_{j_i}`} /></div>
+                </div>
+                <div>
+                  <div className="text-gray-500 text-xs font-mono uppercase tracking-wider mb-3">Sampling</div>
+                  <div className="text-white"><BlockMath math={String.raw`\hat{y}_{\text{samp}} = \frac{n}{k}\sum_{i=1}^k x_{j_i}`} /></div>
+                </div>
+              </div>
 
-          <div className="border-t border-dark-border pt-6">
-            <div className="text-accent-gold text-xs font-mono uppercase tracking-wider mb-4 text-center">Hybrid Estimator</div>
-            <div className="text-white text-center">
-              <BlockMath math={String.raw`\hat{y}_{\text{hybrid}} = \underbrace{\sum_{i=1}^{k_1} x_{t_i}}_{\text{head (top-}k\text{)}} + \underbrace{\frac{n-k_1}{k_2}\sum_{i=1}^{k_2} x_{s_i}}_{\text{tail (sampling)}}`} />
+              <div className="border-t border-dark-border pt-6">
+                <div className="text-accent-gold text-xs font-mono uppercase tracking-wider mb-4 text-center">Hybrid Estimator</div>
+                <div className="text-white text-center">
+                  <BlockMath math={String.raw`\hat{y}_{\text{hybrid}} = \underbrace{\sum_{i=1}^{k_1} x_{t_i}}_{\text{head (top-}k\text{)}} + \underbrace{\frac{n-k_1}{k_2}\sum_{i=1}^{k_2} x_{s_i}}_{\text{tail (sampling)}}`} />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -121,28 +111,36 @@ python3 demo/chat.py --model Qwen/Qwen3-30B-A3B-Instruct-2507`;
       </section>
 
       {/* Figure 1 */}
-      <div className="my-10 p-6 bg-black/20 rounded-xl border border-dark-border max-w-4xl mx-auto">
-        <AttentionErrorPlot />
+      <div className="my-8 sm:my-10 p-4 sm:p-6 bg-black/20 rounded-xl border border-dark-border md:max-w-4xl md:mx-auto">
+        <img
+          src="blogs/vattention/attention_error_plot.png"
+          alt="Failure modes of approximation plot"
+          className="w-full h-auto rounded-lg border border-dark-border"
+        />
         <p className="text-center text-gray-500 mt-4 font-mono text-xs">
           Figure 1: Error vs. Distribution Flatness. vAttention maintains low error even where Top-K fails.
         </p>
       </div>
 
-      <section className="space-y-6 max-w-4xl mx-auto">
-        <h3 className="text-2xl font-semibold text-white mt-8 mb-4">vAttention algorithm</h3>
+      <section className="space-y-6 md:max-w-4xl md:mx-auto">
+        <h3 className="text-xl sm:text-2xl font-semibold text-white mt-8 mb-4">vAttention algorithm</h3>
         <p>
           Algorithmically, vAttention is parameterized by an off-the-shelf top-k sparse attention method. It uses this top-k predictor—augmented with sink and local tokens—to select a set of deterministic indices. vAttention then samples additional indices uniformly at random from the remaining (residual) tokens and combines both sets to compute the full attention estimate. The resulting computation proceeds as follows:
         </p>
 
-        <div className="my-8 bg-dark-surface border border-dark-border rounded-lg p-6">
-          <div className="text-accent-gold text-xs font-mono uppercase tracking-wider mb-4">vAttention Algorithm</div>
-          <div className="text-white space-y-4">
-            <BlockMath math={String.raw`N = \sum_{i \in \mathcal{I}_f} e^{\langle K_i, q\rangle} V_i + \frac{n_s}{|\mathcal{I}_{dyn}|}\sum_{j \in \mathcal{I}_{dyn}} e^{\langle K_j, q\rangle} V_j`} />
-            <BlockMath math={String.raw`D = \sum_{i \in \mathcal{I}_f} e^{\langle K_i, q\rangle} + \frac{n_s}{|\mathcal{I}_{dyn}|}\sum_{j \in \mathcal{I}_{dyn}} e^{\langle K_j, q\rangle}`} />
-            <BlockMath math={String.raw`\text{SDPA} = \frac{N}{D}`} />
-          </div>
-          <div className="mt-4 text-gray-500 text-xs font-mono">
-            <InlineMath math="\mathcal{I}_f" />: deterministic indices &nbsp;|&nbsp; <InlineMath math="\mathcal{I}_{dyn}" />: sampled indices &nbsp;|&nbsp; <InlineMath math="n_s" />: residual count
+        <div className="my-8">
+          <div className="bg-dark-surface border border-dark-border rounded-lg p-4 sm:p-6 overflow-x-auto">
+            <div>
+              <div className="text-accent-gold text-xs font-mono uppercase tracking-wider mb-4">vAttention Algorithm</div>
+              <div className="text-white space-y-4">
+                <BlockMath math={String.raw`N = \sum_{i \in \mathcal{I}_f} e^{\langle K_i, q\rangle} V_i + \frac{n_s}{|\mathcal{I}_{dyn}|}\sum_{j \in \mathcal{I}_{dyn}} e^{\langle K_j, q\rangle} V_j`} />
+                <BlockMath math={String.raw`D = \sum_{i \in \mathcal{I}_f} e^{\langle K_i, q\rangle} + \frac{n_s}{|\mathcal{I}_{dyn}|}\sum_{j \in \mathcal{I}_{dyn}} e^{\langle K_j, q\rangle}`} />
+                <BlockMath math={String.raw`\text{SDPA} = \frac{N}{D}`} />
+              </div>
+              <div className="mt-4 text-gray-500 text-xs font-mono">
+                <InlineMath math="\mathcal{I}_f" />: deterministic indices &nbsp;|&nbsp; <InlineMath math="\mathcal{I}_{dyn}" />: sampled indices &nbsp;|&nbsp; <InlineMath math="n_s" />: residual count
+              </div>
+            </div>
           </div>
         </div>
 
@@ -152,25 +150,35 @@ python3 demo/chat.py --model Qwen/Qwen3-30B-A3B-Instruct-2507`;
       </section>
 
       {/* Schematic Figure */}
-      <div className="my-12">
-        <VAttentionSchematic />
+      <div className="my-12 md:max-w-4xl md:mx-auto">
+        <div className="bg-dark-surface border border-dark-border rounded-lg p-4 sm:p-6 shadow-lg w-full">
+          <img
+            src="blogs/vattention/vattention_schematic.png"
+            alt="vAttention schematic"
+            className="w-full h-auto"
+          />
+        </div>
         <p className="text-center text-gray-500 mt-4 font-mono text-xs">
           Figure 2: vAttention: recipe for verified-<InlineMath math="\mathcal{X}" /> attention.
         </p>
       </div>
 
-      <section className="space-y-6 max-w-4xl mx-auto">
-        <h3 className="text-2xl font-semibold text-white mt-8 mb-4">
+      <section className="space-y-6 md:max-w-4xl md:mx-auto">
+        <h3 className="text-xl sm:text-2xl font-semibold text-white mt-8 mb-4">
           Theoretical framework of Verified-<InlineMath math="\mathcal{X}" /> algorithm
         </h3>
         <p>
           Unlike heuristic approaches, vAttention offers explicit theoretical guarantees. We formalize this as the <strong>Verified-X</strong> property: an algorithm is <InlineMath math="(\epsilon, \delta)" />-verified if it approximates a target computation <InlineMath math="\mathcal{X}" /> within relative error <InlineMath math="\epsilon" /> with probability at least <InlineMath math="1 - \delta" /> for all inputs.
         </p>
 
-        <div className="my-8 bg-dark-surface border border-dark-border rounded-lg p-6">
-          <div className="text-accent-gold text-xs font-mono uppercase tracking-wider mb-4">Definition: Verified-<InlineMath math="\mathcal{X}" /></div>
-          <div className="text-white text-center">
-            <BlockMath math={String.raw`\Pr\!\left( \frac{\| \mathcal{X}'(x) - \mathcal{X}(x) \|_2}{\| \mathcal{X}(x) \|_2} > \epsilon \right) < \delta \quad \forall\, x`} />
+        <div className="my-8">
+          <div className="bg-dark-surface border border-dark-border rounded-lg p-4 sm:p-6 overflow-x-auto">
+            <div>
+              <div className="text-accent-gold text-xs font-mono uppercase tracking-wider mb-4">Definition: Verified-<InlineMath math="\mathcal{X}" /></div>
+              <div className="text-white text-center">
+                <BlockMath math={String.raw`\Pr\!\left( \frac{\| \mathcal{X}'(x) - \mathcal{X}(x) \|_2}{\| \mathcal{X}(x) \|_2} > \epsilon \right) < \delta \quad \forall\, x`} />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -178,13 +186,17 @@ python3 demo/chat.py --model Qwen/Qwen3-30B-A3B-Instruct-2507`;
           For the numerator and denominator (<InlineMath math="\mathcal{X} \in \{N, D\}" />), the residual sums are unbiased estimators. By applying concentration inequalities to the vector-valued sums, we derive a closed-form lower bound for the sampling budget <InlineMath math="b" /> required to satisfy the guarantee:
         </p>
 
-        <div className="my-8 bg-dark-surface border border-dark-border rounded-lg p-6">
-          <div className="text-accent-gold text-xs font-mono uppercase tracking-wider mb-4">Theorem: Sampling Budget Bound</div>
-          <div className="text-white text-center">
-            <BlockMath math={String.raw`b \geq \left( \Phi^{-1}\!\left(1 - \tfrac{\delta}{2}\right) \cdot \frac{n_s \sqrt{\mathrm{Tr}(\Sigma)}}{\tau} \right)^{\!2} \;\Longrightarrow\; \Pr\!\left(\|\hat{s} - s\|_2 > \tau\right) \le \delta`} />
-          </div>
-          <div className="mt-4 text-gray-500 text-xs font-mono">
-            <InlineMath math="b" />: sample size &nbsp;|&nbsp; <InlineMath math="\Sigma" />: population covariance &nbsp;|&nbsp; <InlineMath math="n_s" />: residual count &nbsp;|&nbsp; <InlineMath math="\tau" />: error tolerance
+        <div className="my-8">
+          <div className="bg-dark-surface border border-dark-border rounded-lg p-4 sm:p-6 overflow-x-auto">
+            <div>
+              <div className="text-accent-gold text-xs font-mono uppercase tracking-wider mb-4">Theorem: Sampling Budget Bound</div>
+              <div className="text-white text-center">
+                <BlockMath math={String.raw`b \geq \left( \Phi^{-1}\!\left(1 - \tfrac{\delta}{2}\right) \cdot \frac{n_s \sqrt{\mathrm{Tr}(\Sigma)}}{\tau} \right)^{\!2} \;\Longrightarrow\; \Pr\!\left(\|\hat{s} - s\|_2 > \tau\right) \le \delta`} />
+              </div>
+              <div className="mt-4 text-gray-500 text-xs font-mono">
+                <InlineMath math="b" />: sample size &nbsp;|&nbsp; <InlineMath math="\Sigma" />: population covariance &nbsp;|&nbsp; <InlineMath math="n_s" />: residual count &nbsp;|&nbsp; <InlineMath math="\tau" />: error tolerance
+              </div>
+            </div>
           </div>
         </div>
 
@@ -195,37 +207,31 @@ python3 demo/chat.py --model Qwen/Qwen3-30B-A3B-Instruct-2507`;
 
       {/* Section 2: Results */}
       <section className="space-y-6">
-        <div className="max-w-4xl mx-auto space-y-6">
-          <h2 className="text-3xl font-bold text-white mb-6">2. vAttention Results</h2>
+        <div className="space-y-6 md:max-w-4xl md:mx-auto">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">2. vAttention Results</h2>
           <p>
             We have updated the Tier-1A leaderboard with <strong>vAttention</strong>, and the results are unambiguous: vAttention absolutely dominates the sparsity-quality frontier.
           </p>
         </div>
 
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <LoadingSpinner />
-          </div>
-        ) : combinedViewData ? (
-          <div className="my-10 p-6 bg-black/20 rounded-xl border border-dark-border">
-            <SparsityFrontierPlot
-              sparsities={filteredSparsities}
-              gapResults={combinedViewData.overallScore.results}
-              errorResults={combinedViewData.localError.results}
-            />
-            <p className="text-center text-gray-500 mt-4 font-mono text-xs">
-              Figure 3: Sparsity-Quality Frontier. vAttention (solid lines) maintains &gt;99% relative accuracy even at extreme sparsities.
-            </p>
-          </div>
-        ) : null}
+        <div className="my-8 sm:my-10 p-4 sm:p-6 bg-black/20 rounded-xl border border-dark-border md:max-w-4xl md:mx-auto">
+          <img
+            src="blogs/vattention/vattention_frontiers.png"
+            alt="Sparsity-Quality Frontier plot"
+            className="w-full h-auto rounded-lg border border-dark-border"
+          />
+          <p className="text-center text-gray-500 mt-4 font-mono text-xs">
+            Figure 3: Sparsity-Quality Frontier. vAttention (solid lines) maintains &gt;99% relative accuracy even at extreme sparsities.
+          </p>
+        </div>
 
-        <div className="max-w-4xl mx-auto space-y-6">
-          <h3 className="text-2xl font-semibold text-white mt-8 mb-4">The paradigm shift offers new frontier.</h3>
+        <div className="space-y-6 md:max-w-4xl md:mx-auto">
+          <h3 className="text-xl sm:text-2xl font-semibold text-white mt-8 mb-4">The paradigm shift offers new frontier.</h3>
           <p>
             In the last blog, we highlighted the gaps in oracle-top-k and oracle-top-p based sparse attention and dense attention showing the need for a new paradigm in sparse attention. vAttention(oracle-top-k) provides a new paradigm that fills this gap. At <strong>50x sparsity</strong>, it elevates relative accuracy from 92% (oracle-top-p) to <strong>97%</strong>, while delivering <strong>&gt;99%</strong> relative accuracy at 5x and 10x compression compared to dense attention.
           </p>
 
-          <h3 className="text-2xl font-semibold text-white mt-8 mb-4">A new state-of-the art method that beats oracle-top-k is born.</h3>
+          <h3 className="text-xl sm:text-2xl font-semibold text-white mt-8 mb-4">A new state-of-the art method that beats oracle-top-k is born.</h3>
           <p>
             The practical implications are significant. <strong>vAttention (PQCache)</strong>—a fully practical implementation parameterizing vAttention with <a href="https://sky-light.eecs.berkeley.edu/#/blog/pqcache" className="text-accent-blue hover:underline">PQCache</a>, a product quantization based top-k predictor, is not only the new state of the art, but it outperforms the theoretical oracle-top-k baseline at 5x and 10x sparsities. This result indicates that a practical sparse attention can now exceed the theoretical bounds of standard oracle approximations.
           </p>
@@ -233,26 +239,26 @@ python3 demo/chat.py --model Qwen/Qwen3-30B-A3B-Instruct-2507`;
       </section>
 
       {/* Section 3: vAttention in SkyLight */}
-      <section className="space-y-6 max-w-4xl mx-auto">
-        <h2 className="text-3xl font-bold text-white mb-6">3. vAttention in SkyLight</h2>
+      <section className="space-y-6 md:max-w-4xl md:mx-auto">
+        <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">3. vAttention in SkyLight</h2>
         <p>
           <a href="https://github.com/skylight-org/sparse-attention-hub" className="text-accent-blue hover:underline">SkyLight</a> seamlessly supports composing and running a wide range of sparse attention ideas. Thanks to its modular design, we can experiment with vAttention parameterized with any deterministic index selection method. For instance, we use the following config to run vAttention(PQCache):
         </p>
 
         <div className="rounded-lg overflow-hidden my-6 border border-dark-border bg-[#282c34]">
-          <div className="p-6 bg-[#282c34] text-gray-300 font-mono text-sm whitespace-pre overflow-x-auto">{configCode}</div>
+          <div className="p-4 sm:p-6 bg-[#282c34] text-gray-300 font-mono text-xs sm:text-sm whitespace-pre overflow-x-auto">{configCode}</div>
         </div>
 
         <p>To explore vAttention in chat mode use:</p>
 
         <div className="rounded-lg overflow-hidden my-6 border border-dark-border bg-[#282c34]">
-          <div className="p-6 bg-[#282c34] text-gray-300 font-mono text-sm whitespace-pre overflow-x-auto">{runCode}</div>
+          <div className="p-4 sm:p-6 bg-[#282c34] text-gray-300 font-mono text-xs sm:text-sm whitespace-pre overflow-x-auto">{runCode}</div>
         </div>
       </section>
 
       {/* Conclusion */}
-      <section className="space-y-6 pt-12 border-t border-dark-border/50 max-w-4xl mx-auto">
-        <h2 className="text-3xl font-bold text-white mb-6">Conclusion</h2>
+      <section className="space-y-6 pt-12 border-t border-dark-border/50 md:max-w-4xl md:mx-auto">
+        <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">Conclusion</h2>
         <p>
           vAttention introduces a paradigm shift in sparse attention by combining stochastic index selection with existing top-k methods. This approach establishes a new sparsity–quality frontier and achieves state-of-the-art performance among sparse attention mechanisms. The Verified-<InlineMath math="\mathcal{X}" /> recipe provides principled error guarantees for approximate attention computation, enabling more reliable and robust deployment of vAttention in real-world settings. We hope that vAttention will help drive broader practical adoption of inference time sparse attention.
         </p>

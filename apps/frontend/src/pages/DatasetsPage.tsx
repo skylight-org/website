@@ -73,7 +73,7 @@ export function DatasetsPage() {
       
       {/* Page Header */}
       <div>
-        <div className="flex items-start justify-between gap-4 mb-2">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-2">
           <div>
           <h2 className="text-4xl font-bold font-quantico text-white">Datasets</h2>
           <p className="text-gray-400">
@@ -90,7 +90,7 @@ export function DatasetsPage() {
             href="https://github.com/skylight-org/website/discussions/categories/benchmark-dataset-requests"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-dark-surface border border-accent-gold/30 rounded-lg text-sm text-gray-300 hover:border-accent-gold hover:bg-dark-surface/80 transition-all group"
+            className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-dark-surface border border-accent-gold/30 rounded-lg text-sm text-gray-300 hover:border-accent-gold hover:bg-dark-surface/80 transition-all group self-start"
           >
             <svg className="w-4 h-4 text-gray-400 group-hover:text-accent-gold transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -105,7 +105,7 @@ export function DatasetsPage() {
 
       {/* Filters Section */}
       <div className="bg-dark-surface border border-dark-border rounded-lg p-6">
-        <div className="flex items-start gap-4">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start">
           {/* Benchmark MultiSelect Filter */}
           <div className="min-w-[200px]">
             <MultiSelectFilter

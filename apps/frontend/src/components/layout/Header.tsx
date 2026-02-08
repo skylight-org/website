@@ -103,7 +103,7 @@ export function Header() {
 
       {/* Mobile Menu Sidebar */}
       <aside
-        className={`fixed top-0 right-0 h-full w-80 bg-dark-surface border-l border-dark-border z-50 transform transition-transform duration-300 ${
+        className={`fixed top-0 right-0 h-full w-[85vw] max-w-sm sm:w-80 bg-dark-surface border-l border-dark-border z-50 transform transition-transform duration-300 ${
           isMenuOpen ? 'translate-x-0' : 'translate-x-full'
         } flex flex-col`}
       >
@@ -135,138 +135,6 @@ export function Header() {
               {item.label}
             </Link>
           ))}
-
-          {/* Documentation Section */}
-          <div className="mt-2">
-            <button
-              onClick={() => setIsDocExpanded(!isDocExpanded)}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                isDocActive()
-                  ? 'bg-accent-gold text-dark-bg'
-                  : 'text-gray-300 hover:bg-dark-surface-hover hover:text-white'
-              }`}
-            >
-              <span className="flex-1 text-left">Documentation</span>
-              <svg
-                className={`w-4 h-4 transition-transform ${isDocExpanded ? 'rotate-180' : ''}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            
-            {isDocExpanded && (
-              <div className="ml-4 mt-2 space-y-2">
-                {/* Baselines Sub-section */}
-                <div>
-                  <button
-                    onClick={() => setIsBaselinesExpanded(!isBaselinesExpanded)}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      location.pathname === '/documentation/baselines'
-                        ? 'bg-dark-surface-hover text-accent-gold'
-                        : 'text-gray-400 hover:bg-dark-surface-hover hover:text-white'
-                    }`}
-                  >
-                    <span className="flex-1 text-left">Baselines</span>
-                    <svg
-                      className={`w-3 h-3 transition-transform ${isBaselinesExpanded ? 'rotate-180' : ''}`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                  
-                  {isBaselinesExpanded && baselines && (
-                    <div className="ml-3 mt-1 space-y-1 max-h-48 overflow-y-auto">
-                      {baselines.map((baseline) => (
-                        <Link
-                          key={baseline.id}
-                          to={`/documentation/baselines/${baseline.id}`}
-                          className={`block px-3 py-1.5 rounded text-xs transition-colors ${
-                            location.pathname === `/documentation/baselines/${baseline.id}`
-                              ? 'text-accent-gold font-medium'
-                              : 'text-gray-500 hover:bg-dark-surface-hover hover:text-gray-300'
-                          }`}
-                          title={baseline.description}
-                        >
-                          <div className="truncate">{baseline.name}</div>
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Datasets Sub-section */}
-                <div>
-                  <button
-                    onClick={() => setIsDatasetsExpanded(!isDatasetsExpanded)}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      location.pathname === '/documentation/datasets'
-                        ? 'bg-dark-surface-hover text-accent-gold'
-                        : 'text-gray-400 hover:bg-dark-surface-hover hover:text-white'
-                    }`}
-                  >
-                    <span className="flex-1 text-left">Datasets</span>
-                    <svg
-                      className={`w-3 h-3 transition-transform ${isDatasetsExpanded ? 'rotate-180' : ''}`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                  
-                  {isDatasetsExpanded && datasets && (
-                    <div className="ml-3 mt-1 space-y-1 max-h-48 overflow-y-auto">
-                      {datasets.map((dataset) => (
-                        <Link
-                          key={dataset.id}
-                          to={`/documentation/datasets/${dataset.id}`}
-                          className={`block px-3 py-1.5 rounded text-xs transition-colors ${
-                            location.pathname === `/documentation/datasets/${dataset.id}`
-                              ? 'text-accent-gold font-medium'
-                              : 'text-gray-500 hover:bg-dark-surface-hover hover:text-gray-300'
-                          }`}
-                          title={dataset.description}
-                        >
-                          <div className="truncate">{dataset.name}</div>
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Sparse Attention Guide */}
-                <Link
-                  to="/documentation/sparse-attention"
-                  className={`block px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    location.pathname === '/documentation/sparse-attention'
-                      ? 'bg-dark-surface-hover text-accent-gold'
-                      : 'text-gray-400 hover:bg-dark-surface-hover hover:text-white'
-                  }`}
-                >
-                  Sparse Attention
-                </Link>
-
-                {/* Auxiliary Memory Sub-section */}
-                <Link
-                  to="/documentation/auxiliary-memory"
-                  className={`block px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    location.pathname === '/documentation/auxiliary-memory'
-                      ? 'bg-dark-surface-hover text-accent-gold'
-                      : 'text-gray-400 hover:bg-dark-surface-hover hover:text-white'
-                  }`}
-                >
-                  Auxiliary Memory
-                </Link>
-              </div>
-            )}
-          </div>
 
           {/* Contribute Link */}
           <Link
