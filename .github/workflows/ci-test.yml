@@ -1,0 +1,163 @@
+name: CI Tests
+
+on:
+  push:
+    branches: ["main", "develop"]
+  pull_request:
+    branches: ["main", "develop"]
+  workflow_dispatch:
+
+jobs:
+  # Test that npm start works from a blank workspace
+  startup-test:
+    name: Test npm start from clean workspace
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Verify clean workspace (no node_modules)
+        run: |
+          if [ -d "node_modules" ]; then
+            echo "Error: node_modules already exists"
+            exit 1
+          fi
+          echo "✓ Workspace is clean"
+      
+      - name: Test npm start (startup check)
+        run: |
+          echo "Starting npm start in background..."
+          
+          # Start the application in the background
+          timeout 120s npm start &
+          START_PID=$!
+          
+          echo "Waiting for servers to start..."
+          sleep 30
+          
+          # Check if the backend server is responding
+          echo "Testing backend health endpoint..."
+          for i in {1..10}; do
+            if curl -f http://localhost:3000/health 2>/dev/null; then
+              echo "✓ Backend server is running"
+              BACKEND_OK=1
+              break
+            fi
+            echo "Attempt $i: Backend not ready yet..."
+            sleep 3
+          done
+          
+          # Check if the frontend server is responding
+          echo "Testing frontend server..."
+          for i in {1..10}; do
+            if curl -f http://localhost:5173 2>/dev/null; then
+              echo "✓ Frontend server is running"
+              FRONTEND_OK=1
+              break
+            fi
+            echo "Attempt $i: Frontend not ready yet..."
+            sleep 3
+          done
+          
+          # Kill the background process
+          kill $START_PID 2>/dev/null || true
+          
+          # Check results
+          if [ -z "$BACKEND_OK" ]; then
+            echo "✗ Backend server failed to start"
+            exit 1
+          fi
+          
+          if [ -z "$FRONTEND_OK" ]; then
+            echo "✗ Frontend server failed to start"
+            exit 1
+          fi
+          
+          echo "✓ All servers started successfully!"
+        env:
+          # Mock Supabase credentials for testing
+          # The backend should handle missing real credentials gracefully
+          SUPABASE_URL: "https://example.supabase.co"
+          SUPABASE_KEY: "test-key-for-ci"
+      
+      - name: Check Node.js version requirement
+        run: |
+          NODE_VERSION=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
+          if [ "$NODE_VERSION" -lt 18 ]; then
+            echo "✗ Node.js version must be 18 or higher"
+            exit 1
+          fi
+          echo "✓ Node.js version requirement met: v$NODE_VERSION"
+      
+      - name: Verify dependencies installed
+        run: |
+          # Check that root node_modules exists
+          if [ ! -d "node_modules" ]; then
+            echo "✗ Root node_modules not found"
+            exit 1
+          fi
+          echo "✓ Root node_modules found"
+          
+          # Check that frontend node_modules exists (Vite creates its own)
+          if [ ! -d "apps/frontend/node_modules" ]; then
+            echo "✗ Frontend node_modules not found"
+            exit 1
+          fi
+          echo "✓ Frontend node_modules found"
+          
+          # Verify key dependencies are installed
+          if [ ! -d "node_modules/express" ]; then
+            echo "✗ Backend dependency 'express' not found"
+            exit 1
+          fi
+          echo "✓ Backend dependencies installed"
+          
+          if [ ! -d "node_modules/react" ]; then
+            echo "✗ Frontend dependency 'react' not found"
+            exit 1
+          fi
+          echo "✓ Frontend dependencies installed"
+          
+          if [ ! -d "node_modules/concurrently" ]; then
+            echo "✗ Root dependency 'concurrently' not found"
+            exit 1
+          fi
+          echo "✓ Root dependencies installed"
+          
+          echo "✓ All workspace dependencies installed correctly"
+
+  # Additional test job for build validation
+  build-test:
+    name: Test build process
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm install
+      
+      - name: Build shared types
+        run: npm run build --workspace=packages/shared-types
+      
+      - name: Build all workspaces
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: "https://test-backend.example.com"
+          VITE_BASE_PATH: "/"
