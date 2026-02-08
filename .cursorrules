@@ -1,0 +1,198 @@
+# Coding Best Practices
+
+## Core Principles
+
+### Low Coupling & High Cohesion
+- Minimize dependencies between modules. Use dependency injection.
+- Each module should have one clear, focused responsibility.
+- Prefer composition over inheritance.
+
+### SOLID Principles
+- **Single Responsibility**: One class/function = one reason to change.
+- **Open/Closed**: Open for extension, closed for modification.
+- **Liskov Substitution**: Subtypes must be substitutable for base types.
+- **Interface Segregation**: Many specific interfaces > one general interface.
+- **Dependency Inversion**: Depend on abstractions, not concretions.
+
+### DRY, KISS, YAGNI
+- **DRY**: Don't Repeat Yourself. Extract common logic.
+- **KISS**: Keep It Simple. Prefer simple solutions.
+- **YAGNI**: You Aren't Gonna Need It. Don't build unused features.
+
+## Code Structure
+
+### Functions/Methods
+- Keep functions atomic: ~40 lines max.
+- One function = one task. Extract subfunctions if complex.
+- Use descriptive names that reveal intent: `calculateTotalWithTax()` not `calc()`.
+- Parameters: max 3-4. Use objects for more.
+- Return early to reduce nesting.
+
+### Classes
+- Single responsibility per class.
+- Keep classes small and focused.
+- Favor small, specialized classes over large, general ones.
+
+### Naming Conventions
+- Variables/functions: camelCase (JS/TS), snake_case (Python).
+- Classes: PascalCase.
+- Constants: UPPER_SNAKE_CASE.
+- Booleans: `isActive`, `hasPermission`, `canEdit`.
+- Names should be self-documenting.
+
+### Code Clarity
+- Write self-explanatory code. Comments explain "why", not "what".
+- Avoid magic numbers. Use named constants.
+- Use TypeScript types/interfaces for clarity.
+- Prefer explicit over implicit.
+
+## Design Patterns (Use When Appropriate)
+
+### Creational
+- **Factory**: Create objects without specifying exact class.
+- **Builder**: Construct complex objects step-by-step.
+- **Singleton**: Ensure single instance (use sparingly).
+
+### Structural
+- **Adapter**: Make incompatible interfaces compatible.
+- **Decorator**: Add behavior without modifying class.
+- **Facade**: Simplify complex subsystem interfaces.
+
+### Behavioral
+- **Strategy**: Select algorithm at runtime.
+- **Observer**: Notify dependents of state changes.
+- **Command**: Encapsulate requests as objects.
+
+## Error Handling
+- Always handle errors explicitly. No silent failures.
+- Use try-catch blocks appropriately.
+- Validate inputs at boundaries.
+- Provide meaningful error messages.
+- Use custom error types when beneficial.
+
+## Testing
+- Write unit tests for business logic.
+- Test edge cases and error conditions.
+- Keep tests simple and focused.
+- Mock external dependencies.
+
+## Documentation
+- Add JSDoc/docstrings for public APIs.
+- Document complex algorithms and business logic.
+- Keep README files updated.
+- Include examples in documentation.
+
+---
+
+## Frontend-Specific Best Practices
+
+### React/TypeScript
+
+#### Component Design
+- Keep components small (<200 lines). Extract subcomponents.
+- One component = one responsibility.
+- Prefer functional components with hooks.
+- Use TypeScript for all props and state.
+- Props interfaces: `ComponentNameProps`.
+
+#### Component Types
+- **Presentational**: Pure UI, no business logic, receive data via props.
+- **Compound**: Parent-child components working together.
+- Use custom hooks to separate logic from UI instead of container components.
+
+#### Hooks
+- Use custom hooks for reusable logic.
+- Follow hooks rules: call at top level, in React functions only.
+- Keep hooks focused: `useAuth`, `useApi`, `useLocalStorage`.
+- Extract complex logic from components into hooks.
+
+#### State Management
+- Local state: `useState` for component-specific data.
+- Shared state: Context API for medium complexity, Redux/Zustand for large apps.
+- Server state: React Query/SWR for API data.
+- Avoid prop drilling. Use Context or state management library.
+- Minimize state. Derive values when possible.
+
+#### Props & Types
+```typescript
+// Always type props
+interface ButtonProps {
+  variant: 'primary' | 'secondary';
+  onClick: () => void;
+  disabled?: boolean;
+  children: React.ReactNode;
+}
+
+// Use discriminated unions for conditional props
+type InputProps = 
+  | { type: 'text'; maxLength: number }
+  | { type: 'number'; min: number; max: number };
+```
+
+#### Performance
+- Only memoize (`React.memo`, `useMemo`, `useCallback`) when there's a measured problem. Avoid premature optimization.
+- Lazy load routes and heavy components: `React.lazy()`.
+- Optimize images: WebP, lazy loading, proper sizing.
+- Virtualize long lists (react-window, react-virtualized).
+- Use code splitting for large apps.
+
+
+### Styling
+
+#### CSS Best Practices
+- Use Tailwind, CSS Modules, or zero-runtime CSS-in-JS (e.g., vanilla-extract) for scoping. Avoid runtime CSS-in-JS (Styled Components, Emotion).
+- Follow BEM naming if using plain CSS: `block__element--modifier`.
+- Use CSS variables for theming.
+- Mobile-first responsive design.
+- Avoid inline styles unless dynamic.
+
+#### Responsive Design
+- Use relative units: `rem`, `em`, `%`, `vh/vw`.
+- Prefer content-driven breakpoints. Reasonable defaults: ~640px, ~768px, ~1024px, ~1280px.
+- Test on multiple screen sizes.
+- Use CSS Grid and Flexbox.
+
+### Accessibility (A11y)
+
+#### Essential Practices
+- Semantic HTML: `<button>`, `<nav>`, `<header>`, `<main>`, `<article>`.
+- ARIA labels when needed: `aria-label`, `aria-describedby`.
+- Keyboard navigation: all interactive elements accessible via Tab.
+- Focus indicators: visible `:focus` styles.
+- Alt text for images.
+- Proper heading hierarchy: h1 → h2 → h3.
+- Color contrast: WCAG AA minimum (4.5:1 for text).
+- Form labels: associate `<label>` with inputs.
+- Skip links for navigation.
+- Test with screen readers.
+
+### API Integration
+- Use async/await for asynchronous operations.
+- Handle loading, error, and success states.
+- Implement retry logic for failed requests.
+- Use proper HTTP methods: GET, POST, PUT, DELETE, PATCH.
+- Type API responses with TypeScript.
+- Centralize API calls in service layer.
+- Use environment variables for API URLs.
+
+### Forms
+- Validate on blur and submit.
+- Show clear error messages.
+- Disable submit during submission.
+- Use controlled components.
+- Implement proper form accessibility.
+
+### Build & Performance
+- Tree shaking: import only what you use.
+- Bundle size: analyze with webpack-bundle-analyzer.
+- Minimize dependencies.
+- Use production builds for deployment.
+- Implement caching strategies.
+- Use CDN for static assets.
+
+### Code Quality
+- Use ESLint and Prettier.
+- Run type checking: `tsc --noEmit`.
+- Use strict TypeScript: `"strict": true`.
+- Write integration tests for critical flows.
+- Review bundle size regularly.
