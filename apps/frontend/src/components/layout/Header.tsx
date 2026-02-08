@@ -118,7 +118,7 @@ export function Header() {
           <div className="mb-2">
             <Link
               to="/home"
-              className={`flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-colors font-quantico ${
+              className={`flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                 isActive('/home')
                   ? 'bg-accent-gold text-dark-bg'
                   : 'text-gray-300 hover:bg-dark-surface-hover hover:text-white'

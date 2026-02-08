@@ -17,7 +17,7 @@ const coreTeam: TeamMember[] = [
 const contributors: TeamMember[] = [
   { name: 'Sahil Joshi', affiliation: 'Graduate Student, Rice University', image: 'https://github.com/sahiljoshi515.png' },
   { name: 'Shuo Yang', affiliation: 'Graduate Student, UC Berkeley', image: 'https://github.com/andy-yang-1.png' },
-  { name: 'Alejandro Cuadron', affiliation: 'Amazon UC Berkeley', image: 'https://github.com/AlexCuadron.png' },
+  { name: 'Alejandro Cuadron', affiliation: 'Amazon | Ex-Grad Student, UC Berkeley', image: 'https://github.com/AlexCuadron.png' },
 ];
 
 const advisors: TeamMember[] = [
