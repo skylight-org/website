@@ -1,10 +1,6 @@
-import { Breadcrumb } from '../components/common/Breadcrumb';
-
 export function ContributePage() {
   return (
     <div className="space-y-8">
-      <Breadcrumb />
-      
       {/* Hero Section */}
       <section>
         <h1 className="text-4xl font-bold text-white mb-4">

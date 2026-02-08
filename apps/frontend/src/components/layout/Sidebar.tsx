@@ -110,7 +110,11 @@ export function Sidebar() {
         </Link>
       </div>
 
-      {/* Navigation */}
+      {/* 
+        IMPORTANT: Desktop Navigation Structure
+        When updating navigation items, also update the mobile Header component (Header.tsx)
+        to maintain consistency across desktop and mobile views.
+      */}
       <nav className="flex-1 overflow-y-auto py-6 px-4">
         {/* Main Section */}
         <div className="mb-2">

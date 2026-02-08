@@ -8,7 +8,6 @@ import { useDatasetMetrics } from '../hooks/useMetrics';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import { LeaderboardTable } from '../components/leaderboard/LeaderboardTable';
-import { Breadcrumb } from '../components/common/Breadcrumb';
 import { TextRangeFilter } from '../components/common/TextRangeFilter';
 import { MultiSelectFilter } from '../components/common/MultiSelectFilter';
 
@@ -117,9 +116,6 @@ export function DatasetDetailPage() {
 
   return (
     <div className="space-y-8">
-      {/* Breadcrumb */}
-      <Breadcrumb />
-
       {/* Header */}
       <div>
         <div className="flex items-start justify-between gap-4 mb-2">

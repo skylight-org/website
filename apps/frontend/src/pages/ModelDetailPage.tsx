@@ -6,7 +6,6 @@ import { useDatasets } from '../hooks/useDatasets';
 import { AggregatedTable } from '../components/leaderboard/AggregatedTable';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
-import { Breadcrumb } from '../components/common/Breadcrumb';
 import { Toggle } from '../components/common/Toggle';
 import { TextRangeFilter } from '../components/common/TextRangeFilter';
 import type { NumericRange } from '@sky-light/shared-types';
@@ -108,8 +107,6 @@ export function ModelDetailPage() {
 
   return (
     <div className="space-y-8">
-      <Breadcrumb />
-      
       {/* Model Header */}
       {llmError ? (
         <ErrorMessage message="Failed to load model details" />

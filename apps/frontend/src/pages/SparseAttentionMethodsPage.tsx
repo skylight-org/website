@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { useBaselineRankings } from '../hooks/useBaselineRankings';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
-import { Breadcrumb } from '../components/common/Breadcrumb';
 import { SortableHeader } from '../components/common/SortableHeader';
 import { useSortableData } from '../hooks/useSortableData';
 
@@ -59,8 +58,6 @@ export function SparseAttentionMethodsPage() {
 
   return (
     <div className="space-y-8">
-      <Breadcrumb />
-      
       {/* Header */}
       <div>
         <h1 className="text-4xl font-bold text-white mb-4">Sparse Attention Methods</h1>

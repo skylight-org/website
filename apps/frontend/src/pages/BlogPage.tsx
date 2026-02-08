@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { Breadcrumb } from '../components/common/Breadcrumb';
 import { blogPosts } from '../data/blogPosts';
 
 export function BlogPage() {
@@ -12,8 +11,6 @@ export function BlogPage() {
 
   return (
     <div className="min-h-screen text-gray-200">
-      <Breadcrumb />
-      
       <div className="max-w-4xl mx-auto mt-12 px-4 md:px-0">
         {/* Header Section */}
         <div className="mb-12 pb-6 border-b border-gray-800">

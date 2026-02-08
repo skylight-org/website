@@ -5,7 +5,6 @@ import { useLLMs } from '../hooks/useLLMs';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import { AggregatedTable } from '../components/leaderboard/AggregatedTable';
-import { Breadcrumb } from '../components/common/Breadcrumb';
 import { TextRangeFilter } from '../components/common/TextRangeFilter';
 import { MultiSelectFilter } from '../components/common/MultiSelectFilter';
 
@@ -94,8 +93,6 @@ export function OverviewPage() {
 
   return (
     <div className="space-y-8">
-      <Breadcrumb />
-      
       {/* Hero Section */}
       <section>
         <h1 className="text-4xl font-bold text-white mb-4">

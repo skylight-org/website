@@ -1,4 +1,3 @@
-import { Breadcrumb } from '../components/common/Breadcrumb';
 import { SummaryPage } from './SummaryPage';
 import { ModelsPage } from './ModelsPage';
 import { DatasetsPage } from './DatasetsPage';
@@ -6,7 +5,6 @@ import { DatasetsPage } from './DatasetsPage';
 export function HomePage() {
   return (
     <div>
-      <Breadcrumb />
       
       <div className="mb-8">
         <div className="mb-4">

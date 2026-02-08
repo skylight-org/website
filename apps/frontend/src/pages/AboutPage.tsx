@@ -1,5 +1,3 @@
-import { Breadcrumb } from '../components/common/Breadcrumb';
-
 type TeamMember = {
   name: string;
   affiliation: string;
@@ -90,8 +88,6 @@ function TeamSection({
 export function AboutPage() {
   return (
     <div className="space-y-10">
-      <Breadcrumb />
-
       <section className="space-y-4">
         <h1 className="text-4xl font-bold text-white">About SkyLight</h1>
         <p className="text-lg text-gray-400 max-w-3xl">
