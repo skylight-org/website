@@ -168,12 +168,12 @@ export function GapSummaryPlot({ sparsities, results }: PlotProps) {
 
   return (
     <div className="mb-4">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
-        <div>
-          <h3 className="text-2xl font-semibold text-white">
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-4">
+        <div className="flex-1 min-w-0">
+          <h3 className="text-xl md:text-2xl font-semibold text-white break-words">
             Relative model quality (higher is better), (Ŝ / S × 100)
           </h3>
-          <p className="text-base text-gray-400">
+          <p className="text-sm md:text-base text-gray-400 break-words mt-1">
             Bars show relative model quality. S is score of dense model and Ŝ is score of sparse model on the benchmark.
           </p>
         </div>
@@ -183,14 +183,15 @@ export function GapSummaryPlot({ sparsities, results }: PlotProps) {
             downloadChartAsPng(chartRef.current, 'skylight_overall_quality.png')
           }
           data-export-ignore="true"
-          className="inline-flex items-center justify-center rounded-md border border-dark-border bg-dark-bg px-3 py-2 text-sm font-medium text-gray-200 hover:bg-dark-surface-hover hover:text-white transition-colors"
+          className="inline-flex items-center justify-center rounded-md border border-dark-border bg-dark-bg px-3 py-2 text-sm font-medium text-gray-200 hover:bg-dark-surface-hover hover:text-white transition-colors whitespace-nowrap shrink-0"
         >
           Download PNG
         </button>
       </div>
 
-      <div ref={chartRef} className="h-[360px]">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="overflow-x-auto" role="region" aria-label="Relative model quality chart" tabIndex={0}>
+        <div ref={chartRef} className="h-[360px] min-w-[600px]">
+          <ResponsiveContainer width="100%" height="100%">
           <BarChart data={gapData} margin={{ top: 10, right: 20, left: 20, bottom: 40 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
             <XAxis
@@ -264,6 +265,7 @@ export function GapSummaryPlot({ sparsities, results }: PlotProps) {
             ))}
           </BarChart>
         </ResponsiveContainer>
+        </div>
       </div>
     </div>
   );
@@ -296,12 +298,12 @@ export function ErrorSummaryPlot({ sparsities, results }: PlotProps) {
 
   return (
     <div className="mb-4">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
-        <div>
-          <h3 className="text-2xl font-semibold text-white">
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-4">
+        <div className="flex-1 min-w-0">
+          <h3 className="text-xl md:text-2xl font-semibold text-white break-words">
             Relative error in attention layer output (lower is better), ( ‖Ô - O‖ / ‖O‖ x 100)
           </h3>
-          <p className="text-base text-gray-400">
+          <p className="text-sm md:text-base text-gray-400 break-words mt-1">
             Bars show the average relative error in the attention layer output compared to
             dense full attention for each sparsity level. Ô is the output vector of the attention module with sparse attention and O is the output vector of the dense attention module.
           </p>
@@ -312,14 +314,15 @@ export function ErrorSummaryPlot({ sparsities, results }: PlotProps) {
             downloadChartAsPng(chartRef.current, 'skylight_attention_error.png')
           }
           data-export-ignore="true"
-          className="inline-flex items-center justify-center rounded-md border border-dark-border bg-dark-bg px-3 py-2 text-sm font-medium text-gray-200 hover:bg-dark-surface-hover hover:text-white transition-colors"
+          className="inline-flex items-center justify-center rounded-md border border-dark-border bg-dark-bg px-3 py-2 text-sm font-medium text-gray-200 hover:bg-dark-surface-hover hover:text-white transition-colors whitespace-nowrap shrink-0"
         >
           Download PNG
         </button>
       </div>
 
-      <div ref={chartRef} className="h-[360px]">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="overflow-x-auto" role="region" aria-label="Relative error in attention layer chart" tabIndex={0}>
+        <div ref={chartRef} className="h-[360px] min-w-[600px]">
+          <ResponsiveContainer width="100%" height="100%">
           <BarChart data={errorData} margin={{ top: 10, right: 20, left: 20, bottom: 40 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
             <XAxis
@@ -384,6 +387,7 @@ export function ErrorSummaryPlot({ sparsities, results }: PlotProps) {
             ))}
           </BarChart>
         </ResponsiveContainer>
+        </div>
       </div>
     </div>
   );
