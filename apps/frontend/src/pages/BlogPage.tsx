@@ -14,7 +14,7 @@ export function BlogPage() {
       <div className="max-w-4xl mt-12 px-4 md:px-0">
         {/* Header Section */}
         <div className="mb-12 pb-6 border-b border-gray-800">
-          <h1 className="text-5xl font-bold text-accent-gold mb-4 tracking-tight font-quantico">
+          <h1 className="text-4xl font-bold text-accent-gold mb-4 font-quantico">
             Sky Light Blog
           </h1>
           <p className="text-lg text-gray-400 max-w-2xl">
