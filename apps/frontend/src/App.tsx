@@ -43,7 +43,7 @@ function AppContent() {
       <main 
         className={`min-h-screen transition-all duration-300 
           pt-20 px-4 pb-8
-          md:pt-8 md:px-0 md:pb-8
+          md:pt-12 md:px-0 md:pb-8
           ${isCollapsed ? 'md:ml-16' : 'md:ml-64'} md:pl-8 md:pr-8
         `}
       >

@@ -3,7 +3,7 @@ export function ContributePage() {
     <div className="space-y-8">
       {/* Hero Section */}
       <section>
-        <h1 className="text-4xl font-bold text-white mb-4">
+        <h1 className="text-4xl font-bold text-accent-gold font-quantico mb-4">
           Contribute
         </h1>
         <p className="text-lg text-gray-400 max-w-3xl">

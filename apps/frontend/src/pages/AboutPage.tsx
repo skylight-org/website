@@ -89,7 +89,7 @@ export function AboutPage() {
   return (
     <div className="space-y-10">
       <section className="space-y-4">
-        <h1 className="text-4xl font-bold text-white">About SkyLight</h1>
+        <h1 className="text-4xl font-bold text-accent-gold font-quantico">About SkyLight</h1>
         <p className="text-lg text-gray-400 max-w-3xl">
           A unified platform to understand, compare, and advance efficiency in AI training and
           inference. We identify and create a ecosystem to enable research and development 
