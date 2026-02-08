@@ -16,7 +16,7 @@ export function Breadcrumb() {
   }
 
   const breadcrumbs: { label: string; path: string }[] = [
-    { label: 'Home', path: '/models' }
+    { label: 'Home', path: '/home' }
   ];
 
   // Build breadcrumbs based on path
@@ -30,7 +30,7 @@ export function Breadcrumb() {
       }
     }
   } else if (pathSegments[0] === 'models') {
-    breadcrumbs.push({ label: 'Overview', path: '/models' });
+    breadcrumbs.push({ label: 'Models', path: '/models' });
     // If viewing a specific model
     if (pathSegments.length === 2 && llms) {
       const model = llms.find(l => l.id === pathSegments[1]);
@@ -44,19 +44,8 @@ export function Breadcrumb() {
     breadcrumbs.push({ label: 'About', path: '/about' });
   } else if (pathSegments[0] === 'contribute') {
     breadcrumbs.push({ label: 'Contribute', path: '/contribute' });
-  } else if (pathSegments[0] === 'documentation') {
-    breadcrumbs.push({ label: 'Documentation', path: '/documentation' });
-    
-    if (pathSegments[1] === 'baselines') {
-      breadcrumbs.push({ label: 'Baselines', path: '/documentation/baselines' });
-      // If viewing a specific baseline
-      if (pathSegments.length === 3 && baselines) {
-        const baseline = baselines.find(b => b.id === pathSegments[2]);
-        if (baseline) {
-          breadcrumbs.push({ label: baseline.name, path: location.pathname });
-        }
-      }
-    }
+  } else if (pathSegments[0] === 'blog') {
+    breadcrumbs.push({ label: 'Blog', path: '/blog' });
   }
 
   return (
