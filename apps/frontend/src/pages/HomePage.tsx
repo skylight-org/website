@@ -10,7 +10,7 @@ export function HomePage() {
       <div className="mb-8">
         <div className="mb-4">
           <div className="flex flex-col sm:flex-row items-start justify-between gap-4 mb-4">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold font-quantico text-accent-gold break-words">sparse-attention/decoding</h1>
+            <h1 className="text-4xl font-bold font-quantico text-accent-gold break-words">sparse-attention/decoding</h1>
             
             {/* GitHub Link */}
             <a
