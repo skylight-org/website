@@ -56,18 +56,17 @@ export function VAttentionSchematic() {
   };
 
   return (
-    <div className="bg-dark-surface border border-dark-border rounded-lg p-6 md:p-8 shadow-lg w-full overflow-x-auto relative" ref={chartRef}>
-      <div className="absolute top-4 right-4 z-10">
+    <div className="bg-dark-surface border border-dark-border rounded-lg p-6 md:p-8 shadow-lg w-full overflow-x-auto" ref={chartRef}>
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+        <h3 className="text-xl font-semibold text-white">vAttention Architecture</h3>
         <button 
           onClick={downloadChart}
-          className="text-xs text-gray-400 hover:text-white border border-dark-border rounded px-3 py-1.5 transition-colors bg-dark-bg/50 backdrop-blur-sm"
+          className="text-xs text-gray-400 hover:text-white border border-dark-border rounded px-3 py-1.5 transition-colors whitespace-nowrap"
           data-export-ignore="true"
         >
           Export PNG
         </button>
       </div>
-
-      <h3 className="text-xl font-semibold text-white mb-6 text-center">vAttention Architecture</h3>
 
       <div className="flex flex-col lg:flex-row items-center justify-center gap-2 md:gap-3 min-w-[600px]">
 
