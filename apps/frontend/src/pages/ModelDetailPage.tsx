@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { PageLayout } from '../components/layout/PageLayout';
 import { useOverallLeaderboard } from '../hooks/useLeaderboard';
 import { useLLM } from '../hooks/useLLMs';
 import { useDatasets } from '../hooks/useDatasets';
@@ -106,7 +107,7 @@ export function ModelDetailPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <PageLayout spacing="normal" maxWidth="full">
       {/* Model Header */}
       {llmError ? (
         <ErrorMessage message="Failed to load model details" />
@@ -243,7 +244,7 @@ export function ModelDetailPage() {
         </div>
       </div>
       )}
-    </div>
+    </PageLayout>
   );
 }
 

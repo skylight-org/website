@@ -1,10 +1,11 @@
+import { PageLayout } from '../components/layout/PageLayout';
 import { SummaryPage } from './SummaryPage';
 import { ModelsPage } from './ModelsPage';
 import { DatasetsPage } from './DatasetsPage';
 
 export function HomePage() {
   return (
-    <div>
+    <PageLayout spacing="normal" maxWidth="full">
       
       <div className="mb-8">
         <div className="mb-4">
@@ -69,7 +70,7 @@ export function HomePage() {
       <div id="datasets-section" className="scroll-mt-24">
         <DatasetsPage />
       </div>
-    </div>
+    </PageLayout>
   );
 }
 

@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { PageLayout } from '../components/layout/PageLayout';
 import { useBaselineRankings } from '../hooks/useBaselineRankings';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
@@ -57,7 +58,7 @@ export function SparseAttentionMethodsPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <PageLayout spacing="normal" maxWidth="full">
       {/* Header */}
       <div>
         <h1 className="text-4xl font-bold text-white mb-4">Sparse Attention Methods</h1>
@@ -231,7 +232,7 @@ export function SparseAttentionMethodsPage() {
           </p>
         </div>
       </div>
-    </div>
+    </PageLayout>
   );
 }
 

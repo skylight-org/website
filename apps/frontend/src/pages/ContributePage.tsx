@@ -1,6 +1,8 @@
+import { PageLayout } from '../components/layout/PageLayout';
+
 export function ContributePage() {
   return (
-    <div className="space-y-8">
+    <PageLayout spacing="normal" maxWidth="full">
       {/* Hero Section */}
       <section>
         <h1 className="text-4xl font-bold text-accent-gold font-quantico mb-4">
@@ -61,6 +63,6 @@ export function ContributePage() {
           </a>
         </div>
       </div>
-    </div>
+    </PageLayout>
   );
 }

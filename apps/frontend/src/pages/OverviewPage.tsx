@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { PageLayout } from '../components/layout/PageLayout';
 import type { NumericRange } from '@sky-light/shared-types';
 import { useOverallLeaderboard, useOverviewStats } from '../hooks/useLeaderboard';
 import { useLLMs } from '../hooks/useLLMs';
@@ -92,7 +93,7 @@ export function OverviewPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <PageLayout spacing="normal" maxWidth="full">
       {/* Hero Section */}
       <section>
         <h1 className="text-4xl font-bold text-white mb-4">
@@ -214,6 +215,6 @@ export function OverviewPage() {
           </div>
         </section>
       )}
-    </div>
+    </PageLayout>
   );
 }

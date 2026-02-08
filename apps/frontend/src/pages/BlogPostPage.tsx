@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
+import { PageLayout } from '../components/layout/PageLayout';
 import { blogPosts } from '../data/blogPosts';
 import { BlogAuthorHeader } from '../components/blog/BlogAuthorHeader';
 import { IntroductionToSkyLightEntry } from '../components/blog/posts/IntroductionToSkyLightEntry';
@@ -35,19 +36,11 @@ export function BlogPostPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto pt-12 pb-24 px-4 md:px-8">
-      {/* Minimal Back Link */}
-      <Link 
-        to="/blog"
-        className="inline-block text-gray-500 hover:text-white mb-12 font-mono text-sm transition-colors"
-      >
-        ← Index
-      </Link>
-
+    <PageLayout spacing="none" maxWidth="full">
       <article>
         {/* Header Section */}
         <div className="max-w-4xl">
-          <h1 className="text-4xl md:text-6xl font-bold text-accent-gold mb-6 leading-tight tracking-tight">
+          <h1 className="text-4xl font-bold text-accent-gold font-quantico mb-6">
             {post.title}
           </h1>
           {post.subtitle && (
@@ -81,6 +74,6 @@ export function BlogPostPage() {
           </div>
         </div>
       </article>
-    </div>
+    </PageLayout>
   );
 }

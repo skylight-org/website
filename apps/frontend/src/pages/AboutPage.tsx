@@ -85,9 +85,11 @@ function TeamSection({
   );
 }
 
+import { PageLayout } from '../components/layout/PageLayout';
+
 export function AboutPage() {
   return (
-    <div className="space-y-10">
+    <PageLayout spacing="large" maxWidth="full">
       <section className="space-y-4">
         <h1 className="text-4xl font-bold text-accent-gold font-quantico">About SkyLight</h1>
         <p className="text-lg text-gray-400 max-w-3xl">
@@ -139,6 +141,6 @@ export function AboutPage() {
         description="Advisors guiding the long-term vision."
         members={advisors}
       />
-    </div>
+    </PageLayout>
   );
 }

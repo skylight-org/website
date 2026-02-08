@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { PageLayout } from '../components/layout/PageLayout';
 import { blogPosts } from '../data/blogPosts';
 
 export function BlogPage() {
@@ -10,8 +11,7 @@ export function BlogPage() {
   };
 
   return (
-    <div className="min-h-screen text-gray-200">
-      <div className="max-w-4xl mt-12 px-4 md:px-0">
+    <PageLayout spacing="normal" maxWidth="narrow">
         {/* Header Section */}
         <div className="mb-12 pb-6 border-b border-gray-800">
           <h1 className="text-4xl font-bold text-accent-gold mb-4 font-quantico">
@@ -71,8 +71,6 @@ export function BlogPage() {
             ))}
           </div>
         </div>
-
-      </div>
-    </div>
+    </PageLayout>
   );
 }

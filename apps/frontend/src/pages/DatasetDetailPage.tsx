@@ -1,5 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { PageLayout } from '../components/layout/PageLayout';
 import type { NumericRange } from '@sky-light/shared-types';
 import { useDatasetLeaderboard } from '../hooks/useLeaderboard';
 import { useDatasets } from '../hooks/useDatasets';
@@ -115,7 +116,7 @@ export function DatasetDetailPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <PageLayout spacing="normal" maxWidth="full">
       {/* Header */}
       <div>
         <div className="flex items-start justify-between gap-4 mb-2">
@@ -272,6 +273,6 @@ export function DatasetDetailPage() {
           </div>
         </div>
       )}
-    </div>
+    </PageLayout>
   );
 }

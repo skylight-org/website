@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { PageLayout } from '../components/layout/PageLayout';
 import { useLLMs } from '../hooks/useLLMs';
 import { useOverallLeaderboard } from '../hooks/useLeaderboard';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
@@ -103,7 +104,7 @@ export function ModelsPage() {
 
 
   return (
-    <div>
+    <PageLayout spacing="normal" maxWidth="full">
       {/* Models Section Header */}
       <div className="mb-6 flex items-center justify-between">
        <h2 className="text-4xl font-bold font-quantico text-white">Models</h2>
@@ -171,6 +172,6 @@ export function ModelsPage() {
           ))}
         </div>
       )}
-    </div>
+    </PageLayout>
   );
 }
