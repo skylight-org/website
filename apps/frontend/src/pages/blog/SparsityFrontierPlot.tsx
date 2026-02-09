@@ -137,20 +137,20 @@ export function SparsityFrontierPlot({ sparsities, gapResults, errorResults }: P
   };
 
   return (
-    // Increased padding (p-6) and max-width to make it wider
-    <div className="bg-dark-surface border border-dark-border rounded-lg p-6 shadow-lg h-full flex flex-col w-full" ref={chartRef}>
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-xl font-semibold text-white tracking-wide">Sparsity Frontier: Quality vs Error</h3>
-        <button 
-          onClick={downloadChart}
-          className="text-xs text-gray-400 hover:text-white border border-dark-border rounded px-3 py-1.5 transition-colors"
-          data-export-ignore="true"
-        >
-          Export PNG
-        </button>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 h-[450px]">
+    <div className="overflow-x-auto" role="region" aria-label="Sparsity frontier comparison plots" tabIndex={0}>
+      <div className="bg-dark-surface border border-dark-border rounded-lg p-6 shadow-lg h-full flex flex-col min-w-[700px]" ref={chartRef}>
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-xl font-semibold text-white tracking-wide">Sparsity Frontier: Quality vs Error</h3>
+          <button 
+            onClick={downloadChart}
+            className="text-xs text-gray-400 hover:text-white border border-dark-border rounded px-3 py-1.5 transition-colors"
+            data-export-ignore="true"
+          >
+            Export PNG
+          </button>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 h-[450px]">
         {/* Left: Performance Pareto */}
         <div className="flex flex-col">
           <h4 className="text-sm font-medium text-gray-300 mb-4 text-center uppercase tracking-wider text-xs">Relative Accuracy (Higher is Better)</h4>
@@ -241,9 +241,10 @@ export function SparsityFrontierPlot({ sparsities, gapResults, errorResults }: P
           </div>
         </div>
       </div>
-      <p className="text-xs text-center text-gray-500 mt-6 font-mono">
-        Solid lines: vAttention methods &mdash; Dashed lines: Standard baselines
-      </p>
+        <p className="text-xs text-center text-gray-500 mt-6 font-mono">
+          Solid lines: vAttention methods &mdash; Dashed lines: Standard baselines
+        </p>
+      </div>
     </div>
   );
 }

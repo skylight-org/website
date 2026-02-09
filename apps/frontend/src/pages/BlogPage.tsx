@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Breadcrumb } from '../components/common/Breadcrumb';
+import { PageLayout } from '../components/layout/PageLayout';
 import { blogPosts } from '../data/blogPosts';
 
 export function BlogPage() {
@@ -11,13 +11,10 @@ export function BlogPage() {
   };
 
   return (
-    <div className="min-h-screen text-gray-200">
-      <Breadcrumb />
-      
-      <div className="max-w-4xl mx-auto mt-12 px-4 md:px-0">
+    <PageLayout spacing="normal" maxWidth="narrow">
         {/* Header Section */}
         <div className="mb-12 pb-6 border-b border-gray-800">
-          <h1 className="text-5xl font-bold text-accent-gold mb-4 tracking-tight font-quantico">
+          <h1 className="text-4xl font-bold text-accent-gold mb-4 font-quantico">
             Sky Light Blog
           </h1>
           <p className="text-lg text-gray-400 max-w-2xl">
@@ -74,11 +71,6 @@ export function BlogPage() {
             ))}
           </div>
         </div>
-
-        <div className="mt-24 pt-8 border-t border-gray-800 text-gray-500 text-sm font-mono text-center md:text-left">
-          <p>© 2025 Sky Light Project</p>
-        </div>
-      </div>
-    </div>
+    </PageLayout>
   );
 }

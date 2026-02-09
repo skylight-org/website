@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { PageLayout } from '../components/layout/PageLayout';
 import { useCombinedViewBoth } from '../hooks/useCombinedView';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
@@ -16,7 +17,7 @@ export function SummaryPage() {
   }, [combinedViewData?.sparsities]);
 
   return (
-    <div>
+    <PageLayout spacing="none" maxWidth="full">
       {/* Combined View Tables with Tabs */}
       <h2 className="text-4xl font-bold font-quantico text-white">Sparse Attention: Tier 1A Rankings</h2>
 
@@ -104,7 +105,7 @@ export function SummaryPage() {
           </div>
         )}
       </div>
-    </div>
+    </PageLayout>
   );
 }
 

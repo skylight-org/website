@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { PageLayout } from '../components/layout/PageLayout';
 import { useDatasets } from '../hooks/useDatasets';
 import { useBenchmarks } from '../hooks/useBenchmarks';
 import { useDatasetLeaderboard } from '../hooks/useLeaderboard';
@@ -7,7 +8,6 @@ import { useLLMs } from '../hooks/useLLMs';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import { DatasetCard } from '../components/leaderboard/DatasetCard';
-import { Breadcrumb } from '../components/common/Breadcrumb';
 import { MultiSelectFilter } from '../components/common/MultiSelectFilter';
 import type { Dataset, Benchmark } from '@sky-light/shared-types';
 
@@ -68,9 +68,7 @@ export function DatasetsPage() {
   if (datasetsError) return <ErrorMessage message="Failed to load datasets" />;
 
   return (
-    <div className="space-y-8">
-      <Breadcrumb />
-      
+    <PageLayout spacing="normal" maxWidth="full">
       {/* Page Header */}
       <div>
         <div className="flex items-start justify-between gap-4 mb-2">
@@ -181,7 +179,7 @@ export function DatasetsPage() {
           ))}
         </div>
       )}
-    </div>
+    </PageLayout>
   );
 }
 
