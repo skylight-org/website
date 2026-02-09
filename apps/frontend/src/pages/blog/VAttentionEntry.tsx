@@ -49,20 +49,9 @@ cd sparse-attention-hub && pip install -e . && pip install -e .[dev]
 python3 demo/chat.py --model Qwen/Qwen3-30B-A3B-Instruct-2507`;
 
   return (
-    <div className="space-y-12 text-lg text-gray-300 leading-relaxed font-light max-w-[1400px] mx-auto px-4 md:px-8">
+    <div className="space-y-12 text-lg text-gray-300 leading-relaxed font-light overflow-x-hidden">
       {/* Header / Intro */}
       <div className="space-y-8 border-b border-dark-border/50 pb-12 max-w-4xl mx-auto">
-        <div className="flex flex-col gap-4">
-          <p className="text-accent-gold font-mono text-sm tracking-widest uppercase">Research • Systems • Oct 2025</p>
-          <p className="text-gray-500 text-sm">
-            <a
-              href="https://arxiv.org/abs/2510.05688"
-              className="hover:text-accent-blue transition-colors underline decoration-dark-border hover:decoration-accent-blue underline-offset-4"
-            >
-              arXiv:2510.05688
-            </a>
-          </p>
-        </div>
 
         <p className="text-xl text-gray-200 leading-relaxed">
           Sparse attention methods are now essential for decoding long-context language models, but existing approaches break down in regimes that matter in practice. In particular, heavy-hitter methods such as top-k and top-p implicitly assume that attention mass is concentrated on a small set of tokens. This assumption holds for some heads and queries—but not for many others.
@@ -141,6 +130,7 @@ python3 demo/chat.py --model Qwen/Qwen3-30B-A3B-Instruct-2507`;
           Algorithmically, vAttention is parameterized by an off-the-shelf top-k sparse attention method. It uses this top-k predictor—augmented with sink and local tokens—to select a set of deterministic indices. vAttention then samples additional indices uniformly at random from the remaining (residual) tokens and combines both sets to compute the full attention estimate. The resulting computation proceeds as follows:
         </p>
 
+        {/* vAttention algorithm equations */}
         <ScrollableFormulaContainer 
           className="my-8" 
           ariaLabel="vAttention algorithm equations"
@@ -180,6 +170,7 @@ python3 demo/chat.py --model Qwen/Qwen3-30B-A3B-Instruct-2507`;
           Unlike heuristic approaches, vAttention offers explicit theoretical guarantees. We formalize this as the <strong>Verified-X</strong> property: an algorithm is <InlineMath math="(\epsilon, \delta)" />-verified if it approximates a target computation <InlineMath math="\mathcal{X}" /> within relative error <InlineMath math="\epsilon" /> with probability at least <InlineMath math="1 - \delta" /> for all inputs.
         </p>
 
+        {/* Verified-X definition formula */}
         <ScrollableFormulaContainer 
           className="my-8" 
           ariaLabel="Verified-X definition formula"
@@ -197,8 +188,9 @@ python3 demo/chat.py --model Qwen/Qwen3-30B-A3B-Instruct-2507`;
           For the numerator and denominator (<InlineMath math="\mathcal{X} \in \{N, D\}" />), the residual sums are unbiased estimators. By applying concentration inequalities to the vector-valued sums, we derive a closed-form lower bound for the sampling budget <InlineMath math="b" /> required to satisfy the guarantee:
         </p>
 
+        {/* Sampling budget bound theorem */}
         <ScrollableFormulaContainer 
-          className="my-8" 
+          className="my-8 w-full" 
           ariaLabel="Sampling budget bound theorem"
           minWidth="min-w-[600px]"
         >
@@ -207,8 +199,14 @@ python3 demo/chat.py --model Qwen/Qwen3-30B-A3B-Instruct-2507`;
             <div className="text-white text-center">
               <BlockMath math={String.raw`b \geq \left( \Phi^{-1}\!\left(1 - \tfrac{\delta}{2}\right) \cdot \frac{n_s \sqrt{\mathrm{Tr}(\Sigma)}}{\tau} \right)^{\!2} \;\Longrightarrow\; \Pr\!\left(\|\hat{s} - s\|_2 > \tau\right) \le \delta`} />
             </div>
-            <div className="mt-4 text-gray-500 text-xs font-mono">
-              <InlineMath math="b" />: sample size &nbsp;|&nbsp; <InlineMath math="\Sigma" />: population covariance &nbsp;|&nbsp; <InlineMath math="n_s" />: residual count &nbsp;|&nbsp; <InlineMath math="\tau" />: error tolerance
+            <div className="mt-4 text-gray-500 text-xs font-mono flex flex-wrap gap-x-2 gap-y-1">
+              <span><InlineMath math="b" />: sample size</span>
+              <span>|</span>
+              <span><InlineMath math="\Sigma" />: population covariance</span>
+              <span>|</span>
+              <span><InlineMath math="n_s" />: residual count</span>
+              <span>|</span>
+              <span><InlineMath math="\tau" />: error tolerance</span>
             </div>
           </div>
         </ScrollableFormulaContainer>
