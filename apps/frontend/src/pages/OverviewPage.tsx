@@ -1,11 +1,11 @@
 import { useState, useMemo, useEffect } from 'react';
+import { PageLayout } from '../components/layout/PageLayout';
 import type { NumericRange } from '@sky-light/shared-types';
 import { useOverallLeaderboard, useOverviewStats } from '../hooks/useLeaderboard';
 import { useLLMs } from '../hooks/useLLMs';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import { AggregatedTable } from '../components/leaderboard/AggregatedTable';
-import { Breadcrumb } from '../components/common/Breadcrumb';
 import { TextRangeFilter } from '../components/common/TextRangeFilter';
 import { MultiSelectFilter } from '../components/common/MultiSelectFilter';
 
@@ -93,9 +93,7 @@ export function OverviewPage() {
   };
 
   return (
-    <div className="space-y-8">
-      <Breadcrumb />
-      
+    <PageLayout spacing="normal" maxWidth="full">
       {/* Hero Section */}
       <section>
         <h1 className="text-4xl font-bold text-white mb-4">
@@ -217,6 +215,6 @@ export function OverviewPage() {
           </div>
         </section>
       )}
-    </div>
+    </PageLayout>
   );
 }

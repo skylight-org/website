@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
-import { useCombinedViewBoth } from '../../../hooks/useCombinedView';
-import { LoadingSpinner } from '../../common/LoadingSpinner';
+import { useCombinedViewBoth } from '../../hooks/useCombinedView';
+import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { ScrollableFormulaContainer } from '../../components/common/ScrollableFormulaContainer';
 import { SparsityFrontierPlot } from './SparsityFrontierPlot';
 import { AttentionErrorPlot } from './AttentionErrorPlot';
 import { VAttentionSchematic } from './VAttentionSchematic';
@@ -87,29 +88,35 @@ python3 demo/chat.py --model Qwen/Qwen3-30B-A3B-Instruct-2507`;
         </p>
 
         {/* Estimator presentation */}
-        <div className="my-8 bg-dark-surface border border-dark-border rounded-lg p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-            <div>
-              <div className="text-gray-500 text-xs font-mono uppercase tracking-wider mb-3">Target</div>
-              <div className="text-white"><BlockMath math={String.raw`y = \sum_{i=1}^n x_i`} /></div>
+        <ScrollableFormulaContainer 
+          className="my-8" 
+          ariaLabel="Estimator comparison formulas"
+          minWidth="min-w-[600px]"
+        >
+          <div className="bg-dark-surface border border-dark-border rounded-lg p-6 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+              <div>
+                <div className="text-gray-500 text-xs font-mono uppercase tracking-wider mb-3">Target</div>
+                <div className="text-white"><BlockMath math={String.raw`y = \sum_{i=1}^n x_i`} /></div>
+              </div>
+              <div>
+                <div className="text-gray-500 text-xs font-mono uppercase tracking-wider mb-3">Top-K</div>
+                <div className="text-white"><BlockMath math={String.raw`\hat{y}_{\text{top}} = \sum_{i=1}^k x_{j_i}`} /></div>
+              </div>
+              <div>
+                <div className="text-gray-500 text-xs font-mono uppercase tracking-wider mb-3">Sampling</div>
+                <div className="text-white"><BlockMath math={String.raw`\hat{y}_{\text{samp}} = \frac{n}{k}\sum_{i=1}^k x_{j_i}`} /></div>
+              </div>
             </div>
-            <div>
-              <div className="text-gray-500 text-xs font-mono uppercase tracking-wider mb-3">Top-K</div>
-              <div className="text-white"><BlockMath math={String.raw`\hat{y}_{\text{top}} = \sum_{i=1}^k x_{j_i}`} /></div>
-            </div>
-            <div>
-              <div className="text-gray-500 text-xs font-mono uppercase tracking-wider mb-3">Sampling</div>
-              <div className="text-white"><BlockMath math={String.raw`\hat{y}_{\text{samp}} = \frac{n}{k}\sum_{i=1}^k x_{j_i}`} /></div>
-            </div>
-          </div>
 
-          <div className="border-t border-dark-border pt-6">
-            <div className="text-accent-gold text-xs font-mono uppercase tracking-wider mb-4 text-center">Hybrid Estimator</div>
-            <div className="text-white text-center">
-              <BlockMath math={String.raw`\hat{y}_{\text{hybrid}} = \underbrace{\sum_{i=1}^{k_1} x_{t_i}}_{\text{head (top-}k\text{)}} + \underbrace{\frac{n-k_1}{k_2}\sum_{i=1}^{k_2} x_{s_i}}_{\text{tail (sampling)}}`} />
+            <div className="border-t border-dark-border pt-6">
+              <div className="text-accent-gold text-xs font-mono uppercase tracking-wider mb-4 text-center">Hybrid Estimator</div>
+              <div className="text-white text-center">
+                <BlockMath math={String.raw`\hat{y}_{\text{hybrid}} = \underbrace{\sum_{i=1}^{k_1} x_{t_i}}_{\text{head (top-}k\text{)}} + \underbrace{\frac{n-k_1}{k_2}\sum_{i=1}^{k_2} x_{s_i}}_{\text{tail (sampling)}}`} />
+              </div>
             </div>
           </div>
-        </div>
+        </ScrollableFormulaContainer>
 
         <p>
           When used in isolation, each method has clear failure modes. In low-entropy settings, where only a few terms contribute meaningfully to <InlineMath math="y" />, top-k performs well, while sampling-based estimation suffers from high variance. Conversely, in high-entropy settings—where contributions are broadly distributed—sampling-based estimation remains accurate, whereas top-k incurs large bias. Recognizing this complementary behavior, vAttention combines the two into a hybrid estimator.
@@ -134,17 +141,23 @@ python3 demo/chat.py --model Qwen/Qwen3-30B-A3B-Instruct-2507`;
           Algorithmically, vAttention is parameterized by an off-the-shelf top-k sparse attention method. It uses this top-k predictor—augmented with sink and local tokens—to select a set of deterministic indices. vAttention then samples additional indices uniformly at random from the remaining (residual) tokens and combines both sets to compute the full attention estimate. The resulting computation proceeds as follows:
         </p>
 
-        <div className="my-8 bg-dark-surface border border-dark-border rounded-lg p-6">
-          <div className="text-accent-gold text-xs font-mono uppercase tracking-wider mb-4">vAttention Algorithm</div>
-          <div className="text-white space-y-4">
-            <BlockMath math={String.raw`N = \sum_{i \in \mathcal{I}_f} e^{\langle K_i, q\rangle} V_i + \frac{n_s}{|\mathcal{I}_{dyn}|}\sum_{j \in \mathcal{I}_{dyn}} e^{\langle K_j, q\rangle} V_j`} />
-            <BlockMath math={String.raw`D = \sum_{i \in \mathcal{I}_f} e^{\langle K_i, q\rangle} + \frac{n_s}{|\mathcal{I}_{dyn}|}\sum_{j \in \mathcal{I}_{dyn}} e^{\langle K_j, q\rangle}`} />
-            <BlockMath math={String.raw`\text{SDPA} = \frac{N}{D}`} />
+        <ScrollableFormulaContainer 
+          className="my-8" 
+          ariaLabel="vAttention algorithm equations"
+          minWidth="min-w-[500px]"
+        >
+          <div className="bg-dark-surface border border-dark-border rounded-lg p-6">
+            <div className="text-accent-gold text-xs font-mono uppercase tracking-wider mb-4">vAttention Algorithm</div>
+            <div className="text-white space-y-4">
+              <BlockMath math={String.raw`N = \sum_{i \in \mathcal{I}_f} e^{\langle K_i, q\rangle} V_i + \frac{n_s}{|\mathcal{I}_{dyn}|}\sum_{j \in \mathcal{I}_{dyn}} e^{\langle K_j, q\rangle} V_j`} />
+              <BlockMath math={String.raw`D = \sum_{i \in \mathcal{I}_f} e^{\langle K_i, q\rangle} + \frac{n_s}{|\mathcal{I}_{dyn}|}\sum_{j \in \mathcal{I}_{dyn}} e^{\langle K_j, q\rangle}`} />
+              <BlockMath math={String.raw`\text{SDPA} = \frac{N}{D}`} />
+            </div>
+            <div className="mt-4 text-gray-500 text-xs font-mono">
+              <InlineMath math="\mathcal{I}_f" />: deterministic indices &nbsp;|&nbsp; <InlineMath math="\mathcal{I}_{dyn}" />: sampled indices &nbsp;|&nbsp; <InlineMath math="n_s" />: residual count
+            </div>
           </div>
-          <div className="mt-4 text-gray-500 text-xs font-mono">
-            <InlineMath math="\mathcal{I}_f" />: deterministic indices &nbsp;|&nbsp; <InlineMath math="\mathcal{I}_{dyn}" />: sampled indices &nbsp;|&nbsp; <InlineMath math="n_s" />: residual count
-          </div>
-        </div>
+        </ScrollableFormulaContainer>
 
         <p>
           The budget allocated to stochastic computation is a central contribution of vAttention and the key factor that makes it “verified”. By dynamically selecting this budget, vAttention provides user-controllable quality guarantees for intermediate approximate computations. These intermediates may correspond to the numerator, the denominator of SDPA, or the full SDPA itself. The resulting theoretical guarantees are derived from a statistical analysis of random sampling–based estimators and are briefly outlined below.
@@ -167,26 +180,38 @@ python3 demo/chat.py --model Qwen/Qwen3-30B-A3B-Instruct-2507`;
           Unlike heuristic approaches, vAttention offers explicit theoretical guarantees. We formalize this as the <strong>Verified-X</strong> property: an algorithm is <InlineMath math="(\epsilon, \delta)" />-verified if it approximates a target computation <InlineMath math="\mathcal{X}" /> within relative error <InlineMath math="\epsilon" /> with probability at least <InlineMath math="1 - \delta" /> for all inputs.
         </p>
 
-        <div className="my-8 bg-dark-surface border border-dark-border rounded-lg p-6">
-          <div className="text-accent-gold text-xs font-mono uppercase tracking-wider mb-4">Definition: Verified-<InlineMath math="\mathcal{X}" /></div>
-          <div className="text-white text-center">
-            <BlockMath math={String.raw`\Pr\!\left( \frac{\| \mathcal{X}'(x) - \mathcal{X}(x) \|_2}{\| \mathcal{X}(x) \|_2} > \epsilon \right) < \delta \quad \forall\, x`} />
+        <ScrollableFormulaContainer 
+          className="my-8" 
+          ariaLabel="Verified-X definition formula"
+          minWidth="min-w-[450px]"
+        >
+          <div className="bg-dark-surface border border-dark-border rounded-lg p-6">
+            <div className="text-accent-gold text-xs font-mono uppercase tracking-wider mb-4">Definition: Verified-<InlineMath math="\mathcal{X}" /></div>
+            <div className="text-white text-center">
+              <BlockMath math={String.raw`\Pr\!\left( \frac{\| \mathcal{X}'(x) - \mathcal{X}(x) \|_2}{\| \mathcal{X}(x) \|_2} > \epsilon \right) < \delta \quad \forall\, x`} />
+            </div>
           </div>
-        </div>
+        </ScrollableFormulaContainer>
 
         <p>
           For the numerator and denominator (<InlineMath math="\mathcal{X} \in \{N, D\}" />), the residual sums are unbiased estimators. By applying concentration inequalities to the vector-valued sums, we derive a closed-form lower bound for the sampling budget <InlineMath math="b" /> required to satisfy the guarantee:
         </p>
 
-        <div className="my-8 bg-dark-surface border border-dark-border rounded-lg p-6">
-          <div className="text-accent-gold text-xs font-mono uppercase tracking-wider mb-4">Theorem: Sampling Budget Bound</div>
-          <div className="text-white text-center">
-            <BlockMath math={String.raw`b \geq \left( \Phi^{-1}\!\left(1 - \tfrac{\delta}{2}\right) \cdot \frac{n_s \sqrt{\mathrm{Tr}(\Sigma)}}{\tau} \right)^{\!2} \;\Longrightarrow\; \Pr\!\left(\|\hat{s} - s\|_2 > \tau\right) \le \delta`} />
+        <ScrollableFormulaContainer 
+          className="my-8" 
+          ariaLabel="Sampling budget bound theorem"
+          minWidth="min-w-[600px]"
+        >
+          <div className="bg-dark-surface border border-dark-border rounded-lg p-6">
+            <div className="text-accent-gold text-xs font-mono uppercase tracking-wider mb-4">Theorem: Sampling Budget Bound</div>
+            <div className="text-white text-center">
+              <BlockMath math={String.raw`b \geq \left( \Phi^{-1}\!\left(1 - \tfrac{\delta}{2}\right) \cdot \frac{n_s \sqrt{\mathrm{Tr}(\Sigma)}}{\tau} \right)^{\!2} \;\Longrightarrow\; \Pr\!\left(\|\hat{s} - s\|_2 > \tau\right) \le \delta`} />
+            </div>
+            <div className="mt-4 text-gray-500 text-xs font-mono">
+              <InlineMath math="b" />: sample size &nbsp;|&nbsp; <InlineMath math="\Sigma" />: population covariance &nbsp;|&nbsp; <InlineMath math="n_s" />: residual count &nbsp;|&nbsp; <InlineMath math="\tau" />: error tolerance
+            </div>
           </div>
-          <div className="mt-4 text-gray-500 text-xs font-mono">
-            <InlineMath math="b" />: sample size &nbsp;|&nbsp; <InlineMath math="\Sigma" />: population covariance &nbsp;|&nbsp; <InlineMath math="n_s" />: residual count &nbsp;|&nbsp; <InlineMath math="\tau" />: error tolerance
-          </div>
-        </div>
+        </ScrollableFormulaContainer>
 
         <p>
           The results for numerator and denominator can be combined to obtain budget for guarantees over the entire attention computation. This result allows vAttention to dynamically size <InlineMath math="\mathcal{I}_{dyn}" /> at runtime, minimizing compute while satisfying rigorous user-defined accuracy constraints (<InlineMath math="\epsilon, \delta" />).

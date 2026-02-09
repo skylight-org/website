@@ -1,4 +1,4 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useSidebar } from '../../contexts/SidebarContext';
 
 // Bottom section components to ensure full-width divider and separation of concerns
@@ -38,40 +38,11 @@ function SidebarCollapseControl({ onCollapse }: { onCollapse: () => void }) {
 
 export function Sidebar() {
   const location = useLocation();
-  const navigate = useNavigate();
   
   const { isCollapsed, setIsCollapsed } = useSidebar();
 
   const isActive = (path: string): boolean => {
     return location.pathname === path;
-  };
-
-  const scrollToSection = (id: string) => {
-    // Handle home page sections
-    if (location.pathname !== '/home' && !location.pathname.startsWith('/semantic-caching')) {
-      navigate('/home');
-      setTimeout(() => {
-        const element = document.getElementById(id);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 100);
-    }
-    // Handle semantic-caching page sections
-    else if (location.pathname !== '/semantic-caching' && location.pathname.startsWith('/semantic-caching')) {
-      navigate('/semantic-caching');
-      setTimeout(() => {
-        const element = document.getElementById(id);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 100);
-    } else {
-      const element = document.getElementById(id);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
   };
 
   if (isCollapsed) {
@@ -119,45 +90,35 @@ export function Sidebar() {
         </Link>
       </div>
 
-      {/* Navigation */}
+      {/* 
+        IMPORTANT: Desktop Navigation Structure
+        When updating navigation items, also update the mobile Header component (Header.tsx)
+        to maintain consistency across desktop and mobile views.
+      */}
       <nav className="flex-1 overflow-y-auto py-6 px-4">
-        {/* Main Section */}
-        <div className="mb-2">
-          <Link
-            to="/home"
-            className={`flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-colors font-quantico ${
-              isActive('/home')
-                ? 'bg-accent-gold text-dark-bg'
-                : 'text-gray-300 hover:bg-dark-surface-hover hover:text-white'
-            }`}
-          >
-            sparse-attention/decoding
-          </Link>
-          
-          {/* Subtabs for sections */}
-          {isActive('/home') && (
-            <div className="ml-4 mt-1 space-y-1 border-l-2 border-dark-border pl-2">
-              <button
-                onClick={() => scrollToSection('summary-section')}
-                className="block w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:bg-dark-surface-hover hover:text-white transition-colors"
-              >
-                Summary
-              </button>
-              <button
-                onClick={() => scrollToSection('models-section')}
-                className="block w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:bg-dark-surface-hover hover:text-white transition-colors"
-              >
-                Models
-              </button>
-              <button
-                onClick={() => scrollToSection('datasets-section')}
-                className="block w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:bg-dark-surface-hover hover:text-white transition-colors"
-              >
-                Datasets
-              </button>
-            </div>
-          )}
-        </div>
+        {/* Welcome Link */}
+        <Link
+          to="/home"
+          className={`flex items-center px-4 py-3 rounded-lg mb-2 text-sm font-medium transition-colors ${
+            isActive('/home')
+              ? 'bg-accent-gold text-dark-bg'
+              : 'text-gray-300 hover:bg-dark-surface-hover hover:text-white'
+          }`}
+        >
+          Welcome
+        </Link>
+
+        {/* Sparse Attention Method Link */}
+        <Link
+          to="/home/method/sparse-attention-decoding"
+          className={`flex items-center px-4 py-3 rounded-lg mb-2 text-sm font-medium transition-colors ${
+            location.pathname === '/home/method/sparse-attention-decoding'
+              ? 'bg-accent-gold text-dark-bg'
+              : 'text-gray-300 hover:bg-dark-surface-hover hover:text-white'
+          }`}
+        >
+          sparse-attention/decoding
+        </Link>
 
         {/* Semantic Caching Tab */}
         <div className="mb-2">
