@@ -67,7 +67,7 @@ export function SemanticCachingMethodPage() {
               
               {/* GitHub Link */}
               <a
-                href="https://github.com/berkeley-function-call-leaderboard/gorilla/tree/main/vcache"
+                href="https://github.com/vcache-project/vCache"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-shrink-0 inline-flex items-center gap-3 px-6 py-4 bg-dark-surface border-2 border-dark-border rounded-xl text-base font-medium text-gray-300 hover:border-accent-gold hover:bg-dark-surface/80 transition-all group mt-2"
