@@ -25,7 +25,7 @@ export function WelcomePage() {
           </h1>
           <p className="text-xl text-gray-400 leading-relaxed max-w-4xl">
             A unified platform to understand, compare, and advance efficiency in AI training and inference. 
-            We identify and create an ecosystem to enable research and development across multiple efficiency research areas.
+            We identify efficiency bottlenecks and create an ecosystem to enable research and development across multiple efficiency research areas.
           </p>
         </div>
 
@@ -56,7 +56,7 @@ export function WelcomePage() {
       {/* Methods Section */}
       <section className="space-y-6">
         <div>
-          <h2 className="text-3xl font-bold text-white mb-2">Research Methods</h2>
+          <h2 className="text-3xl font-bold text-white mb-2">Research Problems</h2>
           <p className="text-gray-400">
             Explore our research across different efficiency optimization techniques for large language models.
           </p>
