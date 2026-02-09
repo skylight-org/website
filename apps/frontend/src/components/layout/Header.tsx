@@ -115,6 +115,18 @@ export function Header() {
             sparse-attention/decoding
           </Link>
 
+          {/* Semantic Caching Method Link */}
+          <Link
+            to="/home/method/semantic-caching"
+            className={`flex items-center px-4 py-3 rounded-lg mb-2 text-sm font-medium transition-colors ${
+              location.pathname.startsWith('/home/method/semantic-caching')
+                ? 'bg-accent-gold text-dark-bg'
+                : 'text-gray-300 hover:bg-dark-surface-hover hover:text-white'
+            }`}
+          >
+            semantic-caching
+          </Link>
+
           {/* Blog Link */}
           <Link
             to="/blog"

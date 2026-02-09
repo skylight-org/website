@@ -6,6 +6,8 @@ import { Header } from './components/layout/Header';
 import { Footer } from './components/common/Footer';
 import { WelcomePage } from './pages/WelcomePage';
 import { SparseAttentionMethodPage } from './pages/SparseAttentionMethodPage';
+import { SemanticCachingMethodPage } from './pages/SemanticCachingMethodPage';
+import { SemanticCacheDatasetDetailPage } from './pages/SemanticCacheDatasetDetailPage';
 import { OverviewPage } from './pages/OverviewPage';
 import { DatasetsPage } from './pages/DatasetsPage';
 import { DatasetDetailPage } from './pages/DatasetDetailPage';
@@ -15,8 +17,6 @@ import { ContributePage } from './pages/ContributePage';
 import { AboutPage } from './pages/AboutPage';
 import { BlogPage } from './pages/BlogPage';
 import { BlogPostPage } from './pages/BlogPostPage';
-import { SemanticCachingHomePage } from './pages/SemanticCachingHomePage';
-import { SemanticCacheDatasetDetailPage } from './pages/SemanticCacheDatasetDetailPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -55,6 +55,8 @@ function AppContent() {
             <Route path="/" element={<Navigate to="/home" replace />} />
             <Route path="/home" element={<WelcomePage />} />
             <Route path="/home/method/sparse-attention-decoding" element={<SparseAttentionMethodPage />} />
+            <Route path="/home/method/semantic-caching" element={<SemanticCachingMethodPage />} />
+            <Route path="/home/method/semantic-caching/datasets/:datasetId" element={<SemanticCacheDatasetDetailPage />} />
             <Route path="/arena" element={<OverviewPage />} />
             <Route path="/datasets" element={<DatasetsPage />} />
             <Route path="/datasets/:datasetId" element={<DatasetDetailPage />} />

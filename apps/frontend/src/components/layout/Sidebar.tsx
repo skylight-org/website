@@ -120,37 +120,17 @@ export function Sidebar() {
           sparse-attention/decoding
         </Link>
 
-        {/* Semantic Caching Tab */}
-        <div className="mb-2">
-          <Link
-            to="/semantic-caching"
-            className={`flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-colors font-quantico ${
-              isActive('/semantic-caching') || location.pathname.startsWith('/semantic-caching')
-                ? 'bg-accent-gold text-dark-bg'
-                : 'text-gray-300 hover:bg-dark-surface-hover hover:text-white'
-            }`}
-          >
-            semantic-caching
-          </Link>
-          
-          {/* Subtabs for semantic-caching sections */}
-          {(isActive('/semantic-caching') || location.pathname.startsWith('/semantic-caching/datasets')) && (
-            <div className="ml-4 mt-1 space-y-1 border-l-2 border-dark-border pl-2">
-              <button
-                onClick={() => scrollToSection('leaderboard-section')}
-                className="block w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:bg-dark-surface-hover hover:text-white transition-colors"
-              >
-                Overall Leaderboard
-              </button>
-              <button
-                onClick={() => scrollToSection('datasets-section')}
-                className="block w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:bg-dark-surface-hover hover:text-white transition-colors"
-              >
-                Datasets
-              </button>
-            </div>
-          )}
-        </div>
+        {/* Semantic Caching Method Link */}
+        <Link
+          to="/home/method/semantic-caching"
+          className={`flex items-center px-4 py-3 rounded-lg mb-2 text-sm font-medium transition-colors ${
+            location.pathname.startsWith('/home/method/semantic-caching')
+              ? 'bg-accent-gold text-dark-bg'
+              : 'text-gray-300 hover:bg-dark-surface-hover hover:text-white'
+          }`}
+        >
+          semantic-caching
+        </Link>
 
         {/* Blog Link */}
         <Link

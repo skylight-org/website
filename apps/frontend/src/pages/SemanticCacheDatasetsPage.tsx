@@ -17,7 +17,7 @@ function DatasetCardWithRankings({ dataset }: DatasetCardWithRankingsProps) {
 
   return (
     <Link
-      to={`/semantic-caching/datasets/${dataset.id}`}
+      to={`/home/method/semantic-caching/datasets/${dataset.id}`}
       className="block bg-dark-surface border border-dark-border rounded-lg p-4 sm:p-6 hover:border-accent-gold transition-colors"
     >
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4 mb-4">
@@ -104,8 +104,8 @@ export function SemanticCacheDatasetsPage() {
 
   return (
     <div>
-      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-6">Benchmark Datasets</h2>
-      <p className="text-sm sm:text-base lg:text-lg text-gray-400 mb-8">
+      <h2 className="text-4xl font-bold font-quantico text-white mb-6">Benchmark Datasets</h2>
+      <p className="text-lg text-gray-400 mb-8">
         Semantic caching methods are evaluated on four diverse datasets covering classification,
         chatbot interactions, search queries, and cross-domain robustness.
       </p>
