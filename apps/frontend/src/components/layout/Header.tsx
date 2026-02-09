@@ -57,8 +57,8 @@ export function Header() {
 
   const navItems = [
     { path: '/home', label: 'sparse-attention/decoding', fontClass: 'font-quantico' },
-    { path: '/semantic-caching', label: 'semantic-caching', fontClass: 'font-quantico' },
     { path: '/blog', label: 'Blog' },
+    { path: '/about', label: 'About' },
   ];
 
   return (

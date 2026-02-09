@@ -203,6 +203,18 @@ export function Sidebar() {
           Blog
         </Link>
 
+        {/* About Link */}
+        <Link
+          to="/about"
+          className={`flex items-center px-4 py-3 rounded-lg mb-2 text-sm font-medium transition-colors ${
+            isActive('/about')
+              ? 'bg-accent-gold text-dark-bg'
+              : 'text-gray-300 hover:bg-dark-surface-hover hover:text-white'
+          }`}
+        >
+          About
+        </Link>
+
         {/* Contribute Link */}
         <Link
           to="/contribute"

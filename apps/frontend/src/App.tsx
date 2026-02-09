@@ -16,6 +16,7 @@ import { DocumentationAuxMemoryPage } from './pages/DocumentationAuxMemoryPage';
 import { DocumentationSparseAttentionPage } from './pages/DocumentationSparseAttentionPage';
 import { BaselineDetailPage } from './pages/BaselineDetailPage';
 import { ContributePage } from './pages/ContributePage';
+import { AboutPage } from './pages/AboutPage';
 import { BlogPage } from './pages/BlogPage';
 import { BlogPostPage } from './pages/BlogPostPage';
 import { SemanticCachingHomePage } from './pages/SemanticCachingHomePage';
@@ -70,8 +71,7 @@ function AppContent() {
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/blog/:slug" element={<BlogPostPage />} />
             <Route path="/contribute" element={<ContributePage />} />
-            <Route path="/semantic-caching" element={<SemanticCachingHomePage />} />
-            <Route path="/semantic-caching/datasets/:datasetId" element={<SemanticCacheDatasetDetailPage />} />
+            <Route path="/about" element={<AboutPage />} />
           </Routes>
           <Footer />
         </div>

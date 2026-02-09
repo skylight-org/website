@@ -40,6 +40,8 @@ export function Breadcrumb() {
     }
   } else if (pathSegments[0] === 'arena') {
     breadcrumbs.push({ label: 'Arena', path: '/arena' });
+  } else if (pathSegments[0] === 'about') {
+    breadcrumbs.push({ label: 'About', path: '/about' });
   } else if (pathSegments[0] === 'contribute') {
     breadcrumbs.push({ label: 'Contribute', path: '/contribute' });
   } else if (pathSegments[0] === 'documentation') {
