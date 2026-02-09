@@ -229,3 +229,55 @@ export interface CombinedViewResult {
   numTables: number;
   metricName: string;
 }
+
+// ============================================================================
+// SEMANTIC CACHE TYPES
+// ============================================================================
+
+export interface SemanticCacheBaseline {
+  id: string;
+  name: string;
+  description: string;
+  supportsGuarantees: boolean;  // true for vCache
+  thresholdType: 'static' | 'dynamic' | 'learned' | 'none';
+}
+
+export interface SemanticCacheDataset {
+  id: string;
+  name: string;
+  description: string;
+  size: number;
+  domain: string;
+  numClasses?: number;
+}
+
+export interface SemanticCacheOverallRanking {
+  rank: number;
+  baseline: SemanticCacheBaseline;
+  avgRank: number;  // Average rank across all δ × dataset configs
+  avgHitRate: number;  // Average cache hit rate (%)
+  avgErrorRate: number;  // Average error rate (%)
+  boundViolations: number;  // Count of violated error bounds
+  hasGuarantees: boolean;  // Whether provides theoretical bounds
+  datasetRanks: Record<string, number>;  // datasetId -> rank
+  datasetHitRates: Record<string, number>;  // datasetId -> hit rate %
+}
+
+export interface SemanticCacheDatasetRanking {
+  rank: number;
+  baseline: SemanticCacheBaseline;
+  hitRate: number;  // Cache hit rate (%)
+  errorRate: number;  // Error rate (%)
+  errorBound: number;  // Target δ value
+  latencyReduction: number;  // Speedup factor (e.g., 52x)
+  boundSatisfied: boolean;  // Whether error ≤ δ
+  hasGuarantees: boolean;
+}
+
+export interface SemanticCacheStats {
+  totalBaselines: number;
+  totalDatasets: number;
+  totalConfigurations: number;
+  avgHitRate: number;
+  avgErrorRate: number;
+}

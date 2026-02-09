@@ -3,11 +3,14 @@ import { Link } from 'react-router-dom';
 import { PageLayout } from '../components/layout/PageLayout';
 import { MethodPreviewCard } from '../components/common/MethodPreviewCard';
 import { GapSummaryPlot } from '../components/leaderboard/SummaryPlots';
+import { SemanticCacheOverallTable } from '../components/semantic-cache/SemanticCacheOverallTable';
 import { useCombinedViewBoth } from '../hooks/useCombinedView';
+import { useSemanticCacheOverall } from '../hooks/useSemanticCacheOverall';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 
 export function WelcomePage() {
-  const { data: combinedViewData, isLoading } = useCombinedViewBoth();
+  const { data: combinedViewData, isLoading: sparseAttentionLoading } = useCombinedViewBoth();
+  const { data: semanticCacheData, isLoading: semanticCacheLoading } = useSemanticCacheOverall();
 
   // Show only 50x (2%), 10x (10%), and 5x (20%) sparsity levels for preview
   const filteredSparsities = useMemo(() => {
@@ -70,7 +73,7 @@ export function WelcomePage() {
             title="Sparse Attention / Decoding"
             description="Sparse attention methods reduce computational workload and memory reads during the attention mechanism in transformer models. Explore state-of-the-art sparse attention for decoding phase at inference time without any model finetuning."
             previewContent={
-              isLoading ? (
+              sparseAttentionLoading ? (
                 <div className="flex items-center justify-center h-[300px]">
                   <LoadingSpinner />
                 </div>
@@ -94,23 +97,31 @@ export function WelcomePage() {
             status="stable"
           />
 
-          {/* Semantic Caching - Coming Soon */}
+          {/* Semantic Caching Method */}
           <MethodPreviewCard
             id="semantic-caching"
             title="Semantic Caching"
-            description="Semantic caching optimizes inference by identifying and reusing previously computed results for semantically similar queries. This reduces redundant computation and improves response times."
+            description="Semantic caching returns cached responses for semantically similar prompts to reduce LLM inference latency and cost. Explore state-of-the-art semantic caching methods evaluated across multiple datasets."
             previewContent={
-              <div className="bg-dark-bg/50 rounded-lg p-12 border border-dark-border/50 flex items-center justify-center">
-                <div className="text-center space-y-2">
-                  <svg className="w-16 h-16 text-gray-600 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
-                  <p className="text-gray-500">Research in progress</p>
+              semanticCacheLoading ? (
+                <div className="flex items-center justify-center h-[300px]">
+                  <LoadingSpinner />
                 </div>
-              </div>
+              ) : semanticCacheData && semanticCacheData.length > 0 ? (
+                <div className="bg-dark-bg/50 rounded-lg p-4 border border-dark-border/50">
+                  <SemanticCacheOverallTable rankings={semanticCacheData} />
+                  <p className="text-xs text-gray-500 text-center mt-4">
+                    Preview: Overall rankings aggregated across 4 datasets and 4 error budgets
+                  </p>
+                </div>
+              ) : (
+                <div className="text-center text-gray-500 py-12">
+                  Preview unavailable
+                </div>
+              )
             }
             route="/home/method/semantic-caching"
-            status="coming-soon"
+            status="stable"
           />
         </div>
       </section>
