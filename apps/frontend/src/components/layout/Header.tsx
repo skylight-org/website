@@ -1,9 +1,8 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
 export function Header() {
   const location = useLocation();
-  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Close menu when route changes
@@ -25,28 +24,6 @@ export function Header() {
 
   const isActive = (path: string): boolean => {
     return location.pathname === path;
-  };
-
-  const scrollToSection = (id: string) => {
-    // Close the menu first
-    setIsMenuOpen(false);
-    
-    // If not on home page, navigate there first
-    if (location.pathname !== '/home') {
-      navigate('/home');
-      // Wait for navigation to complete before scrolling
-      setTimeout(() => {
-        const element = document.getElementById(id);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 100);
-    } else {
-      const element = document.getElementById(id);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
   };
 
   return (
@@ -114,43 +91,29 @@ export function Header() {
           to maintain consistency across mobile and desktop views.
         */}
         <nav className="flex-1 overflow-y-auto py-6 px-4">
-          {/* Main Section */}
-          <div className="mb-2">
-            <Link
-              to="/home"
-              className={`flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                isActive('/home')
-                  ? 'bg-accent-gold text-dark-bg'
-                  : 'text-gray-300 hover:bg-dark-surface-hover hover:text-white'
-              }`}
-            >
-              sparse-attention/decoding
-            </Link>
-            
-            {/* Subtabs for sections - shown when on home page */}
-            {isActive('/home') && (
-              <div className="ml-4 mt-1 space-y-1 border-l-2 border-dark-border pl-2">
-                <button
-                  onClick={() => scrollToSection('summary-section')}
-                  className="block w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:bg-dark-surface-hover hover:text-white transition-colors"
-                >
-                  Summary
-                </button>
-                <button
-                  onClick={() => scrollToSection('models-section')}
-                  className="block w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:bg-dark-surface-hover hover:text-white transition-colors"
-                >
-                  Models
-                </button>
-                <button
-                  onClick={() => scrollToSection('datasets-section')}
-                  className="block w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:bg-dark-surface-hover hover:text-white transition-colors"
-                >
-                  Datasets
-                </button>
-              </div>
-            )}
-          </div>
+          {/* Welcome Link */}
+          <Link
+            to="/home"
+            className={`flex items-center px-4 py-3 rounded-lg mb-2 text-sm font-medium transition-colors ${
+              isActive('/home')
+                ? 'bg-accent-gold text-dark-bg'
+                : 'text-gray-300 hover:bg-dark-surface-hover hover:text-white'
+            }`}
+          >
+            Welcome
+          </Link>
+
+          {/* Sparse Attention Method Link */}
+          <Link
+            to="/home/method/sparse-attention-decoding"
+            className={`flex items-center px-4 py-3 rounded-lg mb-2 text-sm font-medium transition-colors ${
+              location.pathname === '/home/method/sparse-attention-decoding'
+                ? 'bg-accent-gold text-dark-bg'
+                : 'text-gray-300 hover:bg-dark-surface-hover hover:text-white'
+            }`}
+          >
+            sparse-attention/decoding
+          </Link>
 
           {/* Blog Link */}
           <Link
