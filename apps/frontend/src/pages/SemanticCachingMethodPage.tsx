@@ -2,16 +2,12 @@ import { PageLayout } from '../components/layout/PageLayout';
 import { MethodLayout } from '../components/layout/MethodLayout';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
-import { useSemanticCacheOverall, useSemanticCacheStats } from '../hooks/useSemanticCacheOverall';
+import { useSemanticCacheOverall } from '../hooks/useSemanticCacheOverall';
 import { SemanticCacheOverallTable } from '../components/semantic-cache/SemanticCacheOverallTable';
 import { SemanticCacheDatasetsPage } from './SemanticCacheDatasetsPage';
 
 function SemanticCacheLeaderboardSection() {
-  const { data: rankings, isLoading: rankingsLoading, error: rankingsError } = useSemanticCacheOverall();
-  const { data: stats, isLoading: statsLoading, error: statsError } = useSemanticCacheStats();
-
-  const isLoading = rankingsLoading || statsLoading;
-  const error = rankingsError || statsError;
+  const { data: rankings, isLoading, error } = useSemanticCacheOverall();
 
   if (isLoading) {
     return (

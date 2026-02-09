@@ -37,7 +37,7 @@ export function SemanticCacheDatasetTable({ rankings, datasetName }: SemanticCac
               <SortableHeader
                 label="Method"
                 sortKey="baseline.name"
-                currentSort={sortConfig}
+                sortConfig={sortConfig}
                 onSort={requestSort}
               />
               <SortableHeader
@@ -48,7 +48,7 @@ export function SemanticCacheDatasetTable({ rankings, datasetName }: SemanticCac
                   </div>
                 }
                 sortKey="hitRate"
-                currentSort={sortConfig}
+                sortConfig={sortConfig}
                 onSort={requestSort}
               />
               <SortableHeader
@@ -59,7 +59,7 @@ export function SemanticCacheDatasetTable({ rankings, datasetName }: SemanticCac
                   </div>
                 }
                 sortKey="errorRate"
-                currentSort={sortConfig}
+                sortConfig={sortConfig}
                 onSort={requestSort}
               />
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
@@ -82,7 +82,7 @@ export function SemanticCacheDatasetTable({ rankings, datasetName }: SemanticCac
                   </div>
                 }
                 sortKey="latencyReduction"
-                currentSort={sortConfig}
+                sortConfig={sortConfig}
                 onSort={requestSort}
               />
             </tr>

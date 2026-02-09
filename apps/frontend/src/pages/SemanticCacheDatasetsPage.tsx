@@ -2,7 +2,7 @@ import { useSemanticCacheDatasets } from '../hooks/useSemanticCacheDatasets';
 import { useSemanticCacheDatasetRankings } from '../hooks/useSemanticCacheDatasetDetail';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
-import type { SemanticCacheDataset, SemanticCacheDatasetRanking } from '@sky-light/shared-types';
+import type { SemanticCacheDataset } from '@sky-light/shared-types';
 import { Link } from 'react-router-dom';
 
 interface DatasetCardWithRankingsProps {

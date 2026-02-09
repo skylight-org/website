@@ -1,7 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import type { SemanticCacheOverallRanking } from '@sky-light/shared-types';
 import { InfoTooltip } from '../common/InfoTooltip';
-import { SortableHeader } from '../common/SortableHeader';
 import { useSortableData } from '../../hooks/useSortableData';
 
 interface SemanticCacheOverallTableProps {
